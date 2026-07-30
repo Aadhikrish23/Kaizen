@@ -1,0 +1,15999 @@
+// File: e:\Kaizen\docs\02_architecture\01_system_architecture.md
+# Kaizen System Architecture
+
+**Document ID:** 01_system_architecture.md
+**Version:** 1.1
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Document Information
+
+| Attribute      | Value                                                      |
+| -------------- | ---------------------------------------------------------- |
+| Document Title | Kaizen System Architecture                                 |
+| Version        | 1.0                                                        |
+| Status         | Approved                                                   |
+| Project        | Kaizen                                                     |
+| System Type    | AI-Powered Health Tracking Platform                        |
+| Audience       | Architects, Developers, DevOps Engineers, AI Coding Agents |
+| Scope          | Overall System Architecture                                |
+
+---
+
+# 2. Executive Summary
+
+Kaizen is an AI-powered health tracking platform designed to help users monitor nutrition, calories, hydration, body weight, health goals, habits, achievements, and long-term wellness trends.
+
+The platform follows a modular service-oriented architecture that separates:
+
+* User interfaces
+* Business logic
+* AI processing
+* Persistence
+* Shared libraries
+
+The architecture is designed to:
+
+* Support 10,000+ active users
+* Enable rapid feature development
+* Maintain clear service boundaries
+* Support Web, Mobile, and Desktop clients
+* Isolate AI workloads from core business services
+* Provide long-term maintainability
+* Support future horizontal scaling
+
+The system adopts an API-first design where all clients communicate through a centralized backend API layer.
+
+---
+
+# 3. System Overview
+
+## Business Objectives
+
+Kaizen enables users to:
+
+* Track meals
+* Track calories
+* Track nutrition
+* Track hydration
+* Track body weight
+* Manage health goals
+* Maintain habits and streaks
+* Earn achievements
+* Analyze long-term trends
+* Receive AI-powered insights
+* Receive meal recommendations
+* Generate health reports
+
+---
+
+## System Characteristics
+
+| Characteristic     | Approach                              |
+| ------------------ | ------------------------------------- |
+| Architecture Style | Modular Service-Oriented Architecture |
+| Communication      | REST APIs                             |
+| Database           | MongoDB Atlas                         |
+| Authentication     | JWT + Refresh Tokens                  |
+| AI Integration     | Dedicated AI Service                  |
+| Deployment         | Cloud Native                          |
+| Frontend Strategy  | Shared React Ecosystem                |
+| Scalability        | Horizontal Scaling Ready              |
+| Storage            | Cloudinary                            |
+
+---
+
+# 4. Architectural Goals
+
+## Scalability
+
+Support growth from early users to at least 10,000 active users without major architectural changes.
+
+---
+
+## Maintainability
+
+Enable developers and AI coding agents to understand and modify the platform with minimal onboarding effort.
+
+---
+
+## AI Isolation
+
+AI capabilities must remain independent from core business logic.
+
+AI failures must never impact:
+
+* Authentication
+* Meal tracking
+* Goal management
+* User data access
+
+---
+
+## Security
+
+Security is incorporated throughout the architecture:
+
+* Authentication
+* Authorization
+* Validation
+* Encryption
+* Token management
+
+---
+
+## Reusability
+
+Maximize reuse of:
+
+* Types
+* Validation schemas
+* Utility functions
+
+across all applications.
+
+---
+
+# 5. Architectural Principles
+
+## API-First Design
+
+All business functionality is exposed through APIs.
+
+Benefits:
+
+* Client independence
+* Easier testing
+* Future integrations
+* Better maintainability
+
+---
+
+## Separation of Concerns
+
+| Layer       | Responsibility |
+| ----------- | -------------- |
+| Clients     | Presentation   |
+| Backend API | Business Logic |
+| AI Service  | Intelligence   |
+| Database    | Persistence    |
+| Storage     | Media Assets   |
+
+---
+
+## Feature-Based Development
+
+Business domains own their logic.
+
+Examples:
+
+* Authentication
+* Meals
+* Goals
+* Water Tracking
+* Weight Tracking
+* Reports
+* AI
+
+---
+
+## Shared Contract Strategy
+
+Common contracts are centralized.
+
+Examples:
+
+* DTOs
+* Validation Schemas
+* Utility Functions
+
+---
+
+## Security by Design
+
+Security is implemented throughout the stack instead of added later.
+
+---
+
+# 6. Repository Architecture
+
+## Approved Repository Structure
+
+```text
+apps/
+├─ web
+├─ mobile
+├─ desktop
+
+services/
+├─ api
+└─ ai
+
+packages/
+├─ shared-types
+├─ shared-validation
+├─ shared-utils
+
+docs/
+```
+
+---
+
+## Repository Responsibilities
+
+### apps
+
+Contains user-facing applications.
+
+```text
+web       → React + Vite
+mobile    → React Native + Expo
+desktop   → Electron
+```
+
+---
+
+### services
+
+Contains backend services.
+
+```text
+api       → Express + TypeScript
+ai        → FastAPI + Python
+```
+
+---
+
+### packages
+
+Contains reusable code.
+
+```text
+shared-types
+shared-validation
+shared-utils
+```
+
+---
+
+### docs
+
+Contains architecture and project documentation.
+
+---
+
+# 7. High-Level System Diagram
+
+```text
++------------------------------------------------+
+|                    USERS                       |
++------------------------------------------------+
+                     |
+     +---------------+----------------+
+     |                                |
+     v                                v
+
++-------------+               +--------------+
+| Web Client  |               | Mobile App   |
++-------------+               +--------------+
+       |
+       |
+       v
+
++---------------------------------------+
+|            Backend API                |
+|      Node.js + Express + TS           |
++------------------+--------------------+
+                   |
+      +------------+-------------+
+      |                          |
+      v                          v
+
++-------------+         +----------------+
+| MongoDB     |         | AI Service     |
+| Atlas       |         | FastAPI        |
++-------------+         +-------+--------+
+                                |
+                                v
+
+                        +----------------+
+                        | OpenAI APIs    |
+                        +----------------+
+
+                   |
+                   v
+
+             +------------+
+             | Cloudinary |
+             +------------+
+```
+
+---
+
+# 8. Component Breakdown
+
+## Web Client
+
+### Technology
+
+* React
+* TypeScript
+* Vite
+* TailwindCSS
+
+### Responsibilities
+
+* Dashboard
+* Analytics
+* Goal Management
+* Reporting
+* Authentication
+
+---
+
+## Mobile Client
+
+### Technology
+
+* React Native
+* Expo
+* TypeScript
+
+### Responsibilities
+
+* Daily tracking
+* Water tracking
+* Meal logging
+* Notifications
+
+---
+
+## Desktop Client
+
+### Technology
+
+* Electron
+* React
+* TypeScript
+
+### Responsibilities
+
+* Advanced analytics
+* Reporting
+* Administrative usage
+
+---
+
+## Backend API
+
+### Technology
+
+* Node.js
+* Express
+* TypeScript
+
+### Responsibilities
+
+* Authentication
+* Authorization
+* Business logic
+* Validation
+* Data orchestration
+* AI orchestration
+
+---
+
+## AI Service
+
+### Technology
+
+* FastAPI
+* Python
+* OpenAI
+
+### Responsibilities
+
+* Food parsing
+* Recommendations
+* Insights
+* Reports
+* Coaching
+
+---
+
+## Database
+
+### Technology
+
+* MongoDB Atlas
+
+### Responsibilities
+
+* Persistent storage
+* Historical tracking
+* Aggregations
+* Reporting data
+
+---
+
+## Cloudinary
+
+### Responsibilities
+
+* Profile images
+* Food images
+* Media assets
+
+---
+
+# 9. Request Flow Diagrams
+
+## Standard Request
+
+```text
+User
+ |
+ v
+Client
+ |
+ v
+Backend API
+ |
+ v
+MongoDB
+ |
+ v
+Backend API
+ |
+ v
+Client
+```
+
+---
+
+## AI Request
+
+```text
+User
+ |
+ v
+Client
+ |
+ v
+Backend API
+ |
+ v
+AI Service
+ |
+ v
+OpenAI
+ |
+ v
+AI Service
+ |
+ v
+Backend API
+ |
+ v
+Client
+```
+
+---
+
+## Authentication Request
+
+```text
+User Login
+     |
+     v
+
+Auth API
+     |
+     v
+
+Credential Validation
+     |
+     v
+
+Access Token
+Refresh Token
+     |
+     v
+
+Client Storage
+```
+
+---
+
+# 10. Authentication Architecture
+
+## Authentication Model
+
+Kaizen uses:
+
+```text
+JWT Access Token
++
+Refresh Token
+```
+
+---
+
+## Access Token
+
+Purpose:
+
+* API authorization
+
+Lifetime:
+
+```text
+15 Minutes
+```
+
+---
+
+## Refresh Token
+
+Purpose:
+
+* Session continuation
+
+Lifetime:
+
+```text
+30 Days
+```
+
+---
+
+## Refresh Token Storage
+
+Stored in:
+
+```text
+refreshTokens Collection
+```
+
+Only token hashes are persisted.
+
+---
+
+## Authentication Flow
+
+```text
+Login
+  |
+  v
+
+Access Token
+Refresh Token
+
+  |
+  v
+
+Access Expires
+
+  |
+  v
+
+Refresh Endpoint
+
+  |
+  v
+
+New Access Token
+New Refresh Token
+```
+
+---
+
+# 11. AI Integration Architecture
+
+## AI Boundary
+
+Clients never communicate directly with AI providers.
+
+```text
+Frontend
+   |
+   v
+
+Backend API
+   |
+   v
+
+AI Service
+   |
+   v
+
+OpenAI
+```
+
+---
+
+## AI Capabilities
+
+* Food Parsing
+* Nutrition Analysis
+* Deficiency Detection
+* Health Coaching
+* Recommendation Generation
+* Report Generation
+
+---
+
+# 12. Data Flow
+
+## User Data Flow
+
+```text
+Client
+   |
+   v
+
+Validation
+   |
+   v
+
+Business Logic
+   |
+   v
+
+Database
+```
+
+---
+
+## Analytics Data Flow
+
+```text
+Historical Data
+       |
+       v
+
+Aggregation Layer
+       |
+       v
+
+Dashboard APIs
+       |
+       v
+
+Client
+```
+
+---
+
+## AI Data Flow
+
+```text
+User Data
+     |
+     v
+
+Backend API
+     |
+     v
+
+AI Service
+     |
+     v
+
+Provider
+     |
+     v
+
+Insights
+```
+
+---
+
+# 13. Cross-Platform Strategy
+
+## Shared Ecosystem
+
+| Platform | Technology       |
+| -------- | ---------------- |
+| Web      | React            |
+| Mobile   | React Native     |
+| Desktop  | React + Electron |
+
+---
+
+## Shared Packages
+
+### shared-types
+
+Contains:
+
+* DTOs
+* Enums
+* Interfaces
+
+---
+
+### shared-validation
+
+Contains:
+
+* Zod Schemas
+* Shared Validators
+
+---
+
+### shared-utils
+
+Contains:
+
+* Date Utilities
+* Formatting Utilities
+* Shared Helpers
+
+---
+
+## Architectural Rule
+
+Business logic must never exist inside shared packages.
+
+Only reusable infrastructure and contracts are allowed.
+
+---
+
+# 14. Security Considerations
+
+## Authentication
+
+* JWT Access Tokens
+* Refresh Tokens
+* Token Rotation
+
+---
+
+## Authorization
+
+* Ownership-based access
+* Resource-level checks
+
+---
+
+## Data Validation
+
+* Client validation
+* Server validation
+
+---
+
+## Secrets Management
+
+* Environment variables
+* No secrets in source code
+
+---
+
+## Transport Security
+
+* HTTPS only
+* Secure headers
+* CORS protection
+
+---
+
+# 15. Scalability Strategy
+
+## Phase 1
+
+Target:
+
+```text
+10,000 Active Users
+```
+
+Single-region deployment.
+
+---
+
+## Backend Scaling
+
+Stateless API servers allow horizontal scaling.
+
+---
+
+## Database Scaling
+
+Future options:
+
+```text
+Read Replicas
+Sharding
+```
+
+---
+
+## AI Scaling
+
+AI service scales independently from business services.
+
+---
+
+# 16. Monitoring and Observability
+
+## Metrics
+
+Track:
+
+* API latency
+* Error rates
+* Request volume
+* AI usage
+* Authentication failures
+
+---
+
+## Logging
+
+Track:
+
+* Application logs
+* Security logs
+* Audit logs
+* AI request logs
+
+---
+
+## Alerting
+
+Alerts for:
+
+* High error rates
+* AI failures
+* Database issues
+* Authentication anomalies
+
+---
+
+# 17. Failure Scenarios
+
+## Database Failure
+
+### Impact
+
+Core functionality unavailable.
+
+### Recovery
+
+* Atlas backups
+* Automatic recovery
+* Health monitoring
+
+---
+
+## AI Service Failure
+
+### Impact
+
+AI features unavailable.
+
+### Recovery
+
+* Graceful degradation
+* Retry policies
+* User notifications
+
+---
+
+## OpenAI Failure
+
+### Impact
+
+AI insights unavailable.
+
+### Recovery
+
+* Cached responses
+* Retry mechanism
+* Fallback messaging
+
+---
+
+# 18. AI Agent Implementation Notes
+
+## Approved Repository Structure
+
+```text
+apps/
+├─ web
+├─ mobile
+├─ desktop
+
+services/
+├─ api
+└─ ai
+
+packages/
+├─ shared-types
+├─ shared-validation
+├─ shared-utils
+
+docs/
+```
+
+---
+
+## AI Agent Rules
+
+### Must Follow
+
+* Feature-based architecture
+* API-first design
+* Strict TypeScript
+* Shared package boundaries
+
+---
+
+### Must Never Do
+
+* Place business logic in shared packages
+* Access database from frontend
+* Call AI provider directly from frontend
+* Store secrets in source code
+* Bypass validation layers
+
+---
+
+# 19. Future Architecture Roadmap
+
+## Phase 2
+
+* Push notifications
+* Meal image recognition
+* Advanced recommendations
+
+---
+
+## Phase 3
+
+* Wearable integrations
+* Apple Health
+* Google Fit
+
+---
+
+## Phase 4
+
+* Event-driven architecture
+* Background jobs
+* Analytics warehouse
+
+---
+
+## Phase 5
+
+* Multi-region deployment
+* Multi-provider AI routing
+* Predictive health intelligence
+
+---
+
+# 20. Architecture Review Checklist
+
+## Architecture
+
+* [ ] Service boundaries maintained
+* [ ] Shared package boundaries maintained
+* [ ] API-first design maintained
+
+---
+
+## Security
+
+* [ ] JWT validation enforced
+* [ ] Refresh token rotation implemented
+* [ ] Authorization verified
+
+---
+
+## Scalability
+
+* [ ] APIs remain stateless
+* [ ] Database indexes reviewed
+* [ ] AI service independently scalable
+
+---
+
+## Maintainability
+
+* [ ] Documentation updated
+* [ ] Shared contracts documented
+* [ ] Technical debt tracked
+
+---
+
+# 21. Conclusion
+
+The Kaizen System Architecture provides a production-ready foundation for an AI-powered health tracking platform. Through clear service boundaries, API-first design, secure token management, AI isolation, and a strictly defined repository structure, the architecture supports Phase 1 goals while providing a scalable path toward future growth, advanced analytics, wearable integrations, and intelligent health assistance.
+
+
+// File: e:\Kaizen\docs\02_architecture\02_technology_decisions.md
+# Kaizen Technology Decisions
+
+**Document ID:** 02_technology_decisions.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Document Information
+
+| Attribute      | Value                                                          |
+| -------------- | -------------------------------------------------------------- |
+| Document Title | Technology Decisions                                           |
+| Version        | 1.0                                                            |
+| Status         | Approved                                                       |
+| Project        | Kaizen                                                         |
+| Scope          | Technology Selection and Architectural Decision Records (ADRs) |
+| Audience       | Architects, Developers, DevOps Engineers, AI Coding Agents     |
+
+---
+
+# 2. Executive Summary
+
+This document captures the major technology decisions made for the Kaizen platform and explains the reasoning behind each selection.
+
+The objective is to provide:
+
+* Long-term architectural clarity
+* Consistent technology adoption
+* Decision traceability
+* Easier onboarding
+* Future migration guidance
+* Architectural governance
+
+Each technology decision is documented using the Architecture Decision Record (ADR) format.
+
+---
+
+# 3. Technology Selection Principles
+
+The following criteria were used when selecting technologies:
+
+| Principle              | Description                                 |
+| ---------------------- | ------------------------------------------- |
+| Developer Productivity | Fast implementation and maintenance         |
+| Scalability            | Ability to support growth beyond Phase 1    |
+| Community Support      | Strong ecosystem and documentation          |
+| Hiring Availability    | Easily available developer talent           |
+| Cost Efficiency        | Suitable for startup and early-stage growth |
+| Cross-Platform Support | Maximum code reuse                          |
+| Maintainability        | Long-term sustainability                    |
+| AI Compatibility       | Easy integration with AI services           |
+
+---
+
+# ADR-001: Frontend Framework
+
+# React + TypeScript + Vite
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use:
+
+* React
+* TypeScript
+* Vite
+
+for all web frontend development.
+
+---
+
+## Why It Was Selected
+
+React provides:
+
+* Large ecosystem
+* Strong community support
+* Excellent performance
+* Reusable component architecture
+
+TypeScript improves:
+
+* Type safety
+* Refactoring reliability
+* Developer productivity
+
+Vite provides:
+
+* Extremely fast development experience
+* Modern build pipeline
+* Faster builds than Webpack
+
+---
+
+## Alternatives Considered
+
+### Angular
+
+Pros:
+
+* Full framework
+* Built-in architecture
+
+Cons:
+
+* Steeper learning curve
+* Larger bundle sizes
+
+---
+
+### Vue
+
+Pros:
+
+* Easy to learn
+* Lightweight
+
+Cons:
+
+* Smaller enterprise adoption
+* Less code sharing with React Native
+
+---
+
+### Next.js
+
+Pros:
+
+* SSR support
+* SEO optimization
+
+Cons:
+
+* Additional complexity
+* Not necessary for Phase 1
+
+---
+
+## Advantages
+
+* Mature ecosystem
+* Excellent tooling
+* Reusable architecture
+* Strong TypeScript support
+* Large hiring pool
+
+---
+
+## Disadvantages
+
+* Requires additional libraries
+* Frequent ecosystem changes
+* Potential state management complexity
+
+---
+
+## Tradeoffs
+
+| Benefit     | Cost                             |
+| ----------- | -------------------------------- |
+| Flexibility | More architectural decisions     |
+| Ecosystem   | Dependency management complexity |
+| Performance | Requires optimization discipline |
+
+---
+
+## Future Migration Considerations
+
+Potential future migration:
+
+```text
+React SPA
+     ↓
+Next.js Hybrid Rendering
+```
+
+Migration risk is low due to React compatibility.
+
+---
+
+# ADR-002: Mobile Framework
+
+# React Native + Expo
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use:
+
+* React Native
+* Expo
+* TypeScript
+
+for mobile applications.
+
+---
+
+## Why It Was Selected
+
+Allows:
+
+* Shared React knowledge
+* Shared business logic
+* Faster development
+* Lower maintenance cost
+
+---
+
+## Alternatives Considered
+
+### Flutter
+
+Pros:
+
+* Excellent performance
+* Strong UI consistency
+
+Cons:
+
+* Separate language (Dart)
+* Less code reuse
+
+---
+
+### Native Android
+
+Pros:
+
+* Maximum platform control
+
+Cons:
+
+* Higher development cost
+
+---
+
+### Kotlin Multiplatform
+
+Pros:
+
+* Shared logic
+
+Cons:
+
+* Smaller ecosystem
+
+---
+
+## Advantages
+
+* Shared development model
+* Large ecosystem
+* Faster releases
+
+---
+
+## Disadvantages
+
+* Slightly lower performance than native
+* Dependency on React Native ecosystem
+
+---
+
+## Tradeoffs
+
+| Benefit            | Cost                      |
+| ------------------ | ------------------------- |
+| Faster development | Small performance penalty |
+| Shared expertise   | Less native control       |
+
+---
+
+## Future Migration Considerations
+
+Possible future migration:
+
+```text
+Expo Managed
+     ↓
+Expo Bare Workflow
+     ↓
+Native Modules
+```
+
+---
+
+# ADR-003: Desktop Platform
+
+# Electron
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use Electron for desktop applications.
+
+---
+
+## Why It Was Selected
+
+Allows reuse of:
+
+* React
+* TypeScript
+* Shared UI
+* Shared services
+
+---
+
+## Alternatives Considered
+
+### Tauri
+
+Pros:
+
+* Lower memory usage
+* Smaller binaries
+
+Cons:
+
+* Smaller ecosystem
+
+---
+
+### Native Windows
+
+Pros:
+
+* Better performance
+
+Cons:
+
+* Separate codebase
+
+---
+
+## Advantages
+
+* Maximum code reuse
+* Fast development
+
+---
+
+## Disadvantages
+
+* Larger memory footprint
+* Larger application size
+
+---
+
+## Future Migration Considerations
+
+Evaluate Tauri after user adoption validates desktop requirements.
+
+---
+
+# ADR-004: Backend Framework
+
+# Node.js + Express + TypeScript
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use:
+
+* Node.js
+* Express
+* TypeScript
+
+for business services.
+
+---
+
+## Why It Was Selected
+
+Provides:
+
+* Unified JavaScript ecosystem
+* Fast development
+* Large community support
+
+---
+
+## Alternatives Considered
+
+### NestJS
+
+Pros:
+
+* Enterprise architecture
+* Dependency injection
+
+Cons:
+
+* Additional complexity
+
+---
+
+### Spring Boot
+
+Pros:
+
+* Enterprise-grade
+
+Cons:
+
+* Different language stack
+
+---
+
+### ASP.NET Core
+
+Pros:
+
+* High performance
+
+Cons:
+
+* Reduced ecosystem alignment
+
+---
+
+## Advantages
+
+* Fast development
+* Large ecosystem
+* Extensive package support
+
+---
+
+## Disadvantages
+
+* Less opinionated architecture
+* Requires stronger discipline
+
+---
+
+## Tradeoffs
+
+| Benefit     | Cost                            |
+| ----------- | ------------------------------- |
+| Simplicity  | Less structure                  |
+| Flexibility | Architectural governance needed |
+
+---
+
+## Future Migration Considerations
+
+Potential upgrade path:
+
+```text
+Express
+    ↓
+NestJS
+```
+
+without changing runtime.
+
+---
+
+# ADR-005: Database
+
+# MongoDB Atlas
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use MongoDB Atlas as the primary database.
+
+---
+
+## Why It Was Selected
+
+Health tracking generates highly flexible and evolving data structures.
+
+MongoDB handles:
+
+* Activity logs
+* Nutrition records
+* Goal tracking
+* AI-generated content
+
+efficiently.
+
+---
+
+## Alternatives Considered
+
+### PostgreSQL
+
+Pros:
+
+* Strong consistency
+* Relational modeling
+
+Cons:
+
+* Higher schema rigidity
+
+---
+
+### MySQL
+
+Pros:
+
+* Mature ecosystem
+
+Cons:
+
+* Less suitable for evolving structures
+
+---
+
+### DynamoDB
+
+Pros:
+
+* Infinite scalability
+
+Cons:
+
+* Vendor lock-in
+
+---
+
+## Advantages
+
+* Flexible schema
+* Rapid iteration
+* Excellent scaling
+
+---
+
+## Disadvantages
+
+* Data consistency requires discipline
+* Complex aggregations can become expensive
+
+---
+
+## Tradeoffs
+
+| Benefit          | Cost                           |
+| ---------------- | ------------------------------ |
+| Flexibility      | Reduced schema enforcement     |
+| Fast development | More validation responsibility |
+
+---
+
+## Future Migration Considerations
+
+Future architecture may include:
+
+```text
+MongoDB
+    ↓
+MongoDB + Data Warehouse
+```
+
+for advanced analytics.
+
+---
+
+# ADR-006: Database ORM Layer
+
+# Mongoose
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use Mongoose for data modeling.
+
+---
+
+## Why It Was Selected
+
+Provides:
+
+* Schema validation
+* Middleware support
+* Query abstraction
+
+---
+
+## Alternatives Considered
+
+### Native Mongo Driver
+
+Pros:
+
+* Maximum performance
+
+Cons:
+
+* More boilerplate
+
+---
+
+## Advantages
+
+* Developer productivity
+* Strong ecosystem
+
+---
+
+## Disadvantages
+
+* Additional abstraction layer
+
+---
+
+## Future Migration Considerations
+
+Can migrate to native driver for performance-critical workloads.
+
+---
+
+# ADR-007: AI Stack
+
+# FastAPI + Python + OpenAI
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+AI capabilities will run in a dedicated FastAPI service.
+
+---
+
+## Why It Was Selected
+
+Python remains the industry standard for AI development.
+
+FastAPI provides:
+
+* Excellent performance
+* Async support
+* Strong typing
+
+---
+
+## Alternatives Considered
+
+### AI Inside Node.js
+
+Pros:
+
+* Single backend
+
+Cons:
+
+* Tight coupling
+
+---
+
+### Django
+
+Pros:
+
+* Mature ecosystem
+
+Cons:
+
+* Larger framework footprint
+
+---
+
+## Advantages
+
+* AI isolation
+* Independent scaling
+* Easy experimentation
+
+---
+
+## Disadvantages
+
+* Additional deployment unit
+* Inter-service communication complexity
+
+---
+
+## Tradeoffs
+
+| Benefit     | Cost                       |
+| ----------- | -------------------------- |
+| Isolation   | More infrastructure        |
+| Scalability | More deployment complexity |
+
+---
+
+## Future Migration Considerations
+
+Future AI stack may evolve into:
+
+```text
+FastAPI
+    ↓
+FastAPI + Vector Database
+    ↓
+Model Gateway Layer
+```
+
+---
+
+# ADR-008: State Management
+
+# Zustand + React Query
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use:
+
+* Zustand for client state
+* React Query for server state
+
+---
+
+## Why It Was Selected
+
+Clear separation between:
+
+* UI state
+* Remote data state
+
+---
+
+## Alternatives Considered
+
+### Redux Toolkit
+
+Pros:
+
+* Enterprise standard
+
+Cons:
+
+* More boilerplate
+
+---
+
+### MobX
+
+Pros:
+
+* Simple APIs
+
+Cons:
+
+* Less predictable behavior
+
+---
+
+## Advantages
+
+* Lightweight
+* Easy learning curve
+* Excellent performance
+
+---
+
+## Disadvantages
+
+* Less standardized than Redux
+
+---
+
+## Tradeoffs
+
+| Benefit    | Cost                         |
+| ---------- | ---------------------------- |
+| Simplicity | Smaller ecosystem            |
+| Less code  | Fewer enterprise conventions |
+
+---
+
+## Future Migration Considerations
+
+Can migrate to Redux Toolkit if application complexity grows significantly.
+
+---
+
+# ADR-009: Validation Layer
+
+# React Hook Form + Zod
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use:
+
+* React Hook Form
+* Zod
+
+for validation.
+
+---
+
+## Why It Was Selected
+
+Provides:
+
+* Type-safe validation
+* Shared schema definitions
+* Excellent performance
+
+---
+
+## Alternatives Considered
+
+### Yup
+
+Pros:
+
+* Mature ecosystem
+
+Cons:
+
+* Inferior TypeScript integration
+
+---
+
+### Joi
+
+Pros:
+
+* Powerful validation
+
+Cons:
+
+* Larger bundle size
+
+---
+
+## Advantages
+
+* Strong type inference
+* Minimal boilerplate
+
+---
+
+## Disadvantages
+
+* Learning curve for schema composition
+
+---
+
+## Future Migration Considerations
+
+Low migration risk due to schema-driven architecture.
+
+---
+
+# ADR-010: Authentication
+
+# JWT Authentication
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use JWT-based authentication.
+
+---
+
+## Why It Was Selected
+
+Provides:
+
+* Stateless APIs
+* Horizontal scalability
+* Cross-platform compatibility
+
+---
+
+## Alternatives Considered
+
+### Session-Based Authentication
+
+Pros:
+
+* Simpler revocation
+
+Cons:
+
+* Server-side storage required
+
+---
+
+### OAuth-Only
+
+Pros:
+
+* Social login support
+
+Cons:
+
+* Insufficient standalone authentication
+
+---
+
+## Advantages
+
+* Scalable
+* Lightweight
+* API-friendly
+
+---
+
+## Disadvantages
+
+* Token revocation complexity
+
+---
+
+## Tradeoffs
+
+| Benefit          | Cost                  |
+| ---------------- | --------------------- |
+| Stateless design | Revocation challenges |
+
+---
+
+## Future Migration Considerations
+
+Potential evolution:
+
+```text
+JWT
+   ↓
+JWT + Refresh Tokens
+   ↓
+OAuth + JWT Hybrid
+```
+
+---
+
+# ADR-011: Hosting Platform
+
+# Vercel + Render + MongoDB Atlas
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Deploy using:
+
+| Service | Purpose      |
+| ------- | ------------ |
+| Vercel  | Frontend     |
+| Render  | Backend & AI |
+| Atlas   | Database     |
+
+---
+
+## Why It Was Selected
+
+Provides:
+
+* Low operational overhead
+* Fast deployment
+* Startup-friendly pricing
+
+---
+
+## Alternatives Considered
+
+### AWS
+
+Pros:
+
+* Maximum scalability
+
+Cons:
+
+* High complexity
+
+---
+
+### Azure
+
+Pros:
+
+* Enterprise support
+
+Cons:
+
+* Higher operational burden
+
+---
+
+### Google Cloud
+
+Pros:
+
+* Strong AI ecosystem
+
+Cons:
+
+* More infrastructure management
+
+---
+
+## Advantages
+
+* Fast setup
+* Low maintenance
+
+---
+
+## Disadvantages
+
+* Some vendor dependence
+* Less infrastructure control
+
+---
+
+## Future Migration Considerations
+
+Future migration path:
+
+```text
+Vercel + Render
+          ↓
+AWS ECS / Kubernetes
+```
+
+---
+
+# ADR-012: Storage Platform
+
+# Cloudinary
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Use Cloudinary for media storage.
+
+---
+
+## Why It Was Selected
+
+Provides:
+
+* Image optimization
+* CDN delivery
+* Simple API integration
+
+---
+
+## Alternatives Considered
+
+### AWS S3
+
+Pros:
+
+* Industry standard
+
+Cons:
+
+* More operational work
+
+---
+
+### Firebase Storage
+
+Pros:
+
+* Easy setup
+
+Cons:
+
+* Vendor lock-in
+
+---
+
+## Advantages
+
+* Automatic optimization
+* CDN included
+
+---
+
+## Disadvantages
+
+* Usage-based costs
+
+---
+
+## Future Migration Considerations
+
+Possible migration:
+
+```text
+Cloudinary
+     ↓
+AWS S3 + CloudFront
+```
+
+for large-scale workloads.
+
+---
+
+# ADR-013: Monitoring and Observability
+
+# Structured Logging + Metrics Monitoring
+
+## Status
+
+Approved
+
+---
+
+## Decision
+
+Phase 1 monitoring stack:
+
+* Application logs
+* Error logs
+* Health checks
+* Performance metrics
+
+---
+
+## Why It Was Selected
+
+Provides sufficient observability for:
+
+* Early-stage production workloads
+* Debugging
+* Reliability monitoring
+
+---
+
+## Alternatives Considered
+
+### Full OpenTelemetry Stack
+
+Pros:
+
+* Enterprise-grade tracing
+
+Cons:
+
+* Higher complexity
+
+---
+
+### Datadog
+
+Pros:
+
+* Comprehensive monitoring
+
+Cons:
+
+* Higher cost
+
+---
+
+### New Relic
+
+Pros:
+
+* Rich observability
+
+Cons:
+
+* Additional operational overhead
+
+---
+
+## Advantages
+
+* Simple implementation
+* Lower operational cost
+
+---
+
+## Disadvantages
+
+* Limited distributed tracing
+
+---
+
+## Tradeoffs
+
+| Benefit    | Cost               |
+| ---------- | ------------------ |
+| Simplicity | Reduced visibility |
+| Lower cost | Fewer diagnostics  |
+
+---
+
+## Future Migration Considerations
+
+Recommended evolution:
+
+```text
+Logs
+   ↓
+Logs + Metrics
+   ↓
+OpenTelemetry
+   ↓
+Enterprise Observability Platform
+```
+
+---
+
+# 4. Technology Decision Summary
+
+| Category         | Selected Technology            |
+| ---------------- | ------------------------------ |
+| Web Frontend     | React + TypeScript + Vite      |
+| Mobile           | React Native + Expo            |
+| Desktop          | Electron                       |
+| Backend          | Node.js + Express + TypeScript |
+| Database         | MongoDB Atlas                  |
+| ODM              | Mongoose                       |
+| AI Platform      | FastAPI + Python + OpenAI      |
+| State Management | Zustand + React Query          |
+| Validation       | React Hook Form + Zod          |
+| Authentication   | JWT                            |
+| Hosting          | Vercel + Render                |
+| Storage          | Cloudinary                     |
+| Monitoring       | Structured Logging + Metrics   |
+
+---
+
+# 5. Conclusion
+
+The selected technology stack prioritizes developer productivity, maintainability, scalability, and cross-platform code reuse while remaining cost-effective for Phase 1 deployment. The architecture deliberately favors proven technologies with strong ecosystems and low operational overhead, while preserving clear migration paths toward enterprise-scale infrastructure, advanced observability, and future AI capabilities as Kaizen grows beyond its initial target of 10,000 active users.
+
+
+// File: e:\Kaizen\docs\02_architecture\03_database_architecture.md
+Here is the complete regenerated `03_database_architecture.md` with the approved `refreshTokens` collection and production-ready authentication/session architecture included.
+
+# Kaizen Database Architecture
+
+**Document ID:** 03_database_architecture.md
+**Version:** 1.1
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Document Information
+
+| Attribute         | Value                                                      |
+| ----------------- | ---------------------------------------------------------- |
+| Document Title    | Database Architecture                                      |
+| Version           | 1.0                                                        |
+| Status            | Approved                                                   |
+| Database Platform | MongoDB Atlas                                              |
+| Database Model    | Document-Oriented                                          |
+| Audience          | Architects, Developers, DevOps Engineers, AI Coding Agents |
+| Scope             | Data Architecture and Collection Design                    |
+
+---
+
+# 2. Executive Summary
+
+The Kaizen database architecture is built on MongoDB Atlas using a document-oriented model optimized for:
+
+* Health tracking
+* User analytics
+* Goal management
+* Time-series data
+* AI-generated insights
+* Reporting
+* Multi-device authentication
+
+The architecture prioritizes:
+
+* Fast reads
+* Efficient aggregations
+* Flexible schemas
+* Horizontal scalability
+* Long-term maintainability
+
+---
+
+# 3. Database Design Principles
+
+## User-Centric Design
+
+Most collections are owned by a user and reference users through:
+
+```text
+userId
+```
+
+---
+
+## Hybrid Normalization Strategy
+
+### Normalized Collections
+
+* users
+* userSettings
+* foodDatabase
+* achievements
+* challenges
+
+---
+
+### Denormalized Collections
+
+* meals
+* mealEntries
+* reports
+* userStats
+
+This minimizes expensive lookups.
+
+---
+
+## Immutable Historical Data
+
+Historical records should not be modified except for user corrections.
+
+Examples:
+
+* meals
+* waterLogs
+* weightLogs
+
+---
+
+## Auditability
+
+All collections should include:
+
+```text
+createdAt
+updatedAt
+```
+
+where applicable.
+
+---
+
+# 4. Collection Relationship Diagram
+
+```text
+users
+ │
+ ├── userSettings
+ │
+ ├── goals
+ │
+ ├── meals
+ │      │
+ │      └── mealEntries
+ │
+ ├── waterLogs
+ │
+ ├── weightLogs
+ │
+ ├── reports
+ │
+ ├── notifications
+ │
+ ├── userAchievements
+ │
+ ├── userStats
+ │
+ └── refreshTokens
+
+foodDatabase
+ │
+ ├── mealEntries
+ │
+ └── recipeIngredients
+
+recipes
+ │
+ └── recipeIngredients
+
+achievements
+ │
+ └── userAchievements
+
+challenges
+ │
+ └── userAchievements
+```
+
+---
+
+# 5. Collection Specifications
+
+# users
+
+## Purpose
+
+Stores user account and authentication information.
+
+### Fields
+
+| Field         | Type     |
+| ------------- | -------- |
+| _id           | ObjectId |
+| email         | String   |
+| passwordHash  | String   |
+| firstName     | String   |
+| lastName      | String   |
+| profileImage  | String   |
+| gender        | String   |
+| dateOfBirth   | Date     |
+| isVerified    | Boolean  |
+| accountStatus | String   |
+| createdAt     | Date     |
+| updatedAt     | Date     |
+
+### Required Fields
+
+```text
+email
+passwordHash
+firstName
+accountStatus
+```
+
+### Indexes
+
+```text
+email (unique)
+accountStatus
+createdAt
+```
+
+---
+
+# userSettings
+
+## Purpose
+
+Stores user preferences and application settings.
+
+### Fields
+
+| Field               | Type     |
+| ------------------- | -------- |
+| _id                 | ObjectId |
+| userId              | ObjectId |
+| dailyCalorieGoal    | Number   |
+| dailyWaterGoal      | Number   |
+| weightUnit          | String   |
+| heightUnit          | String   |
+| notificationEnabled | Boolean  |
+| theme               | String   |
+| createdAt           | Date     |
+| updatedAt           | Date     |
+
+### Indexes
+
+```text
+userId (unique)
+```
+
+---
+
+# goals
+
+## Purpose
+
+Stores health goals.
+
+### Fields
+
+| Field        | Type     |
+| ------------ | -------- |
+| _id          | ObjectId |
+| userId       | ObjectId |
+| title        | String   |
+| type         | String   |
+| targetValue  | Number   |
+| currentValue | Number   |
+| startDate    | Date     |
+| targetDate   | Date     |
+| status       | String   |
+| createdAt    | Date     |
+
+### Indexes
+
+```text
+userId
+status
+type
+```
+
+---
+
+# foodDatabase
+
+## Purpose
+
+Master nutrition database.
+
+### Fields
+
+| Field       | Type     |
+| ----------- | -------- |
+| _id         | ObjectId |
+| foodName    | String   |
+| servingSize | Number   |
+| servingUnit | String   |
+| calories    | Number   |
+| protein     | Number   |
+| carbs       | Number   |
+| fat         | Number   |
+| fiber       | Number   |
+
+### Indexes
+
+```text
+foodName (text)
+calories
+```
+
+---
+
+# meals
+
+## Purpose
+
+Represents a meal event.
+
+### Fields
+
+| Field         | Type     |
+| ------------- | -------- |
+| _id           | ObjectId |
+| userId        | ObjectId |
+| mealType      | String   |
+| totalCalories | Number   |
+| totalProtein  | Number   |
+| totalCarbs    | Number   |
+| totalFat      | Number   |
+| mealDate      | Date     |
+| notes         | String   |
+| createdAt     | Date     |
+
+### Indexes
+
+```text
+userId
+mealDate
+(userId, mealDate)
+```
+
+---
+
+# mealEntries
+
+## Purpose
+
+Individual food items inside meals.
+
+### Fields
+
+| Field    | Type     |
+| -------- | -------- |
+| _id      | ObjectId |
+| mealId   | ObjectId |
+| foodId   | ObjectId |
+| quantity | Number   |
+| calories | Number   |
+| protein  | Number   |
+| carbs    | Number   |
+| fat      | Number   |
+
+### Indexes
+
+```text
+mealId
+foodId
+```
+
+---
+
+# waterLogs
+
+## Purpose
+
+Tracks hydration.
+
+### Fields
+
+| Field     | Type     |
+| --------- | -------- |
+| _id       | ObjectId |
+| userId    | ObjectId |
+| amount    | Number   |
+| logTime   | Date     |
+| createdAt | Date     |
+
+### Indexes
+
+```text
+(userId, logTime)
+```
+
+---
+
+# weightLogs
+
+## Purpose
+
+Tracks weight history.
+
+### Fields
+
+| Field      | Type     |
+| ---------- | -------- |
+| _id        | ObjectId |
+| userId     | ObjectId |
+| weight     | Number   |
+| recordedAt | Date     |
+| notes      | String   |
+
+### Indexes
+
+```text
+(userId, recordedAt)
+```
+
+---
+
+# recipes
+
+## Purpose
+
+Stores reusable recipes.
+
+### Fields
+
+| Field         | Type     |
+| ------------- | -------- |
+| _id           | ObjectId |
+| title         | String   |
+| description   | String   |
+| servings      | Number   |
+| totalCalories | Number   |
+| createdBy     | ObjectId |
+| isPublic      | Boolean  |
+
+### Indexes
+
+```text
+title
+isPublic
+```
+
+---
+
+# recipeIngredients
+
+## Purpose
+
+Recipe ingredient mappings.
+
+### Fields
+
+| Field    | Type     |
+| -------- | -------- |
+| _id      | ObjectId |
+| recipeId | ObjectId |
+| foodId   | ObjectId |
+| quantity | Number   |
+
+### Indexes
+
+```text
+recipeId
+foodId
+```
+
+---
+
+# achievements
+
+## Purpose
+
+Master achievement catalog.
+
+### Fields
+
+| Field       | Type     |
+| ----------- | -------- |
+| _id         | ObjectId |
+| code        | String   |
+| title       | String   |
+| description | String   |
+| icon        | String   |
+| category    | String   |
+| points      | Number   |
+
+### Indexes
+
+```text
+code (unique)
+category
+```
+
+---
+
+# userAchievements
+
+## Purpose
+
+Achievement unlock records.
+
+### Fields
+
+| Field         | Type     |
+| ------------- | -------- |
+| _id           | ObjectId |
+| userId        | ObjectId |
+| achievementId | ObjectId |
+| earnedAt      | Date     |
+
+### Indexes
+
+```text
+(userId, achievementId)
+```
+
+---
+
+# challenges
+
+## Purpose
+
+Stores challenge definitions.
+
+### Fields
+
+| Field        | Type     |
+| ------------ | -------- |
+| _id          | ObjectId |
+| title        | String   |
+| description  | String   |
+| startDate    | Date     |
+| endDate      | Date     |
+| rewardPoints | Number   |
+
+### Indexes
+
+```text
+startDate
+endDate
+```
+
+---
+
+# reports
+
+## Purpose
+
+Generated report snapshots.
+
+### Fields
+
+| Field       | Type     |
+| ----------- | -------- |
+| _id         | ObjectId |
+| userId      | ObjectId |
+| reportType  | String   |
+| periodStart | Date     |
+| periodEnd   | Date     |
+| reportData  | Object   |
+| generatedAt | Date     |
+
+### Indexes
+
+```text
+(userId, generatedAt)
+reportType
+```
+
+---
+
+# notifications
+
+## Purpose
+
+Stores user notifications.
+
+### Fields
+
+| Field            | Type     |
+| ---------------- | -------- |
+| _id              | ObjectId |
+| userId           | ObjectId |
+| title            | String   |
+| message          | String   |
+| notificationType | String   |
+| isRead           | Boolean  |
+| createdAt        | Date     |
+
+### Indexes
+
+```text
+(userId, isRead)
+```
+
+---
+
+# userStats
+
+## Purpose
+
+Stores aggregated statistics.
+
+### Fields
+
+| Field                | Type     |
+| -------------------- | -------- |
+| _id                  | ObjectId |
+| userId               | ObjectId |
+| totalMeals           | Number   |
+| totalWaterConsumed   | Number   |
+| currentStreak        | Number   |
+| longestStreak        | Number   |
+| achievementsUnlocked | Number   |
+| lastCalculatedAt     | Date     |
+
+### Indexes
+
+```text
+userId (unique)
+```
+
+---
+
+# refreshTokens
+
+## Purpose
+
+Stores hashed refresh tokens for secure session management.
+
+Supports:
+
+* Multi-device login
+* Token rotation
+* Session tracking
+* Device logout
+* Logout all devices
+
+---
+
+## Fields
+
+| Field      | Type        |
+| ---------- | ----------- |
+| _id        | ObjectId    |
+| userId     | ObjectId    |
+| tokenHash  | String      |
+| deviceInfo | String      |
+| ipAddress  | String      |
+| userAgent  | String      |
+| expiresAt  | Date        |
+| createdAt  | Date        |
+| revokedAt  | Date | Null |
+
+---
+
+## Required Fields
+
+```text
+userId
+tokenHash
+expiresAt
+createdAt
+```
+
+---
+
+## Validation Rules
+
+| Field     | Rule               |
+| --------- | ------------------ |
+| userId    | Valid ObjectId     |
+| tokenHash | Hash only          |
+| expiresAt | Future Date        |
+| ipAddress | Valid IP           |
+| userAgent | Max 512 Characters |
+| revokedAt | Nullable           |
+
+---
+
+## Relationships
+
+```text
+users (1)
+   |
+   └── refreshTokens (N)
+```
+
+---
+
+## Index Strategy
+
+### Standard Indexes
+
+```text
+userId
+expiresAt
+revokedAt
+```
+
+### Compound Index
+
+```text
+(userId, revokedAt)
+```
+
+### TTL Index
+
+```text
+expiresAt
+```
+
+Expired tokens are automatically removed.
+
+---
+
+## Example Document
+
+```json
+{
+  "_id": "65abc123",
+  "userId": "64user123",
+  "tokenHash": "7f2a8e0f...",
+  "deviceInfo": "Chrome Windows",
+  "ipAddress": "192.168.1.1",
+  "userAgent": "Mozilla/5.0",
+  "expiresAt": "2026-07-01T00:00:00Z",
+  "createdAt": "2026-06-01T00:00:00Z",
+  "revokedAt": null
+}
+```
+
+---
+
+## Security Considerations
+
+### Never Store Raw Tokens
+
+```text
+Refresh Token
+      |
+      v
+
+Hash
+      |
+      v
+
+Database
+```
+
+---
+
+### Device Tracking
+
+Each session stores:
+
+* Device
+* Browser
+* IP Address
+
+---
+
+## Refresh Token Rotation
+
+```text
+Refresh Request
+       |
+       v
+
+Validate Token
+       |
+       v
+
+Revoke Existing Token
+       |
+       v
+
+Issue New Token
+       |
+       v
+
+Store New Hash
+```
+
+---
+
+## Logout Flow
+
+### Single Device
+
+```text
+Current Refresh Token
+          |
+          v
+
+Set revokedAt
+          |
+          v
+
+Session Invalidated
+```
+
+---
+
+### Logout All Devices
+
+```text
+User
+ |
+ v
+
+Find All User Tokens
+ |
+ v
+
+Set revokedAt
+ |
+ v
+
+All Sessions Revoked
+```
+
+---
+
+# 6. Global Indexing Strategy
+
+## High-Traffic Collections
+
+Compound indexes optimized for:
+
+```text
+Meals
+Water Logs
+Weight Logs
+Reports
+Notifications
+Refresh Tokens
+```
+
+---
+
+## Text Search
+
+```text
+foodDatabase.foodName
+recipes.title
+```
+
+---
+
+# 7. Query Optimization Strategy
+
+## Dashboard Queries
+
+Use:
+
+```text
+userStats
+```
+
+instead of expensive aggregations.
+
+---
+
+## Reporting
+
+Store report snapshots.
+
+Avoid regenerating reports unnecessarily.
+
+---
+
+## Nutrition Queries
+
+Use indexed date-based lookups.
+
+---
+
+# 8. Aggregation Strategy
+
+## Daily
+
+* Calories
+* Water
+* Meal counts
+
+---
+
+## Weekly
+
+* Goal progress
+* Weight trends
+
+---
+
+## Monthly
+
+* Nutrition summaries
+* AI reports
+* Achievement summaries
+
+---
+
+## Materialized Collections
+
+```text
+userStats
+reports
+```
+
+---
+
+# 9. Data Retention Strategy
+
+## Permanent Collections
+
+```text
+users
+goals
+meals
+mealEntries
+waterLogs
+weightLogs
+userAchievements
+```
+
+---
+
+## TTL Collections
+
+```text
+refreshTokens
+```
+
+removed automatically after expiration.
+
+---
+
+## Report Retention
+
+Minimum:
+
+```text
+24 Months
+```
+
+---
+
+# 10. Backup Strategy
+
+## Atlas Backups
+
+Frequency:
+
+```text
+Daily
+```
+
+Retention:
+
+```text
+35 Days
+```
+
+---
+
+## Recovery Targets
+
+| Metric | Target       |
+| ------ | ------------ |
+| RPO    | < 15 Minutes |
+| RTO    | < 1 Hour     |
+
+---
+
+# 11. Future Scaling Considerations
+
+## Phase 1
+
+```text
+10,000 Active Users
+```
+
+Single Atlas cluster.
+
+---
+
+## Phase 2
+
+```text
+Read Replicas
+```
+
+for analytics.
+
+---
+
+## Phase 3
+
+```text
+Sharding by userId
+```
+
+for large-scale growth.
+
+---
+
+## Phase 4
+
+```text
+MongoDB
+     +
+Analytics Warehouse
+```
+
+for advanced reporting.
+
+---
+
+# 12. Database Governance Rules
+
+## Developers Must
+
+* Use indexes appropriately
+* Use ObjectId references
+* Validate data at API layer
+* Store hashes instead of secrets
+
+---
+
+## Developers Must Not
+
+* Store plaintext passwords
+* Store raw refresh tokens
+* Duplicate user profile data
+* Create unindexed high-volume queries
+
+---
+
+# 13. Conclusion
+
+The Kaizen database architecture provides a scalable, secure, and analytics-friendly foundation optimized for health tracking workloads. The addition of the refreshTokens collection introduces production-grade session management, refresh token rotation, multi-device authentication, and secure logout capabilities while preserving performance, maintainability, and future scalability.
+
+
+// File: e:\Kaizen\docs\02_architecture\04_api_architecture.md
+# Kaizen API Architecture
+
+**Document ID:** 04_api_architecture.md
+**Version:** 1.1
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Document Information
+
+| Attribute      | Value                                     |
+| -------------- | ----------------------------------------- |
+| Document Title | API Architecture                          |
+| Version        | 1.0                                       |
+| Status         | Approved                                  |
+| API Style      | REST                                      |
+| Framework      | Express.js + TypeScript                   |
+| Authentication | JWT Access + Refresh Tokens               |
+| Audience       | Architects, Developers, AI Coding Agents  |
+| Scope          | API Standards and Endpoint Specifications |
+
+---
+
+# 2. Executive Summary
+
+Kaizen follows an API-First Architecture where all business functionality is exposed through versioned REST APIs.
+
+The API serves:
+
+* Web Application
+* Mobile Application
+* Desktop Application
+* Future Integrations
+
+Responsibilities:
+
+* Authentication
+* Authorization
+* Validation
+* Business Logic
+* Data Orchestration
+* AI Service Integration
+
+---
+
+# 3. API Design Principles
+
+## Consistency
+
+All endpoints follow consistent:
+
+* Naming conventions
+* Response structures
+* Error formats
+
+---
+
+## Resource-Oriented Design
+
+Examples:
+
+```text
+/users
+/goals
+/meals
+/water
+/weight
+```
+
+---
+
+## Stateless Design
+
+The API remains stateless.
+
+Session state is maintained through:
+
+```text
+JWT Access Tokens
++
+Refresh Tokens
+```
+
+---
+
+## Security By Default
+
+All business endpoints require authentication.
+
+---
+
+## Versioning
+
+All routes are versioned.
+
+```text
+/api/v1
+```
+
+---
+
+# 4. Versioning Strategy
+
+## URL Versioning
+
+Examples:
+
+```text
+/api/v1/auth/login
+/api/v1/meals
+/api/v1/goals
+```
+
+---
+
+## Future Versions
+
+```text
+/api/v2
+/api/v3
+```
+
+---
+
+## Deprecation Policy
+
+| Stage      | Duration          |
+| ---------- | ----------------- |
+| Active     | Current Version   |
+| Deprecated | 6 Months          |
+| Removed    | After Deprecation |
+
+---
+
+# 5. Authentication Strategy
+
+## Authentication Model
+
+Kaizen uses:
+
+```text
+Access Token
++
+Refresh Token
+```
+
+---
+
+## Access Token
+
+Purpose:
+
+* API Authorization
+
+Lifetime:
+
+```text
+15 Minutes
+```
+
+---
+
+## Refresh Token
+
+Purpose:
+
+* Session Continuation
+
+Lifetime:
+
+```text
+30 Days
+```
+
+---
+
+## Storage
+
+### Access Token
+
+Stored client-side.
+
+---
+
+### Refresh Token
+
+Stored securely.
+
+Database stores:
+
+```text
+Hashed Refresh Token
+```
+
+only.
+
+---
+
+## Authentication Header
+
+```http
+Authorization: Bearer <access-token>
+```
+
+---
+
+# 6. Refresh Token Lifecycle
+
+```text
+Login
+  |
+  v
+
+Access Token
+Refresh Token
+
+  |
+  v
+
+Access Token Expires
+
+  |
+  v
+
+Refresh Request
+
+  |
+  v
+
+Validate Refresh Token
+
+  |
+  v
+
+Revoke Old Token
+
+  |
+  v
+
+Issue New Tokens
+
+  |
+  v
+
+Store New Refresh Token
+```
+
+---
+
+# 7. Token Rotation Strategy
+
+Every refresh request performs:
+
+```text
+Old Refresh Token
+       |
+       v
+
+Validation
+       |
+       v
+
+Revocation
+       |
+       v
+
+Generate New Token
+       |
+       v
+
+Store New Hash
+       |
+       v
+
+Return New Tokens
+```
+
+---
+
+## Benefits
+
+* Replay protection
+* Session security
+* Stolen token mitigation
+
+---
+
+# 8. Authorization Strategy
+
+## Ownership-Based Access
+
+Users may access only their own resources.
+
+Examples:
+
+```text
+User A
+Cannot Access
+User B Meals
+
+User A
+Cannot Access
+User B Goals
+```
+
+---
+
+## Authorization Layers
+
+| Layer                | Responsibility      |
+| -------------------- | ------------------- |
+| JWT Middleware       | Authentication      |
+| Ownership Middleware | Resource Access     |
+| Service Layer        | Business Validation |
+
+---
+
+# 9. Standard Response Format
+
+## Success Response
+
+```json
+{
+  "success": true,
+  "message": "Operation successful",
+  "data": {},
+  "meta": {}
+}
+```
+
+---
+
+## Response Fields
+
+| Field   | Description   |
+| ------- | ------------- |
+| success | Status        |
+| message | Human Message |
+| data    | Payload       |
+| meta    | Metadata      |
+
+---
+
+# 10. Error Response Format
+
+```json
+{
+  "success": false,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "message": "Invalid email"
+    }
+  ]
+}
+```
+
+---
+
+## Standard Status Codes
+
+| Code | Meaning      |
+| ---- | ------------ |
+| 400  | Bad Request  |
+| 401  | Unauthorized |
+| 403  | Forbidden    |
+| 404  | Not Found    |
+| 409  | Conflict     |
+| 429  | Rate Limited |
+| 500  | Server Error |
+
+---
+
+# 11. Pagination Standards
+
+## Query Parameters
+
+```http
+?page=1&limit=20
+```
+
+---
+
+## Response Format
+
+```json
+{
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "totalItems": 100,
+    "totalPages": 5
+  }
+}
+```
+
+---
+
+## Defaults
+
+| Property | Value |
+| -------- | ----- |
+| page     | 1     |
+| limit    | 20    |
+| maxLimit | 100   |
+
+---
+
+# 12. Filtering Standards
+
+Examples:
+
+```http
+/meals?mealType=BREAKFAST
+/meals?startDate=2026-01-01
+```
+
+---
+
+# 13. Sorting Standards
+
+Examples:
+
+```http
+?sortBy=createdAt&order=desc
+```
+
+---
+
+Default:
+
+```text
+createdAt DESC
+```
+
+---
+
+# 14. Authentication Endpoints
+
+# Register
+
+| Property       | Value                 |
+| -------------- | --------------------- |
+| Method         | POST                  |
+| Route          | /api/v1/auth/register |
+| Authentication | Public                |
+| Purpose        | Create Account        |
+
+### Request
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password",
+  "firstName": "John",
+  "lastName": "Doe"
+}
+```
+
+### Response
+
+```json
+{
+  "userId": "string",
+  "email": "user@example.com"
+}
+```
+
+---
+
+# Login
+
+| Property       | Value              |
+| -------------- | ------------------ |
+| Method         | POST               |
+| Route          | /api/v1/auth/login |
+| Authentication | Public             |
+| Purpose        | Authenticate User  |
+
+### Request
+
+```json
+{
+  "email": "user@example.com",
+  "password": "password"
+}
+```
+
+### Response
+
+```json
+{
+  "accessToken": "jwt-access-token",
+  "refreshToken": "jwt-refresh-token",
+  "user": {}
+}
+```
+
+---
+
+# Refresh Token
+
+| Property       | Value                      |
+| -------------- | -------------------------- |
+| Method         | POST                       |
+| Route          | /api/v1/auth/refresh-token |
+| Authentication | Refresh Token Required     |
+| Purpose        | Renew Session              |
+
+### Request
+
+```json
+{
+  "refreshToken": "token"
+}
+```
+
+### Response
+
+```json
+{
+  "accessToken": "new-access-token",
+  "refreshToken": "new-refresh-token"
+}
+```
+
+### Error Responses
+
+```text
+400 Invalid Request
+401 Invalid Token
+401 Revoked Token
+401 Expired Token
+429 Rate Limited
+```
+
+---
+
+# Logout
+
+| Property       | Value                 |
+| -------------- | --------------------- |
+| Method         | POST                  |
+| Route          | /api/v1/auth/logout   |
+| Authentication | Required              |
+| Purpose        | Logout Current Device |
+
+### Request
+
+```json
+{
+  "refreshToken": "token"
+}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+```
+
+### Error Responses
+
+```text
+401 Unauthorized
+404 Session Not Found
+```
+
+---
+
+# Logout All Devices
+
+| Property       | Value                   |
+| -------------- | ----------------------- |
+| Method         | POST                    |
+| Route          | /api/v1/auth/logout-all |
+| Authentication | Required                |
+| Purpose        | Revoke All Sessions     |
+
+### Request
+
+```json
+{}
+```
+
+### Response
+
+```json
+{
+  "success": true,
+  "message": "All sessions revoked"
+}
+```
+
+### Error Responses
+
+```text
+401 Unauthorized
+500 Internal Error
+```
+
+---
+
+# Forgot Password
+
+POST /api/v1/auth/forgot-password
+
+---
+
+# Reset Password
+
+POST /api/v1/auth/reset-password
+
+---
+
+# 15. Logout Workflow
+
+## Single Device Logout
+
+```text
+Logout
+   |
+   v
+
+Refresh Token
+   |
+   v
+
+Revoke Token
+   |
+   v
+
+Session Invalidated
+```
+
+---
+
+## Logout All Devices
+
+```text
+Logout All
+      |
+      v
+
+Find User Sessions
+      |
+      v
+
+Revoke All Tokens
+      |
+      v
+
+All Devices Logged Out
+```
+
+---
+
+# 16. User Endpoints
+
+| Method | Route                  | Purpose         |
+| ------ | ---------------------- | --------------- |
+| GET    | /api/v1/users/me       | Profile         |
+| PUT    | /api/v1/users/me       | Update Profile  |
+| GET    | /api/v1/users/settings | Get Settings    |
+| PUT    | /api/v1/users/settings | Update Settings |
+
+Authentication Required: Yes
+
+---
+
+# 17. Goal Endpoints
+
+| Method | Route                 |
+| ------ | --------------------- |
+| POST   | /api/v1/goals         |
+| GET    | /api/v1/goals         |
+| GET    | /api/v1/goals/:goalId |
+| PUT    | /api/v1/goals/:goalId |
+| DELETE | /api/v1/goals/:goalId |
+
+Authentication Required: Yes
+
+---
+
+# 18. Meal Endpoints
+
+| Method | Route                      |
+| ------ | -------------------------- |
+| POST   | /api/v1/meals              |
+| GET    | /api/v1/meals              |
+| GET    | /api/v1/meals/:mealId      |
+| PUT    | /api/v1/meals/:mealId      |
+| DELETE | /api/v1/meals/:mealId      |
+| GET    | /api/v1/meals/foods/search |
+
+Authentication Required: Yes
+
+---
+
+# 19. Water Endpoints
+
+| Method | Route                |
+| ------ | -------------------- |
+| POST   | /api/v1/water        |
+| GET    | /api/v1/water        |
+| DELETE | /api/v1/water/:logId |
+
+Authentication Required: Yes
+
+---
+
+# 20. Weight Endpoints
+
+| Method | Route                    |
+| ------ | ------------------------ |
+| POST   | /api/v1/weight           |
+| GET    | /api/v1/weight           |
+| PUT    | /api/v1/weight/:weightId |
+| DELETE | /api/v1/weight/:weightId |
+
+Authentication Required: Yes
+
+---
+
+# 21. Recipe Endpoints
+
+| Method | Route                     |
+| ------ | ------------------------- |
+| POST   | /api/v1/recipes           |
+| GET    | /api/v1/recipes           |
+| GET    | /api/v1/recipes/:recipeId |
+| PUT    | /api/v1/recipes/:recipeId |
+| DELETE | /api/v1/recipes/:recipeId |
+
+Authentication Required: Yes
+
+---
+
+# 22. Dashboard Endpoints
+
+| Method | Route                       |
+| ------ | --------------------------- |
+| GET    | /api/v1/dashboard/summary   |
+| GET    | /api/v1/dashboard/nutrition |
+| GET    | /api/v1/dashboard/progress  |
+
+Authentication Required: Yes
+
+---
+
+# 23. Report Endpoints
+
+| Method | Route                     |
+| ------ | ------------------------- |
+| POST   | /api/v1/reports/generate  |
+| GET    | /api/v1/reports           |
+| GET    | /api/v1/reports/:reportId |
+
+Authentication Required: Yes
+
+---
+
+# 24. Achievement Endpoints
+
+| Method | Route                     |
+| ------ | ------------------------- |
+| GET    | /api/v1/achievements      |
+| GET    | /api/v1/achievements/user |
+
+Authentication Required: Yes
+
+---
+
+# 25. Challenge Endpoints
+
+| Method | Route                                |
+| ------ | ------------------------------------ |
+| GET    | /api/v1/challenges                   |
+| POST   | /api/v1/challenges/:challengeId/join |
+| GET    | /api/v1/challenges/user              |
+
+Authentication Required: Yes
+
+---
+
+# 26. Notification Endpoints
+
+| Method | Route                                      |
+| ------ | ------------------------------------------ |
+| GET    | /api/v1/notifications                      |
+| PATCH  | /api/v1/notifications/:notificationId/read |
+| PATCH  | /api/v1/notifications/read-all             |
+
+Authentication Required: Yes
+
+---
+
+# 27. AI Service Endpoints
+
+| Method | Route                            |
+| ------ | -------------------------------- |
+| POST   | /api/v1/ai/insights              |
+| POST   | /api/v1/ai/recommendations/meals |
+| POST   | /api/v1/ai/nutrition-analysis    |
+| POST   | /api/v1/ai/goal-suggestions      |
+
+Authentication Required: Yes
+
+---
+
+# 28. Rate Limiting Strategy
+
+| Endpoint Group | Limit      |
+| -------------- | ---------- |
+| Authentication | 10/minute  |
+| Standard APIs  | 100/minute |
+| AI APIs        | 20/minute  |
+
+---
+
+# 29. API Security Standards
+
+Required Controls:
+
+* JWT Validation
+* Refresh Token Validation
+* Token Rotation
+* Ownership Checks
+* Input Validation
+* Rate Limiting
+* HTTPS Enforcement
+* CORS Protection
+
+---
+
+# 30. API Lifecycle
+
+```text
+Draft
+  |
+Development
+  |
+Testing
+  |
+Production
+  |
+Deprecated
+  |
+Retired
+```
+
+---
+
+# 31. Conclusion
+
+The Kaizen API Architecture provides a secure, scalable, and maintainable REST API foundation built around an Access Token + Refresh Token authentication model. Through standardized responses, token rotation, session revocation, ownership-based authorization, and consistent endpoint design, the API layer supports all client platforms while remaining scalable for future growth, integrations, and advanced AI capabilities.
+
+
+// File: e:\Kaizen\docs\02_architecture\05_frontend_architecture.md
+# Kaizen Frontend Architecture
+
+**Document ID:** 05_frontend_architecture.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Document Information
+
+| Attribute        | Value                               |
+| ---------------- | ----------------------------------- |
+| Document Title   | Frontend Architecture               |
+| Version          | 1.0                                 |
+| Status           | Approved                            |
+| Primary Platform | Web                                 |
+| Framework        | React                               |
+| Language         | TypeScript                          |
+| Build Tool       | Vite                                |
+| Styling          | TailwindCSS                         |
+| State Management | Zustand + React Query               |
+| Scope            | Frontend Architecture and Standards |
+
+---
+
+# 2. Executive Summary
+
+The Kaizen frontend architecture is designed to provide a scalable, maintainable, and high-performance user experience across web, mobile, and desktop platforms.
+
+The architecture follows a feature-based organization model that promotes:
+
+* Clear ownership boundaries
+* High modularity
+* Easier onboarding
+* Reusable UI patterns
+* Independent feature development
+* Long-term maintainability
+
+The frontend acts as a presentation layer and never contains business-critical logic that belongs to backend services.
+
+---
+
+# 3. Frontend Goals
+
+## Primary Goals
+
+### Scalability
+
+Support growth from a small codebase to a large multi-team application.
+
+---
+
+### Maintainability
+
+Enable developers and AI coding agents to locate and modify features quickly.
+
+---
+
+### Performance
+
+Deliver a responsive user experience with minimal loading times.
+
+---
+
+### Reusability
+
+Maximize component reuse and reduce duplication.
+
+---
+
+### Type Safety
+
+Use TypeScript throughout the application.
+
+---
+
+### Accessibility
+
+Provide an inclusive experience for all users.
+
+---
+
+### Testability
+
+Support automated testing at all layers.
+
+---
+
+# 4. Architectural Principles
+
+## Feature-Based Organization
+
+Features own their:
+
+* Components
+* Hooks
+* Services
+* Validation
+* Types
+* Pages
+
+---
+
+## Separation of Concerns
+
+| Layer      | Responsibility    |
+| ---------- | ----------------- |
+| Pages      | Route Containers  |
+| Components | UI Rendering      |
+| Hooks      | Reusable Logic    |
+| Services   | API Communication |
+| Store      | Client State      |
+| Validation | Input Validation  |
+
+---
+
+## Single Source of Truth
+
+Server state originates from APIs.
+
+Client state exists only when necessary.
+
+---
+
+## Reusability First
+
+Shared UI elements must be placed in common component libraries.
+
+---
+
+## API-First Frontend
+
+Frontend communicates exclusively through documented APIs.
+
+---
+
+# 5. Frontend Architecture Overview
+
+```text
+User
+  |
+  v
+
+Pages
+  |
+  v
+
+Feature Components
+  |
+  v
+
+Custom Hooks
+  |
+  v
+
+Services
+  |
+  v
+
+React Query
+  |
+  v
+
+API Client
+  |
+  v
+
+Backend API
+```
+
+---
+
+# 6. Feature-Based Architecture
+
+## Feature Structure
+
+Each feature contains everything required to operate independently.
+
+```text
+feature
+│
+├── pages
+├── components
+├── hooks
+├── services
+├── schemas
+├── types
+├── constants
+└── utils
+```
+
+---
+
+## Benefits
+
+* Reduced coupling
+* Easier ownership
+* Better scalability
+* Faster onboarding
+
+---
+
+# 7. Folder Structure
+
+## Root Frontend Structure
+
+```text
+apps/web/src
+
+├── app
+│
+├── features
+│
+├── components
+│
+├── hooks
+│
+├── services
+│
+├── store
+│
+├── routes
+│
+├── layouts
+│
+├── providers
+│
+├── utils
+│
+├── constants
+│
+├── types
+│
+├── assets
+│
+├── styles
+│
+└── tests
+```
+
+---
+
+## Detailed Folder Structure
+
+```text
+src
+
+├── app
+│   ├── App.tsx
+│   ├── router.tsx
+│   └── providers.tsx
+│
+├── features
+│   │
+│   ├── auth
+│   │   ├── pages
+│   │   ├── components
+│   │   ├── hooks
+│   │   ├── services
+│   │   ├── schemas
+│   │   └── types
+│   │
+│   ├── meals
+│   │   ├── pages
+│   │   ├── components
+│   │   ├── hooks
+│   │   ├── services
+│   │   ├── schemas
+│   │   └── types
+│   │
+│   ├── water
+│   │
+│   ├── weight
+│   │
+│   ├── goals
+│   │
+│   ├── dashboard
+│   │
+│   ├── reports
+│   │
+│   ├── achievements
+│   │
+│   ├── challenges
+│   │
+│   ├── notifications
+│   │
+│   └── ai
+│
+├── components
+│   ├── ui
+│   ├── forms
+│   ├── charts
+│   ├── feedback
+│   └── layout
+│
+├── store
+│
+├── services
+│
+├── routes
+│
+├── layouts
+│
+├── providers
+│
+├── utils
+│
+├── types
+│
+└── tests
+```
+
+---
+
+# 8. Routing Strategy
+
+## Routing Library
+
+React Router
+
+---
+
+## Route Categories
+
+### Public Routes
+
+```text
+/login
+/register
+/forgot-password
+/reset-password
+```
+
+---
+
+### Protected Routes
+
+```text
+/overview
+/meals
+/water
+/weight
+/goals
+/reports
+/achievements
+/challenges
+/settings
+```
+
+---
+
+## Route Hierarchy
+
+```text
+/
+│
+├── login
+├── register
+│
+└── app
+    │
+    ├── dashboard
+    ├── meals
+    ├── water
+    ├── weight
+    ├── goals
+    ├── reports
+    ├── achievements
+    ├── challenges
+    └── settings
+```
+
+---
+
+## Lazy Loading Strategy
+
+All major feature routes must be lazy loaded.
+
+```text
+Dashboard
+Meals
+Goals
+Reports
+AI Features
+```
+
+---
+
+# 9. State Management Strategy
+
+## State Categories
+
+### Server State
+
+Managed by React Query.
+
+Examples:
+
+```text
+User Profile
+Goals
+Meals
+Water Logs
+Weight Logs
+Reports
+```
+
+---
+
+### Client State
+
+Managed by Zustand.
+
+Examples:
+
+```text
+Theme
+Sidebar State
+Filters
+Preferences
+Temporary UI State
+```
+
+---
+
+## State Flow
+
+```text
+Backend API
+      |
+      v
+
+React Query Cache
+      |
+      v
+
+Feature Hooks
+      |
+      v
+
+Components
+```
+
+---
+
+## Rules
+
+Use React Query whenever data comes from APIs.
+
+Do not store server state in Zustand.
+
+---
+
+# 10. API Communication Strategy
+
+## API Layer
+
+All API calls must pass through a centralized API client.
+
+```text
+Component
+   |
+   v
+
+Feature Service
+   |
+   v
+
+API Client
+   |
+   v
+
+Backend
+```
+
+---
+
+## Responsibilities
+
+### API Client
+
+Handles:
+
+* Base URL
+* Headers
+* Authentication
+* Error handling
+* Retries
+
+---
+
+### Feature Services
+
+Handle:
+
+* Resource-specific requests
+* Request transformations
+
+---
+
+## Benefits
+
+* Consistent communication
+* Easier maintenance
+* Centralized control
+
+---
+
+# 11. Form Validation Strategy
+
+## Libraries
+
+* React Hook Form
+* Zod
+
+---
+
+## Validation Flow
+
+```text
+User Input
+     |
+     v
+
+React Hook Form
+     |
+     v
+
+Zod Schema
+     |
+     v
+
+Submit
+```
+
+---
+
+## Validation Layers
+
+### Client Validation
+
+* Required fields
+* Formats
+* Length checks
+
+---
+
+### Server Validation
+
+* Business rules
+* Security checks
+
+---
+
+## Rules
+
+Every form must have:
+
+* Schema validation
+* Error messages
+* Submission states
+
+---
+
+# 12. Error Handling Strategy
+
+## Error Categories
+
+### Validation Errors
+
+User input issues.
+
+---
+
+### Network Errors
+
+API unavailable.
+
+---
+
+### Authentication Errors
+
+Expired or invalid token.
+
+---
+
+### Server Errors
+
+Unexpected failures.
+
+---
+
+## Error Flow
+
+```text
+API Error
+    |
+    v
+
+Error Handler
+    |
+    v
+
+User Feedback Component
+```
+
+---
+
+## User Experience Rules
+
+Never expose raw server errors.
+
+Display user-friendly messages.
+
+---
+
+# 13. Authentication Handling
+
+## Authentication Flow
+
+```text
+Login
+  |
+  v
+
+Receive JWT
+  |
+  v
+
+Store Securely
+  |
+  v
+
+Attach To Requests
+  |
+  v
+
+Protected APIs
+```
+
+---
+
+## Token Storage
+
+Phase 1:
+
+```text
+Secure Browser Storage
+```
+
+Future:
+
+```text
+HTTP-Only Cookies
+```
+
+---
+
+## Authentication Context
+
+Centralized authentication provider manages:
+
+* Current user
+* Login state
+* Logout
+* Session validation
+
+---
+
+# 14. Protected Routes
+
+## Route Protection Flow
+
+```text
+Route Access
+     |
+     v
+
+Auth Check
+     |
+     ├── Authenticated
+     │      |
+     │      v
+     │   Render Page
+     │
+     └── Not Authenticated
+             |
+             v
+         Redirect Login
+```
+
+---
+
+## Protected Route Wrapper
+
+Responsible for:
+
+* Token validation
+* Redirect logic
+* Session checks
+
+---
+
+# 15. Reusable Component Strategy
+
+## Component Layers
+
+### Base Components
+
+Reusable primitives.
+
+Examples:
+
+```text
+Button
+Input
+Modal
+Card
+Badge
+```
+
+---
+
+### Composite Components
+
+Built from primitives.
+
+Examples:
+
+```text
+GoalCard
+MealCard
+ProgressChart
+AchievementCard
+```
+
+---
+
+### Feature Components
+
+Feature-specific components.
+
+Examples:
+
+```text
+MealForm
+WaterTracker
+GoalProgress
+```
+
+---
+
+## Component Hierarchy
+
+```text
+UI Components
+      |
+      v
+
+Shared Components
+      |
+      v
+
+Feature Components
+      |
+      v
+
+Pages
+```
+
+---
+
+# 16. Design System Strategy
+
+## Design Goals
+
+* Consistency
+* Reusability
+* Accessibility
+* Scalability
+
+---
+
+## Design Tokens
+
+Centralized tokens for:
+
+```text
+Colors
+Spacing
+Typography
+Border Radius
+Shadows
+Breakpoints
+```
+
+---
+
+## Theme Support
+
+Phase 1:
+
+```text
+Light Theme
+Dark Theme
+```
+
+---
+
+## Styling Approach
+
+TailwindCSS utility-first architecture.
+
+---
+
+# 17. Accessibility Strategy
+
+## Compliance Target
+
+WCAG 2.1 AA
+
+---
+
+## Requirements
+
+### Keyboard Navigation
+
+All features must be keyboard accessible.
+
+---
+
+### Semantic HTML
+
+Use proper semantic elements.
+
+---
+
+### Screen Readers
+
+Support assistive technologies.
+
+---
+
+### Color Contrast
+
+Maintain accessible contrast ratios.
+
+---
+
+### Focus States
+
+Visible focus indicators required.
+
+---
+
+## Accessibility Testing
+
+Must be included in QA process.
+
+---
+
+# 18. Performance Optimization Strategy
+
+## Code Splitting
+
+Use route-level lazy loading.
+
+---
+
+## Bundle Optimization
+
+Strategies:
+
+```text
+Tree Shaking
+Code Splitting
+Dynamic Imports
+```
+
+---
+
+## React Query Optimization
+
+Use:
+
+```text
+Caching
+Prefetching
+Background Refetching
+```
+
+---
+
+## Rendering Optimization
+
+Use:
+
+```text
+Memoization
+Virtualization
+Selective Re-renders
+```
+
+---
+
+## Asset Optimization
+
+Images:
+
+```text
+WebP
+Responsive Images
+Lazy Loading
+```
+
+---
+
+# 19. Frontend Security Considerations
+
+## Input Sanitization
+
+Prevent malicious input rendering.
+
+---
+
+## Authentication Security
+
+* Token validation
+* Session expiration
+* Logout invalidation
+
+---
+
+## API Security
+
+* HTTPS only
+* Secure headers
+* CORS compliance
+
+---
+
+## XSS Protection
+
+Never render unsanitized HTML.
+
+---
+
+# 20. Frontend Testing Strategy
+
+## Unit Testing
+
+Test:
+
+```text
+Components
+Hooks
+Utilities
+```
+
+---
+
+## Integration Testing
+
+Test:
+
+```text
+Feature Flows
+Forms
+API Integration
+```
+
+---
+
+## End-to-End Testing
+
+Test:
+
+```text
+Authentication
+Meal Tracking
+Goal Management
+Reports
+```
+
+---
+
+# 21. AI Agent Implementation Rules
+
+## AI Agents Must
+
+* Follow feature-based architecture
+* Use TypeScript strictly
+* Create reusable components
+* Use React Query for server state
+* Use Zustand only for client state
+* Keep validation schemas near features
+
+---
+
+## AI Agents Must Not
+
+* Call APIs directly from components
+* Store server state in Zustand
+* Duplicate components
+* Hardcode API URLs
+* Bypass validation layers
+
+---
+
+# 22. Frontend Architecture Review Checklist
+
+## Architecture
+
+* [ ] Feature-based structure maintained
+* [ ] Shared components reusable
+* [ ] No cross-feature coupling
+
+## State
+
+* [ ] React Query used correctly
+* [ ] Zustand used only for client state
+
+## Performance
+
+* [ ] Lazy loading implemented
+* [ ] Large lists virtualized
+* [ ] Bundle size reviewed
+
+## Accessibility
+
+* [ ] Keyboard accessible
+* [ ] Screen reader compatible
+* [ ] WCAG requirements met
+
+## Security
+
+* [ ] Protected routes enforced
+* [ ] Input validation present
+* [ ] No sensitive data exposed
+
+---
+
+# 23. Conclusion
+
+The Kaizen Frontend Architecture establishes a scalable, maintainable, and high-performance foundation built around React, TypeScript, and a feature-based architecture. By enforcing strict separation of concerns, centralized API communication, reusable component patterns, robust validation, and accessibility standards, the frontend remains easy to extend, simple to maintain, and capable of supporting future web, mobile, and desktop experiences while preserving a consistent user experience across all platforms.
+
+
+// File: e:\Kaizen\docs\02_architecture\06_ai_architecture.md
+# Kaizen AI Architecture
+
+**Document ID:** 06_ai_architecture.md
+**Version:** 1.1
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Document Information
+
+| Attribute            | Value                                         |
+| -------------------- | --------------------------------------------- |
+| Document Title       | AI Architecture                               |
+| Version              | 1.0                                           |
+| Status               | Approved                                      |
+| AI Service Framework | FastAPI                                       |
+| AI Language          | Python                                        |
+| Initial Provider     | OpenAI                                        |
+| Architecture Style   | Service-Oriented AI Layer                     |
+| Scope                | AI Services, Workflows, Provider Integrations |
+
+---
+
+# 2. Executive Summary
+
+The Kaizen AI Architecture provides intelligent health analysis, recommendations, coaching, nutrition insights, and report generation capabilities while maintaining strict separation from core business services.
+
+The AI layer is implemented as an independent service responsible for:
+
+* Food Parsing
+* Nutrition Analysis
+* Deficiency Detection
+* Personalized Recommendations
+* Health Coaching
+* Report Generation
+
+The architecture ensures:
+
+* Independent deployment
+* Independent scaling
+* Provider abstraction
+* Cost optimization
+* Fault isolation
+* Future multi-model support
+
+The AI service acts as an intelligence layer and is never considered the source of truth for health data.
+
+---
+
+# 3. AI System Overview
+
+## Primary Responsibilities
+
+The AI service is responsible for:
+
+* Understanding meal descriptions
+* Generating nutrition insights
+* Detecting dietary patterns
+* Producing health recommendations
+* Generating health reports
+* Coaching users toward goals
+
+---
+
+## Non-Responsibilities
+
+The AI service does not own:
+
+* Authentication
+* Authorization
+* User management
+* Database persistence
+* Business rules
+
+These remain inside the Backend API.
+
+---
+
+# 4. AI Service Boundaries
+
+## Service Ownership
+
+| Layer       | Responsibility     |
+| ----------- | ------------------ |
+| Frontend    | User Experience    |
+| Backend API | Business Logic     |
+| AI Service  | Intelligence Layer |
+| Database    | Data Persistence   |
+| AI Provider | Model Execution    |
+
+---
+
+## Boundary Diagram
+
+```text
+Frontend
+    |
+    v
+Backend API
+    |
+    v
++------------------+
+|    AI Service    |
++------------------+
+    |
+    v
+AI Provider
+
+AI Service Never:
+- Owns Users
+- Owns Authentication
+- Owns Authorization
+- Owns Persistence
+```
+
+---
+
+# 5. High-Level AI Architecture
+
+```text
+                +----------------+
+                |    Frontend    |
+                +--------+-------+
+                         |
+                         v
+
+                +----------------+
+                |  Backend API   |
+                +--------+-------+
+                         |
+                         v
+
+        +----------------------------------+
+        |          AI Service              |
+        |                                  |
+        | Food Parsing Engine              |
+        | Nutrition Analysis Engine        |
+        | Deficiency Detection Engine      |
+        | Recommendation Engine            |
+        | Health Coach Engine              |
+        | Report Generation Engine         |
+        +----------------+-----------------+
+                         |
+                         v
+
+                +----------------+
+                | OpenAI Provider |
+                +----------------+
+```
+
+---
+
+# 6. AI Cache Layer Architecture
+
+## Purpose
+
+The cache layer reduces:
+
+* OpenAI requests
+* Latency
+* Infrastructure costs
+
+while improving consistency and reliability.
+
+---
+
+## Processing Flow
+
+```text
+Request
+   |
+   v
+
+Cache Check
+   |
+   +---- HIT
+   |        |
+   |        v
+   |    Return Result
+   |
+   +---- MISS
+            |
+            v
+
+       AI Service
+            |
+            v
+
+       Provider
+            |
+            v
+
+       Store Result
+            |
+            v
+
+       Return Response
+```
+
+---
+
+## Cache Architecture
+
+```text
+Backend API
+      |
+      v
+
+AI Service
+      |
+      v
+
+Cache Layer
+      |
+      +----- Cache Hit
+      |
+      +----- Cache Miss
+                  |
+                  v
+
+             Provider
+```
+
+---
+
+# 7. OpenAI Integration Strategy
+
+## Phase 1 Provider
+
+OpenAI serves as the primary AI provider.
+
+---
+
+## Request Flow
+
+```text
+Backend API
+      |
+      v
+
+AI Service
+      |
+      v
+
+Prompt Builder
+      |
+      v
+
+OpenAI Client
+      |
+      v
+
+Response Processor
+      |
+      v
+
+Structured Output
+```
+
+---
+
+## OpenAI Usage Areas
+
+| Capability      | Uses AI |
+| --------------- | ------- |
+| Food Parsing    | Yes     |
+| Health Coaching | Yes     |
+| Reports         | Yes     |
+| Insights        | Yes     |
+| Recommendations | Yes     |
+
+---
+
+## Rule-Based First Strategy
+
+Deterministic logic should be preferred for:
+
+* Calculations
+* Aggregations
+* Statistics
+* Goal progress
+
+AI should only be used for interpretation and generation.
+
+---
+
+# 8. Future Multi-Provider Strategy
+
+## Provider Abstraction Layer
+
+AI engines never call providers directly.
+
+---
+
+## Architecture
+
+```text
+AI Engines
+      |
+      v
+
+Provider Gateway
+      |
+      +-------------+
+      |             |
+      v             v
+
+OpenAI      Future Providers
+```
+
+---
+
+## Future Providers
+
+Potential integrations:
+
+```text
+OpenAI
+Claude
+Gemini
+Mistral
+Llama
+Self-Hosted Models
+```
+
+---
+
+## Benefits
+
+* Vendor flexibility
+* Cost optimization
+* Reliability
+* A/B testing
+
+---
+
+# 9. Food Parsing Engine
+
+## Purpose
+
+Convert user meal descriptions into structured food records.
+
+---
+
+## Example Input
+
+```text
+2 idlis
+1 bowl sambar
+1 banana
+```
+
+---
+
+## Example Output
+
+```json
+{
+  "foods": [
+    {
+      "name": "Idli",
+      "quantity": 2
+    }
+  ]
+}
+```
+
+---
+
+## Responsibilities
+
+* Food identification
+* Quantity extraction
+* Serving normalization
+* Ambiguity handling
+
+---
+
+## Workflow
+
+```text
+Meal Input
+     |
+     v
+
+Food Parser
+     |
+     v
+
+Food Candidates
+     |
+     v
+
+Nutrition Mapping
+     |
+     v
+
+Structured Data
+```
+
+---
+
+# 10. Nutrition Analysis Engine
+
+## Purpose
+
+Analyze nutritional intake patterns.
+
+---
+
+## Inputs
+
+* Meals
+* Water intake
+* Weight history
+* Goals
+
+---
+
+## Outputs
+
+* Nutrition summaries
+* Macro breakdowns
+* Trend analysis
+* Goal alignment insights
+
+---
+
+## Workflow
+
+```text
+Historical Data
+       |
+       v
+
+Nutrition Analyzer
+       |
+       v
+
+Trend Detection
+       |
+       v
+
+Insights
+```
+
+---
+
+# 11. Deficiency Detection Engine
+
+## Purpose
+
+Identify possible nutritional deficiencies and imbalances.
+
+---
+
+## Detection Categories
+
+```text
+Protein Deficiency
+Fiber Deficiency
+Hydration Deficiency
+Calorie Deficit
+Calorie Excess
+Nutrition Imbalance
+```
+
+---
+
+## Workflow
+
+```text
+Meal History
+      |
+      v
+
+Nutrient Aggregation
+      |
+      v
+
+Deficiency Rules
+      |
+      v
+
+AI Interpretation
+      |
+      v
+
+Recommendations
+```
+
+---
+
+## Medical Safety Constraint
+
+The AI system must never:
+
+* Diagnose diseases
+* Prescribe medication
+* Provide medical treatment advice
+
+All outputs are informational only.
+
+---
+
+# 12. Recommendation Engine
+
+## Purpose
+
+Generate personalized recommendations.
+
+---
+
+## Recommendation Types
+
+### Meal Recommendations
+
+Suggest foods aligned with user goals.
+
+---
+
+### Nutrition Recommendations
+
+Suggest dietary improvements.
+
+---
+
+### Habit Recommendations
+
+Improve consistency and streaks.
+
+---
+
+### Goal Recommendations
+
+Suggest realistic targets.
+
+---
+
+## Workflow
+
+```text
+User Profile
+      |
+      v
+
+Health Data
+      |
+      v
+
+Recommendation Engine
+      |
+      v
+
+AI Personalization
+      |
+      v
+
+Recommendations
+```
+
+---
+
+# 13. Health Coach Engine
+
+## Purpose
+
+Provide conversational guidance.
+
+---
+
+## Responsibilities
+
+* Motivation
+* Goal reinforcement
+* Habit coaching
+* Progress explanation
+
+---
+
+## Constraints
+
+Must never:
+
+* Diagnose conditions
+* Prescribe medication
+* Replace professional healthcare
+
+---
+
+## Workflow
+
+```text
+User Context
+      |
+      v
+
+Coach Prompt
+      |
+      v
+
+Provider
+      |
+      v
+
+Coaching Response
+```
+
+---
+
+# 14. Report Generation Engine
+
+## Purpose
+
+Generate natural-language health reports.
+
+---
+
+## Report Types
+
+### Weekly Report
+
+Includes:
+
+* Calories
+* Water intake
+* Goal progress
+
+---
+
+### Monthly Report
+
+Includes:
+
+* Trends
+* Achievements
+* Recommendations
+
+---
+
+### AI Health Report
+
+Includes:
+
+* Behavioral observations
+* Strengths
+* Improvement opportunities
+
+---
+
+## Workflow
+
+```text
+Historical Data
+      |
+      v
+
+Report Builder
+      |
+      v
+
+AI Summary
+      |
+      v
+
+Report Output
+```
+
+---
+
+# 15. Request Flow Diagrams
+
+## Standard AI Request
+
+```text
+Frontend
+    |
+    v
+
+Backend API
+    |
+    v
+
+AI Service
+    |
+    v
+
+Cache Layer
+    |
+    +---- HIT
+    |
+    +---- MISS
+             |
+             v
+
+          Provider
+             |
+             v
+
+        AI Service
+             |
+             v
+
+Backend API
+             |
+             v
+
+Frontend
+```
+
+---
+
+## Nutrition Analysis Flow
+
+```text
+User
+ |
+ v
+
+Historical Data
+ |
+ v
+
+Nutrition Engine
+ |
+ v
+
+Provider
+ |
+ v
+
+Insights
+```
+
+---
+
+## Report Generation Flow
+
+```text
+Request
+   |
+   v
+
+Historical Data
+   |
+   v
+
+Report Engine
+   |
+   v
+
+Cache Layer
+   |
+   v
+
+Provider
+   |
+   v
+
+Report
+```
+
+---
+
+# 16. Cache Strategy
+
+## Weekly Reports
+
+Cache Duration:
+
+```text
+24 Hours
+```
+
+---
+
+## Monthly Reports
+
+Cache Duration:
+
+```text
+24 Hours
+```
+
+---
+
+## Health Insights
+
+Cache Duration:
+
+```text
+12 Hours
+```
+
+---
+
+## Recommendations
+
+Cache Duration:
+
+```text
+6 Hours
+```
+
+---
+
+## Coaching Conversations
+
+```text
+No Cache
+```
+
+Context changes frequently.
+
+---
+
+# 17. Cache Key Generation
+
+## Components
+
+```text
+userId
++
+featureType
++
+dataVersion
++
+dateRange
+```
+
+---
+
+## Example
+
+```text
+user_123:weekly_report:2026-06
+```
+
+---
+
+# 18. Cache Invalidation Rules
+
+## Meals Updated
+
+Invalidate:
+
+```text
+Weekly Reports
+Insights
+Recommendations
+```
+
+---
+
+## Weight Updated
+
+Invalidate:
+
+```text
+Reports
+Insights
+Recommendations
+```
+
+---
+
+## Goal Updated
+
+Invalidate:
+
+```text
+Recommendations
+Goal Suggestions
+```
+
+---
+
+## Manual Refresh
+
+Invalidate immediately.
+
+---
+
+# 19. Cost Optimization Strategy
+
+## AI Usage Principle
+
+Use AI only when deterministic logic cannot solve the problem.
+
+---
+
+## Avoid AI For
+
+```text
+Calorie Totals
+Water Totals
+Goal Calculations
+Aggregations
+Statistics
+```
+
+---
+
+## Use AI For
+
+```text
+Insights
+Recommendations
+Reports
+Coaching
+```
+
+---
+
+## Cost Reduction Through Caching
+
+### Without Cache
+
+```text
+100 Users
+5 Report Views
+
+500 OpenAI Requests
+```
+
+---
+
+### With Cache
+
+```text
+100 Users
+5 Report Views
+
+100 OpenAI Requests
+```
+
+---
+
+## Expected Savings
+
+```text
+60% - 90%
+```
+
+depending on usage patterns.
+
+---
+
+# 20. Prompt Management Strategy
+
+## Central Prompt Repository
+
+Prompts must never be hardcoded inside controllers.
+
+---
+
+## Structure
+
+```text
+services/ai
+
+prompts/
+├── food-parser
+├── nutrition-analysis
+├── deficiency-analysis
+├── recommendations
+├── coaching
+└── reports
+```
+
+---
+
+## Prompt Components
+
+Each prompt contains:
+
+```text
+System Instructions
+Business Rules
+Output Schema
+Safety Constraints
+```
+
+---
+
+## Versioning
+
+```text
+v1
+v2
+v3
+```
+
+Prompt changes must be versioned.
+
+---
+
+# 21. Error Handling Strategy
+
+## Error Categories
+
+### Validation Errors
+
+Invalid request.
+
+---
+
+### Provider Errors
+
+Provider unavailable.
+
+---
+
+### Timeout Errors
+
+Provider exceeded limits.
+
+---
+
+### Parsing Errors
+
+Unexpected output.
+
+---
+
+### Cache Errors
+
+Cache unavailable.
+
+---
+
+## Error Flow
+
+```text
+Error
+  |
+  v
+
+Categorize
+  |
+  v
+
+Log
+  |
+  v
+
+Fallback
+  |
+  v
+
+Response
+```
+
+---
+
+## User Experience Rules
+
+Never expose:
+
+* Raw prompts
+* Stack traces
+* Provider errors
+
+---
+
+# 22. Retry Strategy
+
+## Retryable Errors
+
+```text
+429
+503
+Timeout
+Network Error
+```
+
+---
+
+## Retry Policy
+
+```text
+Attempt 1
+
+Wait 1s
+
+Attempt 2
+
+Wait 2s
+
+Attempt 3
+```
+
+Maximum retries:
+
+```text
+3
+```
+
+---
+
+## Non-Retryable
+
+```text
+Validation Errors
+Authentication Errors
+Malformed Requests
+```
+
+---
+
+# 23. Rate Limiting Strategy
+
+| Endpoint        | Limit   |
+| --------------- | ------- |
+| Insights        | 20/day  |
+| Reports         | 10/day  |
+| Recommendations | 30/day  |
+| Coach           | 100/day |
+
+---
+
+## Service-Level Limits
+
+Protect provider quotas.
+
+---
+
+# 24. Security Considerations
+
+## Data Privacy
+
+Only required health data may be sent to providers.
+
+---
+
+## Prompt Security
+
+Sanitize all user-generated content.
+
+---
+
+## Secrets Management
+
+Store provider credentials in environment variables.
+
+---
+
+## Audit Logging
+
+Track:
+
+* Requests
+* Costs
+* Failures
+* Token usage
+
+---
+
+# 25. Monitoring and Observability
+
+## Metrics
+
+Track:
+
+```text
+Request Volume
+Success Rate
+Failure Rate
+Response Time
+Token Usage
+Cost Per Request
+Cache Hit Ratio
+Cache Miss Ratio
+```
+
+---
+
+## Alerts
+
+Trigger alerts for:
+
+```text
+Provider Failure
+High Costs
+Cache Failure
+High Error Rate
+```
+
+---
+
+# 26. Future AI Roadmap
+
+## Phase 2
+
+* Food image recognition
+* Meal photo analysis
+
+---
+
+## Phase 3
+
+* Multi-provider routing
+* Model A/B testing
+
+---
+
+## Phase 4
+
+* Vector Search
+* RAG Architecture
+* Personal Knowledge Base
+
+---
+
+## Phase 5
+
+* Fine-tuned Models
+* Local AI Execution
+* Hybrid Inference
+
+---
+
+# 27. AI Agent Implementation Rules
+
+## AI Agents Must
+
+* Use provider abstraction
+* Centralize prompts
+* Use cache layer
+* Implement structured outputs
+* Log usage metrics
+
+---
+
+## AI Agents Must Not
+
+* Hardcode prompts
+* Expose provider APIs
+* Store API keys
+* Mix business logic with AI logic
+* Bypass caching rules
+
+---
+
+# 28. Conclusion
+
+The Kaizen AI Architecture provides a scalable, provider-agnostic intelligence layer capable of delivering food parsing, nutrition analysis, personalized recommendations, coaching, and report generation while maintaining strict separation from business systems. The addition of the AI Cache Layer significantly reduces provider costs, improves response times, and enhances reliability, ensuring that the AI platform remains cost-effective, maintainable, and ready for future multi-provider expansion.
+
+
+// File: e:\Kaizen\docs\02_architecture\07_security_architecture.md
+# Kaizen Security Architecture
+
+**Document ID:** 07_security_architecture.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Security Architecture defines the security controls, policies, standards, and operational practices required to protect user data, platform services, authentication systems, AI integrations, and infrastructure.
+
+This architecture follows a **Security-by-Design** approach where security controls are embedded into every architectural layer rather than added later.
+
+Primary goals:
+
+* Protect user health data
+* Prevent unauthorized access
+* Secure authentication sessions
+* Reduce attack surface
+* Prevent API abuse
+* Protect AI services
+* Ensure auditability
+* Support future compliance requirements
+
+---
+
+# 2. Security Principles
+
+## Defense in Depth
+
+Multiple security layers protect every request.
+
+```text
+Client
+  |
+Authentication
+  |
+Authorization
+  |
+Validation
+  |
+Business Rules
+  |
+Database
+```
+
+---
+
+## Least Privilege
+
+Users only receive access to resources they own.
+
+Services only receive permissions required to perform their functions.
+
+---
+
+## Zero Trust
+
+No request is trusted automatically.
+
+Every request must:
+
+* Authenticate
+* Authorize
+* Validate
+
+---
+
+## Secure by Default
+
+Security controls must be enabled by default.
+
+Developers must explicitly opt into exceptions.
+
+---
+
+## Fail Secure
+
+Failures must deny access rather than grant access.
+
+---
+
+# 3. Threat Model
+
+## Assets Being Protected
+
+### User Data
+
+* Meals
+* Water logs
+* Weight history
+* Goals
+* Reports
+
+---
+
+### Authentication Data
+
+* Password hashes
+* Access tokens
+* Refresh tokens
+
+---
+
+### AI Services
+
+* AI endpoints
+* Prompt infrastructure
+* Usage quotas
+
+---
+
+### Infrastructure
+
+* Databases
+* APIs
+* Cloud resources
+
+---
+
+## Threat Actors
+
+### External Attackers
+
+Attempt:
+
+* Account compromise
+* API abuse
+* Data theft
+
+---
+
+### Malicious Users
+
+Attempt:
+
+* Privilege escalation
+* Data access violations
+* Resource abuse
+
+---
+
+### Automated Bots
+
+Attempt:
+
+* Credential stuffing
+* Scraping
+* Denial of service
+
+---
+
+# 4. Authentication Security
+
+## Authentication Model
+
+Kaizen uses:
+
+```text
+JWT Access Token
++
+Refresh Token
+```
+
+---
+
+## Access Token
+
+Purpose:
+
+```text
+API Authorization
+```
+
+Lifetime:
+
+```text
+15 Minutes
+```
+
+---
+
+## Refresh Token
+
+Purpose:
+
+```text
+Session Continuation
+```
+
+Lifetime:
+
+```text
+30 Days
+```
+
+---
+
+## Security Goals
+
+* Short-lived access tokens
+* Rotating refresh tokens
+* Session revocation
+* Multi-device support
+
+---
+
+# 5. Authorization Security
+
+## Ownership-Based Access Control
+
+Users may only access resources they own.
+
+Example:
+
+```text
+User A
+  Cannot Access
+User B Meals
+```
+
+---
+
+## Authorization Layers
+
+```text
+Request
+   |
+   v
+
+Authentication
+   |
+   v
+
+Ownership Validation
+   |
+   v
+
+Business Validation
+   |
+   v
+
+Resource Access
+```
+
+---
+
+## Protected Resources
+
+* Meals
+* Goals
+* Reports
+* Notifications
+* Water logs
+* Weight logs
+
+---
+
+# 6. JWT Architecture
+
+## Token Structure
+
+```text
+Header
+Payload
+Signature
+```
+
+---
+
+## Payload Claims
+
+```json
+{
+  "sub": "userId",
+  "email": "user@example.com",
+  "type": "access"
+}
+```
+
+---
+
+## JWT Flow
+
+```text
+Login
+   |
+   v
+
+JWT Issued
+   |
+   v
+
+Client Request
+   |
+   v
+
+JWT Validation
+   |
+   v
+
+Authorized Request
+```
+
+---
+
+## JWT Security Controls
+
+* Signed tokens
+* Expiration enforcement
+* Signature validation
+* Token type validation
+
+---
+
+# 7. Refresh Token Architecture
+
+## Purpose
+
+Maintain secure long-lived sessions.
+
+---
+
+## Database Storage
+
+Only token hashes are stored.
+
+```text
+Refresh Token
+      |
+      v
+
+Hash
+      |
+      v
+
+Database
+```
+
+---
+
+## Refresh Token Rotation Flow
+
+```text
+Refresh Request
+       |
+       v
+
+Validate Token
+       |
+       v
+
+Find Session
+       |
+       v
+
+Revoke Existing Token
+       |
+       v
+
+Generate New Token
+       |
+       v
+
+Store New Hash
+       |
+       v
+
+Return New Tokens
+```
+
+---
+
+## Benefits
+
+* Replay attack protection
+* Session hijacking mitigation
+* Token theft mitigation
+
+---
+
+# 8. Password Security
+
+## Password Storage
+
+Passwords are never stored directly.
+
+Stored value:
+
+```text
+bcrypt(password)
+```
+
+---
+
+## Password Rules
+
+Minimum:
+
+```text
+8 Characters
+```
+
+Recommended:
+
+```text
+12+ Characters
+```
+
+---
+
+## Requirements
+
+Must contain:
+
+* Uppercase
+* Lowercase
+* Number
+
+---
+
+## Password Reset
+
+Uses:
+
+```text
+One-Time Reset Token
+```
+
+with expiration.
+
+---
+
+# 9. API Security
+
+## API Protection Layers
+
+```text
+Client
+   |
+Rate Limiter
+   |
+Authentication
+   |
+Authorization
+   |
+Validation
+   |
+Business Logic
+```
+
+---
+
+## Security Controls
+
+* JWT validation
+* Refresh token validation
+* Ownership checks
+* Request validation
+* Rate limiting
+
+---
+
+# 10. Input Validation Strategy
+
+## Validation Layers
+
+### Client Validation
+
+Using:
+
+```text
+React Hook Form
++
+Zod
+```
+
+---
+
+### Server Validation
+
+Using:
+
+```text
+Zod Schemas
+```
+
+---
+
+## Validation Goals
+
+Prevent:
+
+* Invalid input
+* Injection attacks
+* Type confusion
+
+---
+
+# 11. Data Protection Strategy
+
+## Sensitive Data
+
+Protected data includes:
+
+* Email addresses
+* Authentication credentials
+* Health data
+
+---
+
+## Encryption
+
+### In Transit
+
+```text
+HTTPS
+TLS 1.2+
+```
+
+---
+
+### At Rest
+
+Provided by:
+
+```text
+MongoDB Atlas
+Cloudinary
+```
+
+---
+
+## Data Minimization
+
+Only required data is stored and transmitted.
+
+---
+
+# 12. Secrets Management
+
+## Secrets
+
+Examples:
+
+```text
+JWT Secret
+Database URI
+OpenAI Key
+Cloudinary Keys
+```
+
+---
+
+## Storage
+
+Environment variables only.
+
+---
+
+## Prohibited
+
+```text
+Source Code
+Git Repository
+Client Applications
+```
+
+---
+
+## Rotation
+
+Secrets should support periodic rotation.
+
+---
+
+# 13. HTTPS & Transport Security
+
+## HTTPS Requirement
+
+All environments except local development must use HTTPS.
+
+---
+
+## TLS Version
+
+Minimum:
+
+```text
+TLS 1.2
+```
+
+Preferred:
+
+```text
+TLS 1.3
+```
+
+---
+
+## HSTS
+
+Enabled in production.
+
+---
+
+# 14. CORS Strategy
+
+## Allowed Origins
+
+Only approved frontend domains.
+
+Example:
+
+```text
+Web Application
+Mobile Application
+Desktop Application
+```
+
+---
+
+## Disallowed
+
+```text
+*
+```
+
+Wildcard origins are prohibited.
+
+---
+
+## Allowed Methods
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+```
+
+---
+
+# 15. Security Headers
+
+## Required Headers
+
+### Strict-Transport-Security
+
+```text
+HSTS
+```
+
+---
+
+### X-Content-Type-Options
+
+```text
+nosniff
+```
+
+---
+
+### X-Frame-Options
+
+```text
+DENY
+```
+
+---
+
+### Referrer-Policy
+
+```text
+strict-origin-when-cross-origin
+```
+
+---
+
+### Content-Security-Policy
+
+Restrict script execution.
+
+---
+
+# 16. Rate Limiting Strategy
+
+## Authentication Endpoints
+
+```text
+10 Requests / Minute
+```
+
+---
+
+## Standard APIs
+
+```text
+100 Requests / Minute
+```
+
+---
+
+## AI APIs
+
+```text
+20 Requests / Minute
+```
+
+---
+
+## Abuse Protection Flow
+
+```text
+Request
+   |
+   v
+
+Rate Limiter
+   |
+   +--- Allowed
+   |
+   +--- Blocked
+```
+
+---
+
+# 17. Session Management
+
+## Session Model
+
+Sessions are represented by refresh tokens.
+
+---
+
+## Session Lifecycle
+
+```text
+Login
+  |
+  v
+
+Create Session
+  |
+  v
+
+Refresh
+  |
+  v
+
+Rotate Token
+  |
+  v
+
+Logout
+```
+
+---
+
+## Session Metadata
+
+Store:
+
+* Device Info
+* IP Address
+* User Agent
+
+---
+
+# 18. Device Management
+
+## Device Tracking
+
+Each refresh token records:
+
+```text
+Device
+Browser
+IP
+User Agent
+```
+
+---
+
+## Future Features
+
+* Active Sessions Page
+* Device Revocation
+* Suspicious Login Detection
+
+---
+
+## Logout All Devices Flow
+
+```text
+Logout All
+      |
+      v
+
+Find User Sessions
+      |
+      v
+
+Revoke All Refresh Tokens
+      |
+      v
+
+All Devices Logged Out
+```
+
+---
+
+# 19. Audit Logging
+
+## Logged Events
+
+### Authentication
+
+* Login
+* Logout
+* Failed Login
+* Password Reset
+
+---
+
+### Security Events
+
+* Token Revocation
+* Rate Limit Violations
+* Authorization Failures
+
+---
+
+### Administrative Events
+
+Future administrative actions.
+
+---
+
+## Log Requirements
+
+Include:
+
+```text
+Timestamp
+UserId
+IP Address
+Event Type
+```
+
+---
+
+# 20. Security Monitoring
+
+## Metrics
+
+Track:
+
+```text
+Failed Logins
+Token Refreshes
+Rate Limit Violations
+API Errors
+Authorization Failures
+```
+
+---
+
+## Alerts
+
+Trigger alerts for:
+
+```text
+Brute Force Activity
+Excessive Failures
+Unusual Traffic
+AI Abuse
+```
+
+---
+
+# 21. OWASP Top 10 Mitigations
+
+| OWASP Risk                  | Mitigation                   |
+| --------------------------- | ---------------------------- |
+| Broken Access Control       | Ownership Validation         |
+| Cryptographic Failures      | TLS + Hashing                |
+| Injection                   | Input Validation             |
+| Insecure Design             | Security Reviews             |
+| Security Misconfiguration   | Hardened Defaults            |
+| Vulnerable Components       | Dependency Scanning          |
+| Authentication Failures     | JWT + Rotation               |
+| Software Integrity Failures | CI/CD Controls               |
+| Logging Failures            | Audit Logging                |
+| SSRF                        | Restricted Outbound Requests |
+
+---
+
+# 22. Security Incident Response Plan
+
+## Phase 1 — Detection
+
+Identify:
+
+* Breach
+* Abuse
+* Unauthorized access
+
+---
+
+## Phase 2 — Containment
+
+Actions:
+
+```text
+Disable Tokens
+Block IPs
+Disable Endpoints
+```
+
+---
+
+## Phase 3 — Investigation
+
+Determine:
+
+* Scope
+* Root Cause
+* Impact
+
+---
+
+## Phase 4 — Recovery
+
+Restore:
+
+* Services
+* Sessions
+* Security Controls
+
+---
+
+## Phase 5 — Postmortem
+
+Document:
+
+* Cause
+* Resolution
+* Improvements
+
+---
+
+# 23. Security Review Checklist
+
+## Authentication
+
+* [ ] Access token expiration enforced
+* [ ] Refresh token rotation enabled
+* [ ] Password hashing enabled
+
+---
+
+## Authorization
+
+* [ ] Ownership validation implemented
+* [ ] Resource access tested
+
+---
+
+## API Security
+
+* [ ] Rate limiting enabled
+* [ ] Validation implemented
+* [ ] Security headers enabled
+
+---
+
+## Data Protection
+
+* [ ] Encryption enabled
+* [ ] Secrets externalized
+* [ ] Sensitive logs avoided
+
+---
+
+## Monitoring
+
+* [ ] Audit logs enabled
+* [ ] Security alerts configured
+
+---
+
+# 24. Future Security Roadmap
+
+## Phase 2
+
+* Active Session Management
+* Device Revocation UI
+
+---
+
+## Phase 3
+
+* Multi-Factor Authentication (MFA)
+* Email Verification Enforcement
+
+---
+
+## Phase 4
+
+* Risk-Based Authentication
+* Suspicious Login Detection
+
+---
+
+## Phase 5
+
+* Compliance Readiness
+* Advanced Threat Detection
+* Security Analytics Dashboard
+
+---
+
+# 25. Conclusion
+
+The Kaizen Security Architecture establishes a production-grade security foundation built around layered defenses, secure authentication, refresh token rotation, session management, strict authorization, comprehensive monitoring, and OWASP-aligned protections. By embedding security into every architectural layer, the platform is prepared to protect user health data, prevent abuse, support future compliance requirements, and scale securely as the product grows.
+
+
+// File: e:\Kaizen\docs\02_architecture\08_deployment_architecture.md
+# Kaizen Deployment Architecture
+
+**Document ID:** 08_deployment_architecture.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Deployment Architecture defines how all applications, services, databases, storage systems, and supporting infrastructure are deployed across development, staging, and production environments.
+
+The deployment strategy prioritizes:
+
+* Simplicity
+* Reliability
+* Low operational overhead
+* Cost efficiency
+* Rapid deployments
+* Easy rollback capabilities
+* Future cloud migration readiness
+
+Phase 1 intentionally uses managed cloud services to minimize infrastructure management while maintaining production-grade reliability.
+
+---
+
+# 2. Deployment Goals
+
+## Primary Goals
+
+### Reliability
+
+Deployments must not compromise service availability.
+
+---
+
+### Scalability
+
+Infrastructure must support growth beyond 10,000 active users.
+
+---
+
+### Cost Efficiency
+
+Phase 1 infrastructure should minimize unnecessary operational expenses.
+
+---
+
+### Security
+
+Secrets, credentials, and infrastructure access must be secured.
+
+---
+
+### Fast Recovery
+
+Rollback and disaster recovery must be straightforward.
+
+---
+
+### Automation
+
+Deployments should require minimal manual intervention.
+
+---
+
+# 3. Environment Strategy
+
+Kaizen uses three primary environments.
+
+| Environment | Purpose                   |
+| ----------- | ------------------------- |
+| Development | Local development         |
+| Staging     | Pre-production validation |
+| Production  | Live customer environment |
+
+---
+
+## Environment Isolation
+
+Each environment maintains:
+
+* Separate environment variables
+* Separate databases
+* Separate deployment pipelines
+* Separate API URLs
+
+Cross-environment data access is prohibited.
+
+---
+
+# 4. Development Environment
+
+## Purpose
+
+Local development and feature implementation.
+
+---
+
+## Infrastructure
+
+```text
+Developer Machine
+       |
+       v
+
+Frontend (Local)
+Backend (Local)
+AI Service (Local)
+```
+
+---
+
+## Components
+
+| Component  | Environment               |
+| ---------- | ------------------------- |
+| Web        | Local                     |
+| API        | Local                     |
+| AI Service | Local                     |
+| MongoDB    | Atlas Development Cluster |
+| Storage    | Cloudinary Dev Folder     |
+
+---
+
+## Goals
+
+* Fast feedback loop
+* Easy debugging
+* Local testing
+
+---
+
+# 5. Staging Environment
+
+## Purpose
+
+Pre-production testing.
+
+---
+
+## Responsibilities
+
+Validate:
+
+* Features
+* Migrations
+* Deployments
+* Performance
+* Security
+
+---
+
+## Infrastructure
+
+```text
+Staging Frontend
+       |
+       v
+
+Staging API
+       |
+       +------+
+       |      |
+       v      v
+
+Staging DB   Staging AI
+```
+
+---
+
+## Requirements
+
+* Production-like configuration
+* Independent environment variables
+* Separate database
+
+---
+
+# 6. Production Environment
+
+## Purpose
+
+Serve live users.
+
+---
+
+## Characteristics
+
+* Highly stable
+* Monitored
+* Backed up
+* Secure
+* Scalable
+
+---
+
+## Infrastructure
+
+```text
+Users
+   |
+   v
+
+Production Frontend
+   |
+   v
+
+Production API
+   |
+   +----------+
+   |          |
+   v          v
+
+MongoDB     AI Service
+Atlas
+```
+
+---
+
+# 7. Infrastructure Diagram
+
+```text
+                     +----------------+
+                     |     Users      |
+                     +--------+-------+
+                              |
+                              v
+
+                     +----------------+
+                     |    Vercel      |
+                     |  Web Frontend  |
+                     +--------+-------+
+                              |
+                              v
+
+                  +----------------------+
+                  |      Render API      |
+                  |  Express + Node.js   |
+                  +-----+-----------+----+
+                        |           |
+                        |           |
+                        v           v
+
+              +----------------+  +----------------+
+              | MongoDB Atlas  |  | Render AI      |
+              | Primary DB     |  | FastAPI        |
+              +----------------+  +--------+-------+
+                                           |
+                                           v
+
+                                   +----------------+
+                                   | OpenAI APIs    |
+                                   +----------------+
+
+                        |
+                        v
+
+               +------------------+
+               |   Cloudinary     |
+               | Media Storage    |
+               +------------------+
+```
+
+---
+
+# 8. Frontend Deployment
+
+## Platform
+
+Vercel
+
+---
+
+## Application
+
+```text
+apps/web
+```
+
+---
+
+## Responsibilities
+
+* React SPA hosting
+* CDN delivery
+* Static asset optimization
+* SSL termination
+
+---
+
+## Deployment Method
+
+```text
+Git Push
+    |
+    v
+
+Vercel Build
+    |
+    v
+
+Deployment
+```
+
+---
+
+## Benefits
+
+* Global CDN
+* Automatic SSL
+* Fast rollbacks
+* Preview deployments
+
+---
+
+# 9. Backend Deployment
+
+## Platform
+
+Render
+
+---
+
+## Service
+
+```text
+services/api
+```
+
+---
+
+## Technology
+
+```text
+Node.js
+Express
+TypeScript
+```
+
+---
+
+## Responsibilities
+
+* Authentication
+* Business logic
+* API layer
+* Database orchestration
+* AI orchestration
+
+---
+
+## Deployment Model
+
+```text
+Git Push
+   |
+   v
+
+Render Build
+   |
+   v
+
+Production Deployment
+```
+
+---
+
+# 10. AI Service Deployment
+
+## Platform
+
+Render
+
+---
+
+## Service
+
+```text
+services/ai
+```
+
+---
+
+## Technology
+
+```text
+FastAPI
+Python
+```
+
+---
+
+## Responsibilities
+
+* Nutrition analysis
+* Recommendations
+* Insights
+* Report generation
+* Health coaching
+
+---
+
+## Independent Scaling
+
+The AI service can scale separately from the backend API.
+
+---
+
+# 11. Database Deployment
+
+## Platform
+
+MongoDB Atlas
+
+---
+
+## Database Type
+
+```text
+MongoDB
+```
+
+---
+
+## Responsibilities
+
+* User data
+* Meals
+* Goals
+* Reports
+* Sessions
+* Analytics
+
+---
+
+## Production Requirements
+
+* Automated backups
+* Monitoring enabled
+* Network restrictions enabled
+
+---
+
+## Future Scaling
+
+```text
+Single Cluster
+      |
+      v
+
+Read Replicas
+      |
+      v
+
+Sharding
+```
+
+---
+
+# 12. Storage Deployment
+
+## Platform
+
+Cloudinary
+
+---
+
+## Responsibilities
+
+* Profile images
+* Food images
+* Media assets
+
+---
+
+## Benefits
+
+* CDN delivery
+* Image optimization
+* Asset management
+
+---
+
+# 13. Environment Variables
+
+## Frontend
+
+Examples:
+
+```text
+VITE_API_URL
+VITE_APP_ENV
+```
+
+---
+
+## Backend
+
+Examples:
+
+```text
+PORT
+NODE_ENV
+MONGODB_URI
+JWT_SECRET
+JWT_REFRESH_SECRET
+CLOUDINARY_URL
+AI_SERVICE_URL
+```
+
+---
+
+## AI Service
+
+Examples:
+
+```text
+OPENAI_API_KEY
+OPENAI_MODEL
+CACHE_TTL
+API_URL
+```
+
+---
+
+## Rules
+
+Environment variables must never be committed to source control.
+
+---
+
+# 14. Secrets Management
+
+## Secrets
+
+Examples:
+
+```text
+Database URI
+JWT Secrets
+OpenAI API Keys
+Cloudinary Credentials
+```
+
+---
+
+## Storage
+
+Managed using:
+
+```text
+Vercel Environment Variables
+Render Environment Variables
+Atlas Credentials
+```
+
+---
+
+## Security Rules
+
+Secrets must:
+
+* Never be hardcoded
+* Never be logged
+* Never be committed to Git
+
+---
+
+## Secret Rotation
+
+Supported quarterly or during incidents.
+
+---
+
+# 15. CI/CD Strategy
+
+## Deployment Trigger
+
+```text
+Git Push
+```
+
+---
+
+## Flow
+
+```text
+Developer
+    |
+    v
+
+GitHub
+    |
+    v
+
+CI Pipeline
+    |
+    v
+
+Build
+    |
+    v
+
+Tests
+    |
+    v
+
+Deploy
+```
+
+---
+
+## Goals
+
+* Automated deployments
+* Reduced human error
+* Fast releases
+
+---
+
+# 16. Deployment Workflow
+
+## Development
+
+```text
+Feature Branch
+```
+
+---
+
+## Validation
+
+```text
+Pull Request
+```
+
+---
+
+## Merge
+
+```text
+Main Branch
+```
+
+---
+
+## Deployment
+
+```text
+Main Branch
+     |
+     v
+
+Production Deployment
+```
+
+---
+
+## Workflow Diagram
+
+```text
+Feature Branch
+      |
+      v
+
+Pull Request
+      |
+      v
+
+Review
+      |
+      v
+
+Merge
+      |
+      v
+
+Build
+      |
+      v
+
+Deploy
+```
+
+---
+
+# 17. Rollback Strategy
+
+## Frontend
+
+Rollback through:
+
+```text
+Vercel Deployment History
+```
+
+---
+
+## Backend
+
+Rollback through:
+
+```text
+Render Previous Deployment
+```
+
+---
+
+## Database
+
+Rollback through:
+
+```text
+Atlas Backup Restore
+```
+
+---
+
+## Rollback Trigger Conditions
+
+* Critical bug
+* Security issue
+* Data corruption
+* Service instability
+
+---
+
+# 18. Backup Strategy
+
+## MongoDB Atlas
+
+Frequency:
+
+```text
+Daily
+```
+
+---
+
+## Retention
+
+```text
+35 Days
+```
+
+---
+
+## Cloudinary
+
+Media assets remain stored independently.
+
+---
+
+## Backup Verification
+
+Monthly restore testing required.
+
+---
+
+# 19. Disaster Recovery Strategy
+
+## Recovery Objectives
+
+| Metric | Target       |
+| ------ | ------------ |
+| RPO    | < 15 Minutes |
+| RTO    | < 1 Hour     |
+
+---
+
+## Recovery Process
+
+```text
+Failure
+   |
+   v
+
+Detection
+   |
+   v
+
+Backup Validation
+   |
+   v
+
+Restore
+   |
+   v
+
+Verification
+```
+
+---
+
+## Scenarios Covered
+
+* Database failure
+* Infrastructure outage
+* Service corruption
+* Deployment failure
+
+---
+
+# 20. High Availability Considerations
+
+## Phase 1
+
+Managed services provide baseline availability.
+
+---
+
+## API
+
+Render automatically restarts failed instances.
+
+---
+
+## Database
+
+Atlas provides managed reliability.
+
+---
+
+## Frontend
+
+Vercel provides global CDN distribution.
+
+---
+
+## Future Enhancements
+
+```text
+Multi-Region Deployment
+Read Replicas
+Regional Failover
+```
+
+---
+
+# 21. Infrastructure Monitoring
+
+## Metrics
+
+Track:
+
+```text
+CPU Usage
+Memory Usage
+API Latency
+Error Rate
+Request Volume
+AI Cost
+Database Performance
+```
+
+---
+
+## Logs
+
+Collect:
+
+```text
+Application Logs
+Security Logs
+Audit Logs
+AI Logs
+```
+
+---
+
+## Alerts
+
+Trigger for:
+
+```text
+High Error Rates
+Service Downtime
+Database Issues
+High AI Costs
+```
+
+---
+
+# 22. Cost Optimization
+
+## Frontend
+
+Use Vercel CDN caching.
+
+---
+
+## Backend
+
+Scale only when necessary.
+
+---
+
+## AI Service
+
+Implement:
+
+```text
+AI Response Cache
+```
+
+to reduce provider costs.
+
+---
+
+## Database
+
+Optimize:
+
+* Indexes
+* Aggregations
+* Query efficiency
+
+---
+
+## Storage
+
+Use Cloudinary optimization features.
+
+---
+
+## Cost Reduction Strategy
+
+```text
+Caching
+    +
+Efficient Queries
+    +
+Managed Services
+```
+
+---
+
+# 23. Future Cloud Migration Strategy
+
+## Current Phase
+
+```text
+Vercel
+Render
+Atlas
+Cloudinary
+```
+
+---
+
+## Future Target
+
+```text
+AWS
+Azure
+GCP
+```
+
+---
+
+## Migration Path
+
+```text
+Managed Services
+        |
+        v
+
+Containerized Services
+        |
+        v
+
+Cloud Infrastructure
+```
+
+---
+
+## Future Architecture
+
+```text
+Docker
+    |
+    v
+
+Kubernetes
+    |
+    v
+
+Multi-Region Cloud
+```
+
+---
+
+## Migration Readiness Principles
+
+Current architecture already supports:
+
+* Stateless APIs
+* Service isolation
+* Environment separation
+* Independent deployments
+
+making future cloud migration low-risk.
+
+---
+
+# 24. Deployment Review Checklist
+
+## Infrastructure
+
+* [ ] Environment separation enforced
+* [ ] Managed services configured
+* [ ] Monitoring enabled
+
+---
+
+## Security
+
+* [ ] Secrets externalized
+* [ ] HTTPS enabled
+* [ ] Network restrictions configured
+
+---
+
+## Reliability
+
+* [ ] Backups enabled
+* [ ] Rollback process documented
+* [ ] Disaster recovery validated
+
+---
+
+## Performance
+
+* [ ] CDN enabled
+* [ ] Database indexes reviewed
+* [ ] AI cache enabled
+
+---
+
+## Operations
+
+* [ ] Alerts configured
+* [ ] Logs retained
+* [ ] Deployment workflow documented
+
+---
+
+# 25. Conclusion
+
+The Kaizen Deployment Architecture provides a production-ready deployment strategy built on Vercel, Render, MongoDB Atlas, and Cloudinary. By leveraging managed services, automated deployments, environment isolation, backup strategies, monitoring, and future cloud migration readiness, the platform can launch quickly, operate reliably, and scale efficiently while maintaining low operational overhead and strong security practices.
+
+
+// File: e:\Kaizen\docs\02_architecture\09_monitoring_architecture.md
+# Kaizen Monitoring Architecture
+
+**Document ID:** 09_monitoring_architecture.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Monitoring Architecture defines how the platform observes, measures, detects, and responds to operational issues across all services and environments.
+
+The monitoring strategy focuses on:
+
+* Reliability
+* Availability
+* Performance
+* Security
+* Cost control
+* Incident response
+* User experience
+
+Phase 1 monitoring is intentionally lightweight while remaining production-ready through the use of:
+
+* Sentry
+* UptimeRobot
+* Structured Logging
+
+The architecture is designed to evolve into a full observability platform as Kaizen scales.
+
+---
+
+# 2. Monitoring Goals
+
+## Reliability
+
+Detect failures before users report them.
+
+---
+
+## Availability
+
+Ensure critical services remain operational.
+
+---
+
+## Performance
+
+Identify latency bottlenecks quickly.
+
+---
+
+## Security
+
+Detect suspicious activity and abuse.
+
+---
+
+## Cost Management
+
+Monitor AI and infrastructure costs.
+
+---
+
+## Operational Visibility
+
+Provide actionable insights into system behavior.
+
+---
+
+# 3. Observability Strategy
+
+Kaizen follows the three pillars of observability.
+
+## Logs
+
+Provide event-level visibility.
+
+---
+
+## Metrics
+
+Provide quantitative measurements.
+
+---
+
+## Alerts
+
+Provide proactive notifications.
+
+---
+
+## Architecture
+
+```text id="zl63xw"
+Application
+     |
+     +--------+
+     |        |
+     v        v
+
+Logs     Metrics
+     \      /
+      \    /
+       \  /
+        \/
+      Alerts
+        |
+        v
+
+     Operators
+```
+
+---
+
+# 4. Logging Architecture
+
+## Logging Standard
+
+All services must use structured JSON logging.
+
+---
+
+## Logging Flow
+
+```text id="9m86hg"
+Application
+      |
+      v
+
+Structured Logger
+      |
+      v
+
+Log Output
+      |
+      v
+
+Monitoring Platform
+```
+
+---
+
+## Log Format
+
+Required fields:
+
+```text id="slk3ef"
+timestamp
+service
+environment
+level
+message
+requestId
+userId
+```
+
+---
+
+## Log Categories
+
+### Application Logs
+
+Business events.
+
+---
+
+### Security Logs
+
+Authentication and authorization events.
+
+---
+
+### Audit Logs
+
+User actions.
+
+---
+
+### AI Logs
+
+AI usage and costs.
+
+---
+
+## Sensitive Data Rules
+
+Never log:
+
+* Passwords
+* Access tokens
+* Refresh tokens
+* API keys
+* Personal health details
+
+---
+
+# 5. Log Levels
+
+## DEBUG
+
+Development troubleshooting.
+
+---
+
+## INFO
+
+Normal application events.
+
+Examples:
+
+```text id="1w6h0y"
+User Login
+Goal Created
+Meal Added
+```
+
+---
+
+## WARN
+
+Unexpected but recoverable events.
+
+Examples:
+
+```text id="a2yj6r"
+Retry Triggered
+Rate Limit Warning
+```
+
+---
+
+## ERROR
+
+Operation failed.
+
+Examples:
+
+```text id="x3smbt"
+Database Failure
+API Failure
+```
+
+---
+
+## FATAL
+
+Critical service failure.
+
+Examples:
+
+```text id="k2vksu"
+Application Crash
+Configuration Failure
+```
+
+---
+
+# 6. Metrics Architecture
+
+## Purpose
+
+Provide quantitative visibility into system behavior.
+
+---
+
+## Metrics Flow
+
+```text id="z04wsy"
+Application
+     |
+     v
+
+Metrics Collection
+     |
+     v
+
+Dashboards
+     |
+     v
+
+Alerts
+```
+
+---
+
+## Metrics Categories
+
+### Business Metrics
+
+User activity.
+
+---
+
+### Performance Metrics
+
+Response times.
+
+---
+
+### Infrastructure Metrics
+
+System resources.
+
+---
+
+### Security Metrics
+
+Authentication activity.
+
+---
+
+### AI Metrics
+
+Usage and cost.
+
+---
+
+# 7. Metrics Catalog
+
+## API Metrics
+
+| Metric        | Description         |
+| ------------- | ------------------- |
+| Request Count | Total requests      |
+| Success Rate  | Successful requests |
+| Error Rate    | Failed requests     |
+| Response Time | API latency         |
+| Throughput    | Requests/sec        |
+
+---
+
+## Database Metrics
+
+| Metric           | Description        |
+| ---------------- | ------------------ |
+| Query Count      | Database activity  |
+| Query Latency    | Query performance  |
+| Connection Count | Active connections |
+| Error Count      | Database errors    |
+
+---
+
+## Authentication Metrics
+
+| Metric              | Description       |
+| ------------------- | ----------------- |
+| Login Success       | Successful logins |
+| Login Failures      | Failed logins     |
+| Refresh Requests    | Token refreshes   |
+| Session Revocations | Logout activity   |
+
+---
+
+## AI Metrics
+
+| Metric           | Description         |
+| ---------------- | ------------------- |
+| AI Requests      | Total requests      |
+| Success Rate     | AI success rate     |
+| Cost Per Request | Cost tracking       |
+| Token Usage      | Provider tokens     |
+| Cache Hit Rate   | Cache effectiveness |
+
+---
+
+## Security Metrics
+
+| Metric                 | Description       |
+| ---------------------- | ----------------- |
+| Rate Limit Violations  | Abuse attempts    |
+| Authorization Failures | Access violations |
+| Suspicious Activity    | Security events   |
+
+---
+
+# 8. Alerting Architecture
+
+## Purpose
+
+Notify operators before users are affected.
+
+---
+
+## Architecture
+
+```text id="e1pjjw"
+Metric
+   |
+   v
+
+Threshold
+   |
+   v
+
+Alert
+   |
+   v
+
+Investigation
+```
+
+---
+
+## Alert Sources
+
+* API Metrics
+* Database Metrics
+* Authentication Metrics
+* Security Metrics
+* AI Metrics
+
+---
+
+# 9. Alert Severity Matrix
+
+| Severity | Description       | Response     |
+| -------- | ----------------- | ------------ |
+| P1       | Critical Outage   | Immediate    |
+| P2       | Major Degradation | < 30 Minutes |
+| P3       | Minor Issue       | Same Day     |
+| P4       | Informational     | Review Later |
+
+---
+
+## Examples
+
+### P1
+
+```text id="lk7cxa"
+API Down
+Database Unavailable
+```
+
+---
+
+### P2
+
+```text id="ibvqun"
+High Error Rate
+AI Service Failure
+```
+
+---
+
+### P3
+
+```text id="d6wklg"
+Increased Latency
+Failed Deployment
+```
+
+---
+
+### P4
+
+```text id="a3drf0"
+Configuration Warning
+```
+
+---
+
+# 10. Health Check Strategy
+
+## Purpose
+
+Verify service availability.
+
+---
+
+## Health Endpoints
+
+### API
+
+```text id="h4mcdp"
+/health
+```
+
+---
+
+### AI Service
+
+```text id="8rjvje"
+/health
+```
+
+---
+
+## Health Response
+
+```json id="gq9sdy"
+{
+  "status": "healthy"
+}
+```
+
+---
+
+## Checks Performed
+
+* Application startup
+* Database connectivity
+* Service availability
+
+---
+
+# 11. API Monitoring
+
+## Monitored Metrics
+
+```text id="1npob4"
+Request Volume
+Error Rate
+Latency
+Availability
+```
+
+---
+
+## Monitoring Tools
+
+### Sentry
+
+Captures:
+
+* Exceptions
+* Stack traces
+* Performance issues
+
+---
+
+### UptimeRobot
+
+Monitors:
+
+* API uptime
+* Availability
+
+---
+
+# 12. Database Monitoring
+
+## Monitored Metrics
+
+```text id="1w57g0"
+Query Latency
+Connection Count
+Error Rate
+Storage Usage
+```
+
+---
+
+## Alert Conditions
+
+### P1
+
+Database unavailable.
+
+---
+
+### P2
+
+Latency exceeds threshold.
+
+---
+
+# 13. AI Service Monitoring
+
+## Monitored Metrics
+
+```text id="e6tjsr"
+Request Count
+Error Rate
+Latency
+Token Usage
+Cost
+Cache Hits
+Cache Misses
+```
+
+---
+
+## Cost Monitoring
+
+Track:
+
+```text id="m0g0f5"
+Daily Cost
+Weekly Cost
+Monthly Cost
+```
+
+---
+
+## Alert Conditions
+
+### P2
+
+AI service unavailable.
+
+---
+
+### P3
+
+Cache hit rate drops significantly.
+
+---
+
+# 14. Authentication Monitoring
+
+## Metrics
+
+Track:
+
+```text id="50k3ny"
+Login Success
+Login Failure
+Token Refresh
+Logout
+Logout All Devices
+```
+
+---
+
+## Security Indicators
+
+### High Failure Rate
+
+May indicate:
+
+```text id="3vxx0n"
+Credential Stuffing
+Brute Force Attack
+```
+
+---
+
+### High Refresh Activity
+
+May indicate:
+
+```text id="qehwfo"
+Session Abuse
+```
+
+---
+
+# 15. Security Monitoring
+
+## Monitored Events
+
+* Failed logins
+* Authorization failures
+* Rate limit violations
+* Suspicious API activity
+
+---
+
+## Security Monitoring Flow
+
+```text id="gjyqrb"
+Security Event
+      |
+      v
+
+Structured Log
+      |
+      v
+
+Alert
+      |
+      v
+
+Investigation
+```
+
+---
+
+# 16. Cost Monitoring
+
+## Infrastructure Costs
+
+Track:
+
+```text id="vf78z7"
+Render
+Vercel
+Atlas
+Cloudinary
+```
+
+---
+
+## AI Costs
+
+Track:
+
+```text id="uqfwdh"
+OpenAI Usage
+Token Consumption
+```
+
+---
+
+## Cost Threshold Alerts
+
+### Monthly Budget Warning
+
+```text id="h2wk0h"
+80%
+```
+
+---
+
+### Critical Budget Warning
+
+```text id="z8t0pn"
+95%
+```
+
+---
+
+# 17. Dashboard Design
+
+## Executive Dashboard
+
+Displays:
+
+* Active Users
+* API Availability
+* AI Costs
+* Error Rates
+
+---
+
+## Operational Dashboard
+
+Displays:
+
+* Service Health
+* Request Volume
+* Latency
+* Incidents
+
+---
+
+## Security Dashboard
+
+Displays:
+
+* Failed Logins
+* Abuse Attempts
+* Rate Limits
+
+---
+
+## AI Dashboard
+
+Displays:
+
+* Token Usage
+* Cost Trends
+* Cache Metrics
+
+---
+
+# 18. Incident Detection
+
+## Automatic Detection
+
+Triggered through:
+
+* Alerts
+* Health checks
+* Error thresholds
+
+---
+
+## Detection Flow
+
+```text id="jw1cb3"
+Issue
+  |
+  v
+
+Metric Spike
+  |
+  v
+
+Alert
+  |
+  v
+
+Investigation
+```
+
+---
+
+# 19. Incident Escalation
+
+## P1 Escalation
+
+```text id="0rq6uw"
+Immediate Response
+```
+
+---
+
+## P2 Escalation
+
+```text id="uj3cr9"
+Within 30 Minutes
+```
+
+---
+
+## P3 Escalation
+
+```text id="jv0w88"
+Same Business Day
+```
+
+---
+
+## Escalation Flow
+
+```text id="6e5pmf"
+Alert
+  |
+  v
+
+Investigation
+  |
+  v
+
+Escalation
+  |
+  v
+
+Resolution
+```
+
+---
+
+# 20. Log Retention Policy
+
+## Development
+
+Retention:
+
+```text id="vz84ms"
+7 Days
+```
+
+---
+
+## Staging
+
+Retention:
+
+```text id="t8twvn"
+14 Days
+```
+
+---
+
+## Production
+
+Retention:
+
+```text id="i90w1v"
+90 Days
+```
+
+---
+
+## Audit Logs
+
+Retention:
+
+```text id="e7sh3j"
+1 Year
+```
+
+---
+
+## Security Logs
+
+Retention:
+
+```text id="1o2ts8"
+1 Year
+```
+
+---
+
+# 21. Monitoring Checklist
+
+## Logging
+
+* [ ] Structured logging enabled
+* [ ] Log levels configured
+* [ ] Sensitive data excluded
+
+---
+
+## Metrics
+
+* [ ] API metrics collected
+* [ ] Database metrics collected
+* [ ] AI metrics collected
+
+---
+
+## Alerting
+
+* [ ] Critical alerts configured
+* [ ] Severity matrix defined
+
+---
+
+## Availability
+
+* [ ] Health checks enabled
+* [ ] Uptime monitoring enabled
+
+---
+
+## Security
+
+* [ ] Authentication monitoring enabled
+* [ ] Audit logs enabled
+
+---
+
+## Cost
+
+* [ ] AI cost tracking enabled
+* [ ] Infrastructure cost monitoring enabled
+
+---
+
+# 22. Future Monitoring Roadmap
+
+## Phase 2
+
+* Centralized log aggregation
+* Advanced dashboards
+
+---
+
+## Phase 3
+
+* Distributed tracing
+* OpenTelemetry integration
+
+---
+
+## Phase 4
+
+* Predictive alerting
+* Anomaly detection
+
+---
+
+## Phase 5
+
+* Full observability platform
+* AI-assisted incident analysis
+
+---
+
+# 23. Tool Responsibilities
+
+## Sentry
+
+Responsible for:
+
+* Exception tracking
+* Performance monitoring
+* Error aggregation
+
+---
+
+## UptimeRobot
+
+Responsible for:
+
+* Uptime checks
+* Availability monitoring
+* Outage alerts
+
+---
+
+## Structured Logging
+
+Responsible for:
+
+* Audit logs
+* Security logs
+* Operational visibility
+
+---
+
+# 24. Conclusion
+
+The Kaizen Monitoring Architecture establishes a production-ready observability foundation using Sentry, UptimeRobot, and structured logging. Through comprehensive logging, metrics collection, alerting, health monitoring, security visibility, and cost tracking, the platform can proactively detect issues, respond rapidly to incidents, maintain service reliability, and scale its monitoring capabilities as the system grows.
+
+
+// File: e:\Kaizen\docs\02_architecture\10_scalability_architecture.md
+# Kaizen Scalability Architecture
+
+**Document ID:** 10_scalability_architecture.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Scalability Architecture defines how the platform will handle increasing user growth, application load, AI workloads, data volume, and infrastructure demands while maintaining performance, reliability, and cost efficiency.
+
+The architecture is intentionally designed to start simple while providing a clear migration path toward large-scale deployment.
+
+Growth targets:
+
+```text
+Phase 1 → 10,000 Active Users
+Phase 2 → 100,000 Active Users
+Phase 3 → 1,000,000 Active Users
+```
+
+The architecture prioritizes:
+
+* Stateless services
+* Independent scaling
+* Managed infrastructure
+* Service isolation
+* Future event-driven architecture
+* Future cloud-native deployment
+
+---
+
+# 2. Scalability Goals
+
+## Primary Goals
+
+### Support Growth
+
+Scale without major rewrites.
+
+---
+
+### Maintain Performance
+
+Maintain acceptable response times under increasing load.
+
+---
+
+### Cost Efficiency
+
+Avoid over-engineering during early phases.
+
+---
+
+### Service Isolation
+
+Scale individual services independently.
+
+---
+
+### Future Cloud Readiness
+
+Support migration to enterprise-grade infrastructure.
+
+---
+
+# 3. Current Capacity Targets
+
+## Phase 1
+
+Target:
+
+```text
+10,000 Active Users
+```
+
+Expected characteristics:
+
+| Metric             | Target    |
+| ------------------ | --------- |
+| Daily Active Users | 10,000    |
+| API Requests/Day   | 500,000+  |
+| Meal Logs/Day      | 50,000+   |
+| AI Requests/Day    | 10,000+   |
+| Concurrent Users   | 500–1,000 |
+
+---
+
+## Phase 2
+
+Target:
+
+```text
+100,000 Active Users
+```
+
+---
+
+## Phase 3
+
+Target:
+
+```text
+1,000,000 Active Users
+```
+
+---
+
+# 4. Scalability Evolution Roadmap
+
+```text
+10K Users
+    |
+    v
+
+Horizontal Scaling
+    |
+    v
+
+100K Users
+    |
+    v
+
+Redis + Queue Layer
+    |
+    v
+
+Event Architecture
+    |
+    v
+
+1M Users
+    |
+    v
+
+Kubernetes
+```
+
+---
+
+# 5. Horizontal Scaling Strategy
+
+## Definition
+
+Increase capacity by adding more service instances.
+
+---
+
+## API Scaling
+
+```text
+API Instance 1
+API Instance 2
+API Instance 3
+```
+
+---
+
+## Benefits
+
+* Fault isolation
+* Better availability
+* Improved performance
+
+---
+
+## Requirement
+
+All services must remain stateless.
+
+---
+
+## Stateless Service Diagram
+
+```text
+User
+  |
+  v
+
+Load Balancer
+      |
+      +------+
+      |      |
+      v      v
+
+   API1    API2
+      |
+      v
+
+   Database
+```
+
+---
+
+# 6. Vertical Scaling Strategy
+
+## Definition
+
+Increase resources of existing servers.
+
+Examples:
+
+```text
+More CPU
+More RAM
+More Storage
+```
+
+---
+
+## Phase 1 Usage
+
+Primary scaling strategy.
+
+Used for:
+
+* API Service
+* AI Service
+
+---
+
+## Advantages
+
+* Simplicity
+* Fast upgrades
+
+---
+
+## Limitations
+
+* Hardware limits
+* Single-node dependency
+
+---
+
+# 7. API Scaling
+
+## Current Architecture
+
+```text
+Render API Instance
+```
+
+---
+
+## Scaling Path
+
+### Phase 1
+
+```text
+Single API Instance
+```
+
+---
+
+### Phase 2
+
+```text
+Multiple API Instances
+```
+
+---
+
+### Phase 3
+
+```text
+Containerized API Cluster
+```
+
+---
+
+## Requirements
+
+### Stateless APIs
+
+No session state stored in memory.
+
+---
+
+### Shared Authentication
+
+Use JWT and refresh tokens.
+
+---
+
+## API Scaling Diagram
+
+```text
+Clients
+   |
+   v
+
+Load Balancer
+      |
+      +---------+
+      |         |
+      v         v
+
+API #1     API #2
+      |
+      v
+
+MongoDB
+```
+
+---
+
+# 8. Database Scaling
+
+## Current Strategy
+
+MongoDB Atlas
+
+---
+
+## Phase 1
+
+```text
+Single Atlas Cluster
+```
+
+Supports:
+
+```text
+10,000 Active Users
+```
+
+---
+
+## Phase 2
+
+Add:
+
+```text
+Read Replicas
+```
+
+Benefits:
+
+* Reporting scalability
+* Analytics scalability
+
+---
+
+## Phase 3
+
+Implement:
+
+```text
+Sharding
+```
+
+Shard key:
+
+```text
+userId
+```
+
+---
+
+## Database Scaling Diagram
+
+```text
+Application
+      |
+      v
+
+Primary Cluster
+      |
+      +--------+
+      |        |
+      v        v
+
+Replica   Replica
+```
+
+---
+
+# 9. AI Service Scaling
+
+## Current Architecture
+
+Dedicated AI Service.
+
+---
+
+## Advantages
+
+AI load never impacts core APIs.
+
+---
+
+## Scaling Path
+
+### Phase 1
+
+```text
+Single AI Instance
+```
+
+---
+
+### Phase 2
+
+```text
+Multiple AI Instances
+```
+
+---
+
+### Phase 3
+
+```text
+AI Worker Pool
+```
+
+---
+
+## AI Scaling Diagram
+
+```text
+Backend API
+      |
+      v
+
+AI Load Balancer
+      |
+      +--------+
+      |        |
+      v        v
+
+AI #1     AI #2
+      |
+      v
+
+OpenAI
+```
+
+---
+
+# 10. Caching Strategy
+
+## Phase 1
+
+AI Response Cache.
+
+---
+
+## Cached Features
+
+### Weekly Reports
+
+TTL:
+
+```text
+24 Hours
+```
+
+---
+
+### Monthly Reports
+
+TTL:
+
+```text
+24 Hours
+```
+
+---
+
+### Insights
+
+TTL:
+
+```text
+12 Hours
+```
+
+---
+
+### Recommendations
+
+TTL:
+
+```text
+6 Hours
+```
+
+---
+
+## Cache Flow
+
+```text
+Request
+   |
+   v
+
+Cache Check
+   |
+   +---- HIT
+   |
+   +---- MISS
+           |
+           v
+
+         AI
+```
+
+---
+
+## Benefits
+
+* Lower latency
+* Reduced AI costs
+* Lower infrastructure load
+
+---
+
+# 11. Queue Architecture
+
+## Phase 1
+
+No dedicated queue.
+
+Synchronous processing only.
+
+---
+
+## Future Queue Layer
+
+```text
+API
+ |
+ v
+
+Queue
+ |
+ v
+
+Workers
+```
+
+---
+
+## Use Cases
+
+* Report generation
+* Notifications
+* Analytics
+* AI processing
+
+---
+
+# 12. Background Jobs
+
+## Current State
+
+Minimal background processing.
+
+---
+
+## Future Jobs
+
+### Daily Statistics
+
+```text
+User Aggregations
+```
+
+---
+
+### Report Generation
+
+```text
+Weekly Reports
+Monthly Reports
+```
+
+---
+
+### Notification Processing
+
+```text
+Reminder Generation
+```
+
+---
+
+## Future Architecture
+
+```text
+Scheduler
+     |
+     v
+
+Worker
+     |
+     v
+
+Database
+```
+
+---
+
+# 13. CDN Strategy
+
+## Current Provider
+
+Vercel CDN
+
+---
+
+## Responsibilities
+
+* Static assets
+* JavaScript bundles
+* CSS files
+* Images
+
+---
+
+## Benefits
+
+* Faster load times
+* Lower backend traffic
+
+---
+
+## CDN Architecture
+
+```text
+User
+  |
+  v
+
+CDN
+  |
+  v
+
+Frontend Assets
+```
+
+---
+
+# 14. Future Redis Integration
+
+## Trigger
+
+Around:
+
+```text
+100,000 Users
+```
+
+---
+
+## Redis Responsibilities
+
+### API Caching
+
+```text
+Dashboard Data
+```
+
+---
+
+### Session Caching
+
+```text
+Temporary Session Data
+```
+
+---
+
+### Rate Limiting
+
+```text
+Distributed Limits
+```
+
+---
+
+### AI Caching
+
+```text
+Recommendations
+Reports
+Insights
+```
+
+---
+
+## Architecture
+
+```text
+API
+ |
+ +------+
+ |      |
+ v      v
+
+Redis  MongoDB
+```
+
+---
+
+# 15. Future Message Queue Integration
+
+## Trigger
+
+Around:
+
+```text
+100,000+ Users
+```
+
+---
+
+## Candidate Technologies
+
+```text
+BullMQ
+RabbitMQ
+SQS
+```
+
+---
+
+## Responsibilities
+
+* Notifications
+* Report generation
+* AI tasks
+* Analytics
+
+---
+
+## Architecture
+
+```text
+API
+ |
+ v
+
+Queue
+ |
+ v
+
+Workers
+```
+
+---
+
+# 16. Future Event-Driven Architecture
+
+## Trigger
+
+Around:
+
+```text
+1,000,000 Users
+```
+
+---
+
+## Event Examples
+
+### Meal Logged
+
+```text
+MealCreated
+```
+
+---
+
+### Goal Updated
+
+```text
+GoalUpdated
+```
+
+---
+
+### Achievement Earned
+
+```text
+AchievementUnlocked
+```
+
+---
+
+## Event Architecture
+
+```text
+Producer
+    |
+    v
+
+Event Bus
+    |
+    +--------+
+    |        |
+    v        v
+
+Analytics
+Notifications
+```
+
+---
+
+## Benefits
+
+* Decoupling
+* Scalability
+* Reliability
+
+---
+
+# 17. Future Kubernetes Migration
+
+## Current State
+
+Managed Services.
+
+---
+
+## Trigger
+
+Around:
+
+```text
+1,000,000 Users
+```
+
+---
+
+## Future Architecture
+
+```text
+Docker
+    |
+    v
+
+Kubernetes
+    |
+    +------+
+    |      |
+    v      v
+
+API Pods
+AI Pods
+```
+
+---
+
+## Benefits
+
+* Auto-scaling
+* Self-healing
+* High availability
+
+---
+
+# 18. Bottleneck Analysis
+
+## Phase 1
+
+### Potential Bottlenecks
+
+#### Database Queries
+
+Mitigation:
+
+```text
+Indexes
+```
+
+---
+
+#### AI Requests
+
+Mitigation:
+
+```text
+Caching
+Rate Limiting
+```
+
+---
+
+#### Large Reports
+
+Mitigation:
+
+```text
+Pre-Generated Reports
+```
+
+---
+
+## Phase 2
+
+### Potential Bottlenecks
+
+#### Analytics
+
+Mitigation:
+
+```text
+Read Replicas
+Redis
+```
+
+---
+
+#### Notification Processing
+
+Mitigation:
+
+```text
+Message Queue
+```
+
+---
+
+## Phase 3
+
+### Potential Bottlenecks
+
+#### Event Processing
+
+Mitigation:
+
+```text
+Event Bus
+```
+
+---
+
+#### Global Traffic
+
+Mitigation:
+
+```text
+Multi-Region Deployment
+```
+
+---
+
+# 19. Capacity Planning
+
+## 10,000 Users
+
+Infrastructure:
+
+```text
+Vercel
+Render
+Atlas
+Cloudinary
+```
+
+Sufficient.
+
+---
+
+## 100,000 Users
+
+Add:
+
+```text
+Redis
+Read Replicas
+Worker Services
+```
+
+---
+
+## 1,000,000 Users
+
+Add:
+
+```text
+Kubernetes
+Event Bus
+Queue Infrastructure
+Regional Deployment
+```
+
+---
+
+## Growth Roadmap
+
+```text
+10K Users
+ |
+ v
+
+Managed Services
+ |
+ v
+
+100K Users
+ |
+ v
+
+Redis + Queue Layer
+ |
+ v
+
+1M Users
+ |
+ v
+
+Kubernetes + Events
+```
+
+---
+
+# 20. Scalability Review Checklist
+
+## Application
+
+* [ ] APIs remain stateless
+* [ ] AI service isolated
+* [ ] Shared contracts maintained
+
+---
+
+## Database
+
+* [ ] Indexes reviewed
+* [ ] Query performance measured
+* [ ] Aggregations optimized
+
+---
+
+## AI
+
+* [ ] Cache enabled
+* [ ] Rate limiting enabled
+* [ ] Cost monitored
+
+---
+
+## Infrastructure
+
+* [ ] CDN enabled
+* [ ] Monitoring configured
+* [ ] Scaling plan documented
+
+---
+
+## Future Readiness
+
+* [ ] Redis migration path defined
+* [ ] Queue strategy defined
+* [ ] Kubernetes path documented
+
+---
+
+# 21. Scalability Decision Matrix
+
+| Users | Architecture Stage         |
+| ----- | -------------------------- |
+| 10K   | Current Architecture       |
+| 50K   | Optimized Managed Services |
+| 100K  | Redis + Workers            |
+| 250K  | Queue Infrastructure       |
+| 500K  | Event-Driven Components    |
+| 1M+   | Kubernetes Platform        |
+
+---
+
+# 22. Conclusion
+
+The Kaizen Scalability Architecture provides a practical growth path from 10,000 active users to 1,000,000+ users without requiring major rewrites. By emphasizing stateless services, independent AI scaling, efficient database design, caching, and managed infrastructure in Phase 1, the platform remains simple and cost-effective today while preserving clear migration paths toward Redis, message queues, event-driven systems, Kubernetes, and large-scale cloud-native deployment in the future.
+
+
+// File: e:\Kaizen\docs\02_architecture\11_cross_platform_architecture.md
+# Kaizen Cross-Platform Architecture
+
+**Document ID:** 11_cross_platform_architecture.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Cross-Platform Architecture defines how the platform delivers a consistent user experience across Web, Mobile, and Desktop applications while maximizing code reuse, maintaining platform independence, and minimizing maintenance overhead.
+
+The architecture leverages a shared TypeScript ecosystem and common package strategy to ensure that business contracts, validation rules, and utility functions are reused consistently across all clients.
+
+Primary goals:
+
+* Maximize code reuse
+* Minimize duplication
+* Maintain platform independence
+* Ensure API consistency
+* Reduce maintenance effort
+* Support future platform expansion
+
+The architecture supports:
+
+* Web (Phase 1)
+* Android Mobile (Phase 1)
+* Windows Desktop (Phase 1)
+* iOS (Future)
+* macOS (Future)
+
+---
+
+# 2. Platform Strategy
+
+## Architectural Approach
+
+Kaizen follows a shared-contract architecture.
+
+Business logic remains centralized within backend services.
+
+Clients focus exclusively on:
+
+* Presentation
+* User interaction
+* State management
+* API communication
+
+---
+
+## Platform Landscape
+
+```text id="j3pv2y"
+                     +----------------+
+                     |  Shared APIs   |
+                     +-------+--------+
+                             |
+      +----------------------+----------------------+
+      |                      |                      |
+      v                      v                      v
+
++-------------+      +-------------+      +-------------+
+|     Web     |      |   Mobile    |      |   Desktop   |
+|   React     |      | React Native|      | Electron    |
++-------------+      +-------------+      +-------------+
+```
+
+---
+
+## Core Principle
+
+The backend remains the single source of truth.
+
+No client application may implement independent business rules.
+
+---
+
+# 3. Repository Architecture
+
+## Approved Repository Structure
+
+```text id="4tmv2z"
+apps/
+├─ web
+├─ mobile
+├─ desktop
+
+services/
+├─ api
+└─ ai
+
+packages/
+├─ shared-types
+├─ shared-validation
+├─ shared-utils
+
+docs/
+```
+
+---
+
+## Repository Responsibilities
+
+### apps
+
+Contains all user-facing applications.
+
+---
+
+### services
+
+Contains backend services.
+
+---
+
+### packages
+
+Contains reusable platform-independent code.
+
+---
+
+### docs
+
+Contains architecture documentation.
+
+---
+
+# 4. Web Architecture
+
+## Platform
+
+```text id="h0o1e3"
+React
+TypeScript
+Vite
+TailwindCSS
+```
+
+---
+
+## Responsibilities
+
+* Dashboard
+* Analytics
+* Reports
+* Goal Management
+* User Settings
+* Authentication
+
+---
+
+## Architecture Diagram
+
+```text id="ejj5nl"
+React UI
+    |
+    v
+
+State Layer
+    |
+    v
+
+API Layer
+    |
+    v
+
+Backend API
+```
+
+---
+
+## Characteristics
+
+* Fast loading
+* SEO-ready future path
+* Responsive design
+* Desktop-first experience
+
+---
+
+# 5. Mobile Architecture
+
+## Platform
+
+```text id="p1jlwm"
+React Native
+Expo
+TypeScript
+```
+
+---
+
+## Responsibilities
+
+* Meal logging
+* Water tracking
+* Weight tracking
+* Daily activity
+* Notifications
+
+---
+
+## Architecture Diagram
+
+```text id="7x8l1x"
+Mobile UI
+     |
+     v
+
+State Layer
+     |
+     v
+
+API Layer
+     |
+     v
+
+Backend API
+```
+
+---
+
+## Characteristics
+
+* Touch-first design
+* Offline-ready future path
+* Native device integrations
+
+---
+
+# 6. Desktop Architecture
+
+## Platform
+
+```text id="2w2qvg"
+Electron
+React
+TypeScript
+```
+
+---
+
+## Responsibilities
+
+* Advanced analytics
+* Reporting
+* Administrative workflows
+* Large-screen experiences
+
+---
+
+## Architecture Diagram
+
+```text id="zq2zbt"
+Electron Shell
+      |
+      v
+
+React UI
+      |
+      v
+
+Backend API
+```
+
+---
+
+## Characteristics
+
+* Native desktop experience
+* Reuse of web components
+* Future offline capabilities
+
+---
+
+# 7. Shared Package Strategy
+
+## Purpose
+
+Centralize reusable code.
+
+---
+
+## Package Diagram
+
+```text id="1ib9ry"
+apps/web
+apps/mobile
+apps/desktop
+      |
+      v
+
++----------------------+
+|   Shared Packages    |
++----------------------+
+| shared-types         |
+| shared-validation    |
+| shared-utils         |
++----------------------+
+```
+
+---
+
+## Rules
+
+Shared packages must remain:
+
+* Platform independent
+* Framework independent
+* UI independent
+
+---
+
+# 8. Shared Types Strategy
+
+## Package
+
+```text id="lz7icm"
+packages/shared-types
+```
+
+---
+
+## Responsibilities
+
+Store:
+
+* DTOs
+* Interfaces
+* Enums
+* API contracts
+
+---
+
+## Example Categories
+
+```text id="jlwm6k"
+User Types
+Goal Types
+Meal Types
+Report Types
+Achievement Types
+```
+
+---
+
+## Benefits
+
+* Type consistency
+* Safer refactoring
+* Better developer experience
+
+---
+
+# 9. Shared Validation Strategy
+
+## Package
+
+```text id="a8jlwm"
+packages/shared-validation
+```
+
+---
+
+## Technology
+
+```text id="6f8y0s"
+Zod
+```
+
+---
+
+## Responsibilities
+
+Store:
+
+* Request validation
+* Form validation
+* Shared schemas
+
+---
+
+## Architecture
+
+```text id="zqvjlwm"
+Shared Schema
+      |
+      +------+
+      |      |
+      v      v
+
+Frontend Backend
+```
+
+---
+
+## Benefits
+
+* Validation consistency
+* Reduced duplication
+* Shared business contracts
+
+---
+
+# 10. Shared Utilities Strategy
+
+## Package
+
+```text id="4dzp0t"
+packages/shared-utils
+```
+
+---
+
+## Responsibilities
+
+Store reusable helper functions.
+
+---
+
+## Example Categories
+
+```text id="4cfhnh"
+Date Utilities
+Formatting Utilities
+Calculation Helpers
+Constants
+```
+
+---
+
+## Rules
+
+Utilities must:
+
+* Be pure functions
+* Be platform independent
+* Have no UI dependencies
+
+---
+
+# 11. Code Sharing Rules
+
+## Allowed In Shared Packages
+
+### shared-types
+
+```text id="m8e6cf"
+Interfaces
+Enums
+DTOs
+```
+
+---
+
+### shared-validation
+
+```text id="sppv3u"
+Zod Schemas
+Validation Helpers
+```
+
+---
+
+### shared-utils
+
+```text id="8s8gmh"
+Pure Functions
+Constants
+Helpers
+```
+
+---
+
+## Forbidden In Shared Packages
+
+### UI Components
+
+```text id="mjlwm9"
+Not Allowed
+```
+
+---
+
+### React Hooks
+
+```text id="psbaxh"
+Not Allowed
+```
+
+---
+
+### Platform APIs
+
+```text id="ewaqrx"
+Not Allowed
+```
+
+---
+
+### Business Logic
+
+```text id="x5vjlwm"
+Not Allowed
+```
+
+Business logic belongs in services.
+
+---
+
+# 12. Platform-Specific Rules
+
+## Web
+
+May use:
+
+* Browser APIs
+* Local storage
+* Responsive layouts
+
+---
+
+## Mobile
+
+May use:
+
+* Camera
+* Notifications
+* Device storage
+* Sensors
+
+---
+
+## Desktop
+
+May use:
+
+* File system access
+* Native OS integrations
+* Desktop notifications
+
+---
+
+## Isolation Rule
+
+Platform-specific code must never be placed inside shared packages.
+
+---
+
+# 13. Platform Communication Strategy
+
+## Communication Model
+
+All clients communicate through:
+
+```text id="mjlwm2"
+Backend API
+```
+
+---
+
+## Architecture
+
+```text id="f5fd79"
+Web
+  |
+Mobile
+  |
+Desktop
+  |
+  v
+
+Backend API
+  |
+  v
+
+Database
+```
+
+---
+
+## Rules
+
+Clients must never:
+
+* Access MongoDB directly
+* Access AI services directly
+* Share data peer-to-peer
+
+---
+
+# 14. Synchronization Strategy
+
+## Source of Truth
+
+Backend API.
+
+---
+
+## Synchronization Flow
+
+```text id="3lh0sp"
+Client
+   |
+   v
+
+API Request
+   |
+   v
+
+Database
+   |
+   v
+
+Response
+```
+
+---
+
+## Benefits
+
+* Data consistency
+* Simplified architecture
+* Easier debugging
+
+---
+
+## Future Enhancements
+
+* Offline synchronization
+* Background sync
+* Conflict resolution
+
+---
+
+# 15. Version Compatibility Strategy
+
+## Version Alignment
+
+All clients must support:
+
+```text id="mf7joh"
+Current API Version
+```
+
+---
+
+## API Versioning
+
+```text id="lg6gkv"
+/api/v1
+```
+
+---
+
+## Compatibility Rules
+
+### Breaking Changes
+
+Require:
+
+```text id="tjlwm7"
+New API Version
+```
+
+---
+
+### Non-Breaking Changes
+
+May remain within current version.
+
+---
+
+## Client Upgrade Strategy
+
+```text id="4jlwm0"
+API v1
+   |
+   +---- Web
+   |
+   +---- Mobile
+   |
+   +---- Desktop
+```
+
+---
+
+# 16. Future Platform Expansion Strategy
+
+## Future Mobile Expansion
+
+### iOS
+
+```text id="wjlwm4"
+React Native
+```
+
+---
+
+## Future Desktop Expansion
+
+### macOS
+
+```text id="sjlwm5"
+Electron
+```
+
+---
+
+## Future Platforms
+
+Potential additions:
+
+```text id="rjlwm1"
+Smart Watches
+TV Applications
+Wearables
+```
+
+---
+
+## Expansion Architecture
+
+```text id="2vjlwm8"
+Backend API
+     |
+     +---------+
+     |         |
+     v         v
+
+Current   Future Platforms
+```
+
+---
+
+# 17. Cross-Platform Development Workflow
+
+## Shared Change Flow
+
+```text id="jlwm10"
+Shared Types
+      |
+      v
+
+Shared Validation
+      |
+      v
+
+Client Update
+      |
+      v
+
+Deployment
+```
+
+---
+
+## Benefits
+
+* Reduced duplication
+* Faster delivery
+* Lower maintenance
+
+---
+
+# 18. Dependency Management Strategy
+
+## Dependency Rules
+
+Applications own platform-specific dependencies.
+
+---
+
+## Shared Packages
+
+Must have minimal dependencies.
+
+---
+
+## Goal
+
+Prevent dependency conflicts across applications.
+
+---
+
+# 19. Cross-Platform Review Checklist
+
+## Shared Packages
+
+* [ ] Types centralized
+* [ ] Validation centralized
+* [ ] Utilities centralized
+
+---
+
+## Platform Isolation
+
+* [ ] No platform-specific code in shared packages
+* [ ] No UI components in shared packages
+
+---
+
+## Communication
+
+* [ ] API-first architecture maintained
+* [ ] No direct database access
+
+---
+
+## Maintainability
+
+* [ ] Shared contracts documented
+* [ ] Package boundaries respected
+
+---
+
+## Future Readiness
+
+* [ ] iOS compatibility maintained
+* [ ] macOS compatibility maintained
+
+---
+
+# 20. Architecture Benefits
+
+## Development Benefits
+
+* Faster feature delivery
+* Reduced duplication
+* Easier onboarding
+
+---
+
+## Operational Benefits
+
+* Consistent behavior
+* Easier maintenance
+* Reduced bugs
+
+---
+
+## Scalability Benefits
+
+* Easier platform expansion
+* Shared contract management
+* Independent deployment capability
+
+---
+
+# 21. Conclusion
+
+The Kaizen Cross-Platform Architecture provides a structured approach for supporting Web, Mobile, and Desktop applications through a shared-contract model built around TypeScript, reusable packages, and API-first communication. By enforcing strict package boundaries, centralized validation, shared typing, and platform isolation, the architecture maximizes code reuse while maintaining flexibility for future expansion to iOS, macOS, wearables, and additional platforms without significant architectural changes.
+
+
+// File: e:\Kaizen\docs\02_architecture\12_folder_structure.md
+# Kaizen Repository Folder Structure
+
+**Document ID:** 12_folder_structure.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+This document defines the official repository structure for the Kaizen platform.
+
+This document is the **single source of truth** for:
+
+* Developers
+* Architects
+* AI Coding Agents
+* Future Contributors
+
+All implementation work must follow this structure.
+
+Any deviation requires architectural review.
+
+---
+
+# 2. Repository Design Principles
+
+## Principles
+
+### Feature-Based Organization
+
+Business features own their implementation.
+
+---
+
+### Clear Ownership
+
+Every folder has a single responsibility.
+
+---
+
+### Separation of Concerns
+
+Applications, services, shared packages, and documentation remain isolated.
+
+---
+
+### AI Agent Friendly
+
+Structure is designed to minimize ambiguity and maximize maintainability.
+
+---
+
+# 3. Monorepo Structure
+
+## Approved Repository Layout
+
+```text
+kaizen/
+
+├── apps/
+│
+├── services/
+│
+├── packages/
+│
+├── docs/
+│
+├── .github/
+│
+├── package.json
+├── pnpm-workspace.yaml
+├── turbo.json
+├── tsconfig.base.json
+└── README.md
+```
+
+---
+
+# 4. Repository Ownership Rules
+
+| Folder   | Owner             |
+| -------- | ----------------- |
+| apps     | Frontend Team     |
+| services | Backend Team      |
+| packages | Platform Team     |
+| docs     | Architecture Team |
+
+---
+
+# 5. apps Folder
+
+## Purpose
+
+Contains all user-facing applications.
+
+---
+
+## Structure
+
+```text
+apps/
+├── web/
+├── mobile/
+└── desktop/
+```
+
+---
+
+## Allowed Contents
+
+* UI
+* Routing
+* State management
+* Forms
+* API communication
+
+---
+
+## Forbidden Contents
+
+* Database access
+* Business logic
+* AI provider calls
+* Secrets
+
+---
+
+# 6. Web Application Structure
+
+## Path
+
+```text
+apps/web
+```
+
+---
+
+## Structure
+
+```text
+apps/web/
+
+├── public/
+
+├── src/
+│
+├── assets/
+│
+├── app/
+│
+├── features/
+│
+├── pages/
+│
+├── components/
+│
+├── hooks/
+│
+├── services/
+│
+├── store/
+│
+├── routes/
+│
+├── layouts/
+│
+├── constants/
+│
+├── lib/
+│
+├── types/
+│
+└── styles/
+
+├── tests/
+
+├── package.json
+└── vite.config.ts
+```
+
+---
+
+## Folder Responsibilities
+
+### public
+
+Static assets.
+
+---
+
+### assets
+
+Images and icons.
+
+---
+
+### app
+
+Application initialization.
+
+---
+
+### features
+
+Feature-based modules.
+
+Example:
+
+```text
+features/
+
+├── auth
+├── meals
+├── goals
+├── dashboard
+├── reports
+└── settings
+```
+
+---
+
+### pages
+
+Route-level pages.
+
+---
+
+### components
+
+Reusable UI components.
+
+---
+
+### hooks
+
+React hooks.
+
+---
+
+### services
+
+API communication.
+
+---
+
+### store
+
+Zustand stores.
+
+---
+
+### routes
+
+Route definitions.
+
+---
+
+### layouts
+
+Application layouts.
+
+---
+
+### constants
+
+Static constants.
+
+---
+
+### lib
+
+Frontend helper functions.
+
+---
+
+### tests
+
+Frontend tests.
+
+---
+
+# 7. Mobile Application Structure
+
+## Path
+
+```text
+apps/mobile
+```
+
+---
+
+## Structure
+
+```text
+apps/mobile/
+
+├── assets/
+
+├── src/
+│
+├── app/
+│
+├── features/
+│
+├── screens/
+│
+├── navigation/
+│
+├── components/
+│
+├── hooks/
+│
+├── services/
+│
+├── store/
+│
+├── constants/
+│
+├── lib/
+│
+└── types/
+
+├── tests/
+
+├── app.json
+└── package.json
+```
+
+---
+
+## Folder Responsibilities
+
+### screens
+
+Mobile screens.
+
+---
+
+### navigation
+
+React Navigation setup.
+
+---
+
+### features
+
+Feature modules.
+
+---
+
+### store
+
+Mobile state management.
+
+---
+
+### services
+
+API communication.
+
+---
+
+## Forbidden Contents
+
+* Direct database access
+* Business logic
+* AI provider access
+
+---
+
+# 8. Desktop Application Structure
+
+## Path
+
+```text
+apps/desktop
+```
+
+---
+
+## Structure
+
+```text
+apps/desktop/
+
+├── electron/
+│
+├── src/
+│
+├── app/
+│
+├── features/
+│
+├── pages/
+│
+├── components/
+│
+├── hooks/
+│
+├── services/
+│
+├── store/
+│
+├── layouts/
+│
+├── constants/
+│
+├── lib/
+│
+└── types/
+
+├── tests/
+
+├── electron-builder.json
+└── package.json
+```
+
+---
+
+## Folder Responsibilities
+
+### electron
+
+Electron main process.
+
+---
+
+### src
+
+Renderer process.
+
+---
+
+### features
+
+Feature modules.
+
+---
+
+### services
+
+API communication.
+
+---
+
+## Forbidden Contents
+
+* Direct database access
+* AI provider access
+
+---
+
+# 9. services Folder
+
+## Purpose
+
+Contains backend services.
+
+---
+
+## Structure
+
+```text
+services/
+
+├── api/
+└── ai/
+```
+
+---
+
+# 10. API Service Structure
+
+## Path
+
+```text
+services/api
+```
+
+---
+
+## Structure
+
+```text
+services/api/
+
+├── src/
+│
+├── app/
+│
+├── config/
+│
+├── modules/
+│
+├── middleware/
+│
+├── routes/
+│
+├── controllers/
+│
+├── services/
+│
+├── repositories/
+│
+├── models/
+│
+├── validators/
+│
+├── jobs/
+│
+├── utils/
+│
+├── types/
+│
+└── tests/
+
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## Responsibilities
+
+### app
+
+Application bootstrap.
+
+---
+
+### config
+
+Environment configuration.
+
+---
+
+### modules
+
+Feature modules.
+
+Example:
+
+```text
+modules/
+
+├── auth
+├── users
+├── meals
+├── goals
+├── reports
+├── notifications
+└── achievements
+```
+
+---
+
+### middleware
+
+Express middleware.
+
+---
+
+### routes
+
+Route definitions.
+
+---
+
+### controllers
+
+Request handlers.
+
+---
+
+### services
+
+Business logic.
+
+---
+
+### repositories
+
+Database access layer.
+
+---
+
+### models
+
+Mongoose schemas.
+
+---
+
+### validators
+
+Request validation.
+
+---
+
+### jobs
+
+Background jobs.
+
+---
+
+## Forbidden Contents
+
+* Frontend code
+* OpenAI calls
+
+---
+
+# 11. AI Service Structure
+
+## Path
+
+```text
+services/ai
+```
+
+---
+
+## Structure
+
+```text
+services/ai/
+
+├── app/
+│
+├── api/
+│
+├── config/
+│
+├── providers/
+│
+├── prompts/
+│
+├── engines/
+│
+├── cache/
+│
+├── models/
+│
+├── schemas/
+│
+├── services/
+│
+├── utils/
+│
+├── tests/
+
+├── main.py
+└── requirements.txt
+```
+
+---
+
+## Responsibilities
+
+### providers
+
+Provider abstraction layer.
+
+Example:
+
+```text
+providers/
+
+├── openai
+└── interfaces
+```
+
+---
+
+### prompts
+
+Prompt definitions.
+
+---
+
+### engines
+
+AI engines.
+
+Example:
+
+```text
+engines/
+
+├── food-parser
+├── nutrition-analysis
+├── deficiency-detection
+├── recommendations
+├── coaching
+└── reports
+```
+
+---
+
+### cache
+
+AI cache layer.
+
+---
+
+## Forbidden Contents
+
+* User authentication
+* Business rules
+* Direct database ownership
+
+---
+
+# 12. packages Folder
+
+## Purpose
+
+Contains reusable shared code.
+
+---
+
+## Structure
+
+```text
+packages/
+
+├── shared-types/
+├── shared-validation/
+└── shared-utils/
+```
+
+---
+
+# 13. shared-types Structure
+
+## Path
+
+```text
+packages/shared-types
+```
+
+---
+
+## Structure
+
+```text
+shared-types/
+
+├── auth/
+├── users/
+├── meals/
+├── goals/
+├── reports/
+├── achievements/
+└── index.ts
+```
+
+---
+
+## Allowed Contents
+
+* Interfaces
+* DTOs
+* Enums
+
+---
+
+## Forbidden Contents
+
+* Business logic
+* Validation
+* API calls
+
+---
+
+# 14. shared-validation Structure
+
+## Path
+
+```text
+packages/shared-validation
+```
+
+---
+
+## Structure
+
+```text
+shared-validation/
+
+├── auth/
+├── users/
+├── meals/
+├── goals/
+├── reports/
+└── index.ts
+```
+
+---
+
+## Allowed Contents
+
+* Zod schemas
+* Validation helpers
+
+---
+
+## Forbidden Contents
+
+* Business logic
+* API code
+
+---
+
+# 15. shared-utils Structure
+
+## Path
+
+```text
+packages/shared-utils
+```
+
+---
+
+## Structure
+
+```text
+shared-utils/
+
+├── dates/
+├── formatting/
+├── calculations/
+├── constants/
+└── index.ts
+```
+
+---
+
+## Allowed Contents
+
+* Pure functions
+* Constants
+* Helpers
+
+---
+
+## Forbidden Contents
+
+* React code
+* Business logic
+* API access
+
+---
+
+# 16. Testing Structure
+
+## Strategy
+
+Testing exists within each application and service.
+
+---
+
+## Layout
+
+```text
+apps/*/tests
+
+services/api/tests
+
+services/ai/tests
+```
+
+---
+
+## Test Categories
+
+### Unit Tests
+
+```text
+tests/unit
+```
+
+---
+
+### Integration Tests
+
+```text
+tests/integration
+```
+
+---
+
+### End-to-End Tests
+
+```text
+tests/e2e
+```
+
+---
+
+## Ownership
+
+| Test Type   | Owner         |
+| ----------- | ------------- |
+| Unit        | Feature Owner |
+| Integration | Service Owner |
+| E2E         | Platform Team |
+
+---
+
+# 17. Documentation Structure
+
+## Path
+
+```text
+docs/
+```
+
+---
+
+## Structure
+
+```text
+docs/
+
+├── 01_project/
+│
+├── 02_architecture/
+│
+├── 03_api/
+│
+├── 04_database/
+│
+├── 05_deployment/
+│
+├── 06_testing/
+│
+└── 07_operations/
+```
+
+---
+
+## Architecture Folder
+
+```text
+docs/02_architecture/
+
+01_system_architecture.md
+02_technology_decisions.md
+03_database_architecture.md
+04_api_architecture.md
+05_frontend_architecture.md
+06_ai_architecture.md
+07_security_architecture.md
+08_deployment_architecture.md
+09_monitoring_architecture.md
+10_scalability_architecture.md
+11_cross_platform_architecture.md
+12_folder_structure.md
+```
+
+---
+
+# 18. AI Coding Agent Rules
+
+## AI Agents Must
+
+* Follow this structure exactly
+* Respect package boundaries
+* Respect ownership boundaries
+* Keep business logic in services
+* Keep UI inside apps
+
+---
+
+## AI Agents Must Never
+
+### Move Folders
+
+```text
+Not Allowed
+```
+
+---
+
+### Create New Top-Level Directories
+
+```text
+Not Allowed
+```
+
+---
+
+### Place Business Logic In Shared Packages
+
+```text
+Not Allowed
+```
+
+---
+
+### Access Database From Frontend
+
+```text
+Not Allowed
+```
+
+---
+
+### Call OpenAI From Clients
+
+```text
+Not Allowed
+```
+
+---
+
+# 19. Dependency Direction Rules
+
+## Allowed
+
+```text
+apps
+   |
+   v
+
+packages
+
+services
+   |
+   v
+
+packages
+```
+
+---
+
+## Forbidden
+
+```text
+packages
+    |
+    v
+
+apps
+
+packages
+    |
+    v
+
+services
+```
+
+---
+
+## Dependency Diagram
+
+```text
+            +------------------+
+            |     packages     |
+            +--------+---------+
+                     ^
+                     |
+         +-----------+-----------+
+         |                       |
+         |                       |
+         |                       |
++--------+--------+     +--------+--------+
+|      apps       |     |    services     |
++-----------------+     +-----------------+
+```
+
+Packages must never depend on apps or services.
+
+---
+
+# 20. Architecture Review Checklist
+
+## Repository Structure
+
+* [ ] Folder structure unchanged
+* [ ] Package boundaries respected
+
+---
+
+## Applications
+
+* [ ] No database access
+* [ ] No AI provider access
+
+---
+
+## Services
+
+* [ ] Business logic isolated
+* [ ] AI logic isolated
+
+---
+
+## Shared Packages
+
+* [ ] No business logic
+* [ ] No UI components
+* [ ] No platform-specific code
+
+---
+
+## Documentation
+
+* [ ] Architecture documents updated
+* [ ] Folder structure remains authoritative
+
+---
+
+# 21. Conclusion
+
+This document defines the official repository structure for Kaizen and serves as the authoritative source for all implementation decisions. By enforcing strict boundaries between applications, services, shared packages, testing, and documentation, the architecture remains maintainable, scalable, AI-agent-friendly, and prepared for long-term growth across Web, Mobile, Desktop, and future platforms.
+
+
+// File: e:\Kaizen\docs\02_architecture\13_coding_standards.md
+# Kaizen Coding Standards
+
+**Document ID:** 13_coding_standards.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+This document defines the official coding standards for the Kaizen platform.
+
+It applies to:
+
+* Web Application
+* Mobile Application
+* Desktop Application
+* API Service
+* AI Service
+* Shared Packages
+
+The purpose is to ensure:
+
+* Consistency
+* Maintainability
+* Scalability
+* Readability
+* Predictability
+* AI-agent compatibility
+
+These standards are mandatory for all contributors.
+
+---
+
+# 2. General Principles
+
+## Principle 1: Readability First
+
+Code is written for humans first.
+
+---
+
+## Principle 2: Consistency Over Preference
+
+Team standards override personal preferences.
+
+---
+
+## Principle 3: Simplicity
+
+Prefer simple solutions over clever solutions.
+
+---
+
+## Principle 4: Single Responsibility
+
+Every module should have one clear responsibility.
+
+---
+
+## Principle 5: Explicitness
+
+Prefer explicit behavior over hidden behavior.
+
+---
+
+## Mandatory Rules
+
+* Strict TypeScript enabled
+* No unused code
+* No dead code
+* No commented-out code
+* No magic values
+
+---
+
+## Prohibited Patterns
+
+* Massive files
+* Deep nesting
+* Circular dependencies
+* Hidden side effects
+
+---
+
+# 3. TypeScript Standards
+
+## Required Configuration
+
+```text id="h7k9x2"
+strict = true
+```
+
+---
+
+## Good
+
+```typescript id="rj4e1n"
+interface User {
+  id: string;
+  email: string;
+}
+```
+
+---
+
+## Bad
+
+```typescript id="x9d2bv"
+let user: any;
+```
+
+---
+
+## Rules
+
+### Use Interfaces For Contracts
+
+Preferred:
+
+```text id="b8w7nm"
+interface
+```
+
+---
+
+### Avoid any
+
+Allowed only with architectural justification.
+
+---
+
+### Explicit Return Types
+
+Required for exported functions.
+
+---
+
+## Mandatory
+
+* Strong typing
+* Shared DTO usage
+* Shared enums
+
+---
+
+# 4. React Standards
+
+## Component Philosophy
+
+Components must be:
+
+* Small
+* Reusable
+* Focused
+
+---
+
+## Good
+
+```text id="t8c1r4"
+MealCard.tsx
+```
+
+Single responsibility.
+
+---
+
+## Bad
+
+```text id="v2n8hz"
+DashboardEverything.tsx
+```
+
+Multiple responsibilities.
+
+---
+
+## Rules
+
+### Functional Components Only
+
+Class components prohibited.
+
+---
+
+### Hooks Only
+
+Use React hooks.
+
+---
+
+### Feature-Based Organization
+
+Components belong inside features.
+
+---
+
+## Prohibited
+
+* Business logic in components
+* Direct API calls in UI components
+* Massive components
+
+---
+
+# 5. Express Standards
+
+## Architecture Layers
+
+```text id="j4n6qp"
+Route
+  |
+Controller
+  |
+Service
+  |
+Repository
+```
+
+---
+
+## Responsibilities
+
+### Routes
+
+Routing only.
+
+---
+
+### Controllers
+
+Request handling only.
+
+---
+
+### Services
+
+Business logic only.
+
+---
+
+### Repositories
+
+Database access only.
+
+---
+
+## Prohibited
+
+* Database queries in controllers
+* Business logic in routes
+
+---
+
+# 6. FastAPI Standards
+
+## Architecture Layers
+
+```text id="n8u5yx"
+Router
+  |
+Service
+  |
+Provider
+```
+
+---
+
+## Responsibilities
+
+### Router
+
+Request handling.
+
+---
+
+### Service
+
+AI orchestration.
+
+---
+
+### Provider
+
+OpenAI communication.
+
+---
+
+## Prohibited
+
+* Business logic ownership
+* User authentication ownership
+
+---
+
+# 7. Naming Conventions
+
+| Item       | Convention       |
+| ---------- | ---------------- |
+| Variables  | camelCase        |
+| Functions  | camelCase        |
+| Classes    | PascalCase       |
+| Components | PascalCase       |
+| Interfaces | PascalCase       |
+| Enums      | PascalCase       |
+| Constants  | UPPER_SNAKE_CASE |
+| Files      | kebab-case       |
+
+---
+
+# 8. Folder Naming Rules
+
+## Standard
+
+```text id="o3f5wp"
+kebab-case
+```
+
+---
+
+## Good
+
+```text id="b7m9dq"
+meal-history
+goal-management
+```
+
+---
+
+## Bad
+
+```text id="p8v2yt"
+MealHistory
+goalManagement
+```
+
+---
+
+# 9. File Naming Rules
+
+## React Components
+
+```text id="l4c8hs"
+PascalCase.tsx
+```
+
+Example:
+
+```text id="x6n5qw"
+MealCard.tsx
+```
+
+---
+
+## Utility Files
+
+```text id="m1k4er"
+kebab-case.ts
+```
+
+Example:
+
+```text id="f7j8up"
+date-utils.ts
+```
+
+---
+
+## Validation Files
+
+```text id="h3y9ra"
+meal.schema.ts
+```
+
+---
+
+# 10. Function Naming Rules
+
+## Functions
+
+```text id="a2p7zn"
+camelCase
+```
+
+---
+
+## Good
+
+```text id="v5w4ob"
+calculateCalories()
+getUserGoals()
+createMeal()
+```
+
+---
+
+## Bad
+
+```text id="d8n3yt"
+CalculateCalories()
+userGoals()
+```
+
+---
+
+## Rules
+
+Functions must start with:
+
+```text id="k4m2qc"
+get
+create
+update
+delete
+calculate
+validate
+```
+
+when applicable.
+
+---
+
+# 11. Variable Naming Rules
+
+## Good
+
+```text id="r8k1jt"
+mealCount
+dailyCalories
+currentGoal
+```
+
+---
+
+## Bad
+
+```text id="v4z8md"
+x
+data
+temp
+```
+
+---
+
+## Rules
+
+Names must describe intent.
+
+---
+
+## Boolean Variables
+
+Must start with:
+
+```text id="t1s9kp"
+is
+has
+can
+should
+```
+
+---
+
+## Examples
+
+```text id="b6w3hz"
+isAuthenticated
+hasCompletedGoal
+canGenerateReport
+```
+
+---
+
+# 12. Component Standards
+
+## Structure
+
+```text id="n2m7qy"
+Component
+Hooks
+Handlers
+Render
+```
+
+---
+
+## Responsibilities
+
+Components should:
+
+* Render UI
+* Manage local state
+* Trigger actions
+
+---
+
+## Must Not
+
+* Access database
+* Contain business logic
+* Perform calculations
+
+---
+
+## Component Size
+
+Recommended:
+
+```text id="f5y2br"
+< 250 lines
+```
+
+Maximum:
+
+```text id="c8x1nm"
+500 lines
+```
+
+---
+
+# 13. API Standards
+
+## Endpoint Naming
+
+Use nouns.
+
+---
+
+## Good
+
+```text id="s6k3qw"
+/meals
+/goals
+/reports
+```
+
+---
+
+## Bad
+
+```text id="d4n8hp"
+/getMeals
+/createGoal
+```
+
+---
+
+## Response Structure
+
+Standardized.
+
+```text id="y5m7rl"
+success
+message
+data
+meta
+```
+
+---
+
+## Status Codes
+
+Must follow REST conventions.
+
+---
+
+# 14. Validation Standards
+
+## Validation Location
+
+### Frontend
+
+Shared validation schemas.
+
+---
+
+### Backend
+
+Shared validation schemas.
+
+---
+
+## Technology
+
+```text id="r7h4pn"
+Zod
+```
+
+---
+
+## Rules
+
+Every input must be validated.
+
+---
+
+## Prohibited
+
+Trusting client input.
+
+---
+
+# 15. Logging Standards
+
+## Logging Format
+
+Structured logging only.
+
+---
+
+## Required Fields
+
+```text id="m3w8qy"
+timestamp
+level
+service
+message
+requestId
+```
+
+---
+
+## Log Levels
+
+```text id="u8f6vk"
+DEBUG
+INFO
+WARN
+ERROR
+FATAL
+```
+
+---
+
+## Never Log
+
+* Passwords
+* Tokens
+* Secrets
+
+---
+
+# 16. Documentation Standards
+
+## Required Documentation
+
+### Features
+
+Must include:
+
+* Purpose
+* Architecture
+* Dependencies
+
+---
+
+### APIs
+
+Must include:
+
+* Request
+* Response
+* Validation
+
+---
+
+## Code Comments
+
+Comment:
+
+* Why
+
+Avoid commenting:
+
+* What
+
+---
+
+# 17. Testing Standards
+
+## Required Test Types
+
+### Unit Tests
+
+Business logic.
+
+---
+
+### Integration Tests
+
+Service interactions.
+
+---
+
+### E2E Tests
+
+Critical user flows.
+
+---
+
+## Coverage Targets
+
+| Type            | Target |
+| --------------- | ------ |
+| Services        | 80%    |
+| Utilities       | 90%    |
+| Shared Packages | 90%    |
+
+---
+
+## Prohibited
+
+Shipping untested business logic.
+
+---
+
+# 18. Git Standards
+
+## Branch Naming
+
+```text id="y4q6kn"
+feature/
+bugfix/
+hotfix/
+refactor/
+```
+
+---
+
+## Examples
+
+```text id="g9r2mu"
+feature/meal-tracking
+bugfix/auth-refresh-token
+```
+
+---
+
+## Commit Format
+
+```text id="w2k8pt"
+type(scope): description
+```
+
+---
+
+## Examples
+
+```text id="s3f6nx"
+feat(auth): add refresh token support
+
+fix(meals): correct calorie calculation
+
+refactor(api): simplify goal service
+```
+
+---
+
+# 19. Pull Request Standards
+
+## Requirements
+
+Every PR must include:
+
+* Summary
+* Screenshots (if UI)
+* Test results
+* Architecture impact
+
+---
+
+## Size Limits
+
+Recommended:
+
+```text id="j7m5pc"
+< 500 lines changed
+```
+
+---
+
+## Large PRs
+
+Must be split.
+
+---
+
+# 20. Code Review Standards
+
+## Review Criteria
+
+### Correctness
+
+Works as expected.
+
+---
+
+### Maintainability
+
+Easy to understand.
+
+---
+
+### Security
+
+No security issues.
+
+---
+
+### Performance
+
+No obvious bottlenecks.
+
+---
+
+### Architecture
+
+Respects architecture boundaries.
+
+---
+
+## Reviewer Checklist
+
+* [ ] Naming standards followed
+* [ ] Tests included
+* [ ] Validation included
+* [ ] Logging included
+* [ ] Architecture respected
+
+---
+
+# 21. Dependency Management Standards
+
+## Rules
+
+Dependencies must:
+
+* Solve a real problem
+* Be actively maintained
+* Be reviewed before addition
+
+---
+
+## Prohibited
+
+Adding libraries for trivial functionality.
+
+---
+
+# 22. Error Handling Standards
+
+## Requirements
+
+Every external operation must handle failures.
+
+---
+
+## Examples
+
+* Database operations
+* API requests
+* AI requests
+* File uploads
+
+---
+
+## Rules
+
+Never expose internal errors to users.
+
+---
+
+# 23. Security Coding Standards
+
+## Required
+
+* Validate all inputs
+* Sanitize outputs
+* Use parameterized queries
+* Use environment variables
+
+---
+
+## Prohibited
+
+* Hardcoded secrets
+* Raw token storage
+* Trusting client input
+
+---
+
+# 24. AI Agent Rules
+
+## AI Agents Must
+
+### Follow Architecture Documents
+
+Mandatory.
+
+---
+
+### Respect Folder Structure
+
+Mandatory.
+
+---
+
+### Use Shared Packages
+
+When applicable.
+
+---
+
+### Create Tests
+
+For business logic.
+
+---
+
+### Add Validation
+
+For all inputs.
+
+---
+
+### Add Logging
+
+For critical operations.
+
+---
+
+## AI Agents Must Never
+
+### Create New Top-Level Directories
+
+Forbidden.
+
+---
+
+### Modify Architecture Documents
+
+Without explicit request.
+
+---
+
+### Place Business Logic In UI
+
+Forbidden.
+
+---
+
+### Place Business Logic In Shared Packages
+
+Forbidden.
+
+---
+
+### Access Database From Frontend
+
+Forbidden.
+
+---
+
+### Call OpenAI Directly From Clients
+
+Forbidden.
+
+---
+
+### Introduce New Technologies
+
+Without architecture approval.
+
+---
+
+# 25. Prohibited Patterns
+
+## Architecture Violations
+
+```text id="k7v2qy"
+Frontend → Database
+Frontend → OpenAI
+Shared Package → Business Logic
+```
+
+---
+
+## Code Smells
+
+* God classes
+* Massive components
+* Circular dependencies
+* Deep nesting
+* Long functions
+
+---
+
+## Forbidden Examples
+
+```text id="u9r4mw"
+1000+ line files
+Controllers with business logic
+Database access in routes
+```
+
+---
+
+# 26. Engineering Excellence Checklist
+
+## Code Quality
+
+* [ ] Strong typing
+* [ ] Validation included
+* [ ] Logging included
+
+---
+
+## Architecture
+
+* [ ] Layer separation respected
+* [ ] Package boundaries respected
+
+---
+
+## Security
+
+* [ ] No secrets committed
+* [ ] Inputs validated
+
+---
+
+## Testing
+
+* [ ] Unit tests added
+* [ ] Integration tests added
+
+---
+
+## Documentation
+
+* [ ] Public APIs documented
+* [ ] Architecture impact documented
+
+---
+
+# 27. Conclusion
+
+These coding standards establish the engineering foundation for Kaizen. By enforcing strict architectural boundaries, strong typing, validation, testing, security controls, and maintainable development practices, the platform remains scalable, secure, AI-agent-friendly, and sustainable as it grows from Phase 1 implementation to enterprise-scale deployment.
+
+
+// File: e:\Kaizen\docs\02_architecture\14_error_handling_strategy.md
+# Kaizen Error Handling Strategy
+
+**Document ID:** 14_error_handling_strategy.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Error Handling Strategy defines how errors are identified, classified, logged, monitored, communicated, and recovered from across all platform components.
+
+The objective is to ensure:
+
+* Consistent error handling
+* Predictable system behavior
+* Improved reliability
+* Better user experience
+* Faster troubleshooting
+* Effective monitoring and alerting
+
+This strategy applies to:
+
+* Web Application
+* Mobile Application
+* Desktop Application
+* Backend API
+* AI Service
+* Database Layer
+* External Integrations
+
+---
+
+# 2. Error Handling Principles
+
+## Fail Gracefully
+
+The application should continue functioning whenever possible.
+
+---
+
+## Never Expose Internal Details
+
+Users must never see:
+
+* Stack traces
+* Database errors
+* Provider errors
+* Internal implementation details
+
+---
+
+## Log Everything Important
+
+All operationally significant errors must be logged.
+
+---
+
+## Standardized Responses
+
+Every error must follow a consistent format.
+
+---
+
+## Recover Automatically When Safe
+
+Transient failures should be retried automatically.
+
+---
+
+## Alert Critical Failures
+
+System failures must trigger monitoring alerts.
+
+---
+
+# 3. Error Classification System
+
+## Severity Levels
+
+| Level | Description         |
+| ----- | ------------------- |
+| INFO  | Expected conditions |
+| WARN  | Recoverable issue   |
+| ERROR | Failed operation    |
+| FATAL | Service unavailable |
+
+---
+
+## Error Categories
+
+| Category         | Prefix |
+| ---------------- | ------ |
+| Validation       | VAL    |
+| Authentication   | AUTH   |
+| Authorization    | PERM   |
+| API              | API    |
+| Database         | DB     |
+| AI               | AI     |
+| External Service | EXT    |
+| Infrastructure   | INF    |
+
+---
+
+## Example Error Codes
+
+```text
+VAL_001
+AUTH_001
+DB_003
+AI_002
+EXT_005
+```
+
+---
+
+# 4. Error Code Standards
+
+## Format
+
+```text
+CATEGORY_NUMBER
+```
+
+---
+
+## Examples
+
+### Validation
+
+```text
+VAL_001 Invalid Email
+VAL_002 Invalid Password
+VAL_003 Missing Required Field
+```
+
+---
+
+### Authentication
+
+```text
+AUTH_001 Invalid Credentials
+AUTH_002 Token Expired
+AUTH_003 Invalid Refresh Token
+AUTH_004 Session Revoked
+```
+
+---
+
+### Authorization
+
+```text
+PERM_001 Access Denied
+PERM_002 Resource Ownership Violation
+```
+
+---
+
+### Database
+
+```text
+DB_001 Record Not Found
+DB_002 Duplicate Key
+DB_003 Query Failure
+```
+
+---
+
+### AI Service
+
+```text
+AI_001 Provider Timeout
+AI_002 Provider Failure
+AI_003 Invalid AI Response
+AI_004 Cache Failure
+```
+
+---
+
+# 5. API Error Handling
+
+## Standard Error Response
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VAL_001",
+    "message": "Validation failed"
+  }
+}
+```
+
+---
+
+## Response Structure
+
+| Field         | Description         |
+| ------------- | ------------------- |
+| success       | Operation status    |
+| error.code    | Standard error code |
+| error.message | Safe user message   |
+
+---
+
+## Rules
+
+### Always Return Structured Errors
+
+Mandatory.
+
+---
+
+### Never Return Raw Exceptions
+
+Prohibited.
+
+---
+
+### Use Appropriate Status Codes
+
+Mandatory.
+
+---
+
+# 6. HTTP Error Standards
+
+| Status | Meaning             |
+| ------ | ------------------- |
+| 400    | Bad Request         |
+| 401    | Unauthorized        |
+| 403    | Forbidden           |
+| 404    | Not Found           |
+| 409    | Conflict            |
+| 422    | Validation Error    |
+| 429    | Rate Limited        |
+| 500    | Internal Error      |
+| 503    | Service Unavailable |
+
+---
+
+# 7. Frontend Error Handling
+
+## Responsibilities
+
+Frontend handles:
+
+* Validation errors
+* Network failures
+* Authentication failures
+* Display messages
+
+---
+
+## Error Flow
+
+```text
+API Request
+      |
+      v
+
+Response Error
+      |
+      v
+
+Error Handler
+      |
+      v
+
+User Feedback
+```
+
+---
+
+## UI Rules
+
+### Show Helpful Messages
+
+Good:
+
+```text
+Unable to save your meal. Please try again.
+```
+
+---
+
+### Avoid Technical Messages
+
+Bad:
+
+```text
+MongoServerError: Duplicate Key
+```
+
+---
+
+# 8. Frontend Recovery Workflow
+
+```text
+Error
+  |
+  v
+
+Classify
+  |
+  +------+
+  |      |
+  v      v
+
+Retry   Show Message
+```
+
+---
+
+## Retryable Frontend Errors
+
+* Network interruptions
+* Temporary API failures
+
+---
+
+# 9. Backend Error Handling
+
+## Architecture
+
+```text
+Controller
+     |
+     v
+
+Service
+     |
+     v
+
+Repository
+     |
+     v
+
+Error Middleware
+```
+
+---
+
+## Global Error Handler
+
+All uncaught exceptions must pass through:
+
+```text
+Global Error Middleware
+```
+
+---
+
+## Responsibilities
+
+### Log Error
+
+Mandatory.
+
+---
+
+### Transform Error
+
+Mandatory.
+
+---
+
+### Return Safe Response
+
+Mandatory.
+
+---
+
+# 10. Backend Error Categories
+
+## Validation Errors
+
+Client input invalid.
+
+---
+
+## Business Rule Errors
+
+Operation not allowed.
+
+---
+
+## Database Errors
+
+Persistence failures.
+
+---
+
+## Infrastructure Errors
+
+System failures.
+
+---
+
+## External Dependency Errors
+
+Third-party failures.
+
+---
+
+# 11. AI Service Error Handling
+
+## AI Failure Categories
+
+### Provider Timeout
+
+OpenAI response timeout.
+
+---
+
+### Provider Failure
+
+Provider unavailable.
+
+---
+
+### Rate Limit Exceeded
+
+Provider quota reached.
+
+---
+
+### Parsing Failure
+
+Unexpected response format.
+
+---
+
+### Cache Failure
+
+Cache unavailable.
+
+---
+
+## AI Error Flow
+
+```text
+Request
+   |
+   v
+
+Provider Error
+   |
+   v
+
+Retry Logic
+   |
+   +------+
+   |      |
+   v      v
+
+Success Failure
+```
+
+---
+
+## User Response Example
+
+```text
+Unable to generate insights at the moment.
+Please try again later.
+```
+
+---
+
+# 12. Database Error Handling
+
+## Common Errors
+
+### Record Not Found
+
+```text
+DB_001
+```
+
+---
+
+### Duplicate Key
+
+```text
+DB_002
+```
+
+---
+
+### Query Failure
+
+```text
+DB_003
+```
+
+---
+
+### Connection Failure
+
+```text
+DB_004
+```
+
+---
+
+## Recovery Workflow
+
+```text
+Database Error
+        |
+        v
+
+Log Error
+        |
+        v
+
+Retry If Safe
+        |
+        v
+
+Return Safe Error
+```
+
+---
+
+# 13. Authentication Error Handling
+
+## Error Types
+
+### Invalid Credentials
+
+```text
+AUTH_001
+```
+
+---
+
+### Expired Access Token
+
+```text
+AUTH_002
+```
+
+---
+
+### Invalid Refresh Token
+
+```text
+AUTH_003
+```
+
+---
+
+### Revoked Session
+
+```text
+AUTH_004
+```
+
+---
+
+## Authentication Flow
+
+```text
+Request
+   |
+   v
+
+Token Check
+   |
+   +------+
+   |      |
+   v      v
+
+Valid  Invalid
+```
+
+---
+
+## User Messages
+
+### Good
+
+```text
+Your session has expired. Please sign in again.
+```
+
+---
+
+### Bad
+
+```text
+JWT Signature Validation Failed
+```
+
+---
+
+# 14. Validation Error Handling
+
+## Validation Layers
+
+### Frontend
+
+Shared Zod schemas.
+
+---
+
+### Backend
+
+Shared Zod schemas.
+
+---
+
+## Validation Response
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VAL_001",
+    "message": "Validation failed"
+  }
+}
+```
+
+---
+
+## Rules
+
+All external input must be validated.
+
+---
+
+# 15. External Service Error Handling
+
+## External Services
+
+* OpenAI
+* Cloudinary
+* MongoDB Atlas
+
+---
+
+## Failure Types
+
+### Timeout
+
+### Rate Limit
+
+### Service Unavailable
+
+### Invalid Response
+
+---
+
+## Recovery Flow
+
+```text
+Service Error
+      |
+      v
+
+Retry
+      |
+      +------+
+      |      |
+      v      v
+
+Success Failure
+```
+
+---
+
+# 16. Retry Strategy
+
+## Retry Principles
+
+Only retry transient failures.
+
+---
+
+## Retry Matrix
+
+| Error Type                  | Retry |
+| --------------------------- | ----- |
+| Network Failure             | Yes   |
+| Timeout                     | Yes   |
+| Rate Limit                  | Yes   |
+| Database Connection Failure | Yes   |
+| Validation Error            | No    |
+| Authentication Error        | No    |
+| Authorization Error         | No    |
+| Duplicate Key               | No    |
+
+---
+
+## Retry Schedule
+
+### Attempt 1
+
+Immediate.
+
+---
+
+### Attempt 2
+
+```text
+1 Second
+```
+
+---
+
+### Attempt 3
+
+```text
+2 Seconds
+```
+
+---
+
+### Attempt 4
+
+```text
+4 Seconds
+```
+
+---
+
+## Maximum Retries
+
+```text
+3
+```
+
+---
+
+# 17. Retry Workflow
+
+```text
+Failure
+   |
+   v
+
+Retryable?
+   |
+   +------+
+   |      |
+   v      v
+
+Yes     No
+ |       |
+ v       v
+
+Retry  Fail Fast
+```
+
+---
+
+# 18. Logging Strategy
+
+## Log Levels
+
+```text
+DEBUG
+INFO
+WARN
+ERROR
+FATAL
+```
+
+---
+
+## Required Error Fields
+
+```text
+timestamp
+service
+errorCode
+message
+requestId
+userId
+```
+
+---
+
+## Example Log
+
+```json
+{
+  "level": "ERROR",
+  "service": "api",
+  "errorCode": "DB_003",
+  "message": "Database query failed"
+}
+```
+
+---
+
+## Never Log
+
+* Passwords
+* Access Tokens
+* Refresh Tokens
+* API Keys
+
+---
+
+# 19. User-Facing Error Messages
+
+## Principles
+
+### Clear
+
+Users understand what happened.
+
+---
+
+### Actionable
+
+Users know what to do next.
+
+---
+
+### Safe
+
+No technical details exposed.
+
+---
+
+## Examples
+
+| Situation        | Message                                |
+| ---------------- | -------------------------------------- |
+| Validation Error | Please check the entered information.  |
+| Session Expired  | Please sign in again.                  |
+| Network Error    | Unable to connect. Try again later.    |
+| AI Failure       | Unable to generate insights right now. |
+
+---
+
+# 20. Monitoring Integration
+
+## Error Sources
+
+* API
+* AI Service
+* Database
+* Authentication
+* Infrastructure
+
+---
+
+## Monitoring Tools
+
+### Sentry
+
+Captures:
+
+* Exceptions
+* Stack traces
+
+---
+
+### Structured Logs
+
+Captures:
+
+* Operational events
+* Security events
+
+---
+
+### UptimeRobot
+
+Captures:
+
+* Availability issues
+
+---
+
+# 21. Error Monitoring Flow
+
+```text
+Error
+  |
+  v
+
+Log
+  |
+  v
+
+Monitoring
+  |
+  v
+
+Alert
+  |
+  v
+
+Investigation
+```
+
+---
+
+# 22. Incident Response Flow
+
+## Detection
+
+Issue identified.
+
+---
+
+## Classification
+
+Determine severity.
+
+---
+
+## Escalation
+
+Notify responsible team.
+
+---
+
+## Resolution
+
+Apply fix.
+
+---
+
+## Postmortem
+
+Document lessons learned.
+
+---
+
+## Incident Flow Diagram
+
+```text
+Issue
+  |
+  v
+
+Detect
+  |
+  v
+
+Classify
+  |
+  v
+
+Respond
+  |
+  v
+
+Resolve
+  |
+  v
+
+Review
+```
+
+---
+
+# 23. Recovery Workflows
+
+## API Recovery
+
+```text
+API Error
+     |
+     v
+
+Retry
+     |
+     v
+
+Fallback
+     |
+     v
+
+Error Response
+```
+
+---
+
+## AI Recovery
+
+```text
+Provider Error
+       |
+       v
+
+Retry
+       |
+       v
+
+Cache Fallback
+       |
+       v
+
+Error Response
+```
+
+---
+
+## Database Recovery
+
+```text
+Connection Failure
+         |
+         v
+
+Reconnect
+         |
+         v
+
+Retry
+         |
+         v
+
+Fail
+```
+
+---
+
+# 24. Error Ownership Matrix
+
+| Error Type            | Owner          |
+| --------------------- | -------------- |
+| Frontend Errors       | Frontend Team  |
+| API Errors            | Backend Team   |
+| Database Errors       | Backend Team   |
+| AI Errors             | AI Team        |
+| Infrastructure Errors | Platform Team  |
+| Security Errors       | Security Owner |
+
+---
+
+# 25. Error Review Checklist
+
+## API
+
+* [ ] Structured errors returned
+* [ ] Proper status codes used
+* [ ] Error codes documented
+
+---
+
+## Frontend
+
+* [ ] User-friendly messages shown
+* [ ] Retry logic implemented
+
+---
+
+## Backend
+
+* [ ] Global error handler enabled
+* [ ] Errors logged correctly
+
+---
+
+## AI
+
+* [ ] Retry logic implemented
+* [ ] Cache fallback enabled
+
+---
+
+## Database
+
+* [ ] Connection failures handled
+* [ ] Duplicate key handling implemented
+
+---
+
+## Security
+
+* [ ] Sensitive data not logged
+* [ ] Authentication failures handled
+
+---
+
+## Monitoring
+
+* [ ] Sentry integrated
+* [ ] Alerts configured
+
+---
+
+# 26. Architecture Review Requirements
+
+Before production release:
+
+* [ ] Error codes finalized
+* [ ] Monitoring integrated
+* [ ] Recovery workflows tested
+* [ ] Incident procedures documented
+* [ ] Retry policies validated
+
+---
+
+# 27. Conclusion
+
+The Kaizen Error Handling Strategy establishes a consistent, secure, and scalable approach to managing failures across all platform layers. Through standardized error codes, structured responses, intelligent retries, centralized logging, monitoring integration, and recovery workflows, the platform can maintain reliability, improve troubleshooting efficiency, and deliver a predictable user experience even during failure scenarios.
+
+
+// File: e:\Kaizen\docs\02_architecture\15_testing_strategy.md
+# Kaizen Testing Strategy
+
+**Document ID:** 15_testing_strategy.md
+**Version:** 1.0
+**Status:** Approved for Phase 1 Development
+**Author:** Principal Software Architecture Team
+**Last Updated:** June 2026
+
+---
+
+# 1. Executive Summary
+
+The Kaizen Testing Strategy defines the testing architecture, methodologies, standards, tools, coverage requirements, and release criteria required to ensure platform quality, reliability, maintainability, and security.
+
+The strategy covers:
+
+* Web Application
+* Mobile Application
+* Desktop Application
+* Backend API
+* AI Service
+* Shared Packages
+
+Testing is treated as a mandatory engineering activity and is integrated into the development lifecycle from the beginning.
+
+Primary objectives:
+
+* Prevent regressions
+* Improve confidence in releases
+* Reduce production defects
+* Improve maintainability
+* Enable rapid development
+* Support AI-assisted development
+
+---
+
+# 2. Testing Philosophy
+
+## Shift Left Testing
+
+Testing begins during development, not after development.
+
+---
+
+## Automation First
+
+Automated testing is preferred over manual testing whenever possible.
+
+---
+
+## Risk-Based Testing
+
+Higher-risk functionality requires deeper test coverage.
+
+Examples:
+
+* Authentication
+* Goal Management
+* AI Features
+* Reports
+
+---
+
+## Test Early
+
+Developers should validate functionality before creating pull requests.
+
+---
+
+## Test Continuously
+
+Testing is integrated into CI/CD pipelines.
+
+---
+
+# 3. Test Pyramid
+
+## Testing Hierarchy
+
+```text
+               E2E
+              /   \
+             /     \
+      Integration Tests
+           /       \
+          /         \
+        Unit Tests
+```
+
+---
+
+## Distribution Target
+
+| Test Type         | Percentage |
+| ----------------- | ---------- |
+| Unit Tests        | 70%        |
+| Integration Tests | 20%        |
+| E2E Tests         | 10%        |
+
+---
+
+## Goal
+
+Maximize confidence while minimizing execution time.
+
+---
+
+# 4. Unit Testing Strategy
+
+## Purpose
+
+Validate individual units of functionality in isolation.
+
+---
+
+## Scope
+
+Test:
+
+* Utility functions
+* Validation schemas
+* Business services
+* Calculation logic
+
+---
+
+## Do Not Test
+
+* External APIs
+* Databases
+* Network requests
+
+---
+
+## Backend Tools
+
+```text
+Jest
+```
+
+---
+
+## Frontend Tools
+
+```text
+Vitest
+React Testing Library
+```
+
+---
+
+## Unit Test Requirements
+
+Every business rule must have unit tests.
+
+---
+
+## Examples
+
+### Good Candidates
+
+```text
+Calorie Calculations
+Goal Progress Logic
+Validation Functions
+Date Utilities
+```
+
+---
+
+### Poor Candidates
+
+```text
+Third-Party Libraries
+Framework Internals
+```
+
+---
+
+# 5. Integration Testing Strategy
+
+## Purpose
+
+Validate interactions between system components.
+
+---
+
+## Scope
+
+Test:
+
+* Controllers + Services
+* Services + Repositories
+* API + Database
+* AI Service + Provider Abstraction
+
+---
+
+## Tools
+
+```text
+Jest
+Supertest
+```
+
+---
+
+## Integration Diagram
+
+```text
+Controller
+    |
+    v
+
+Service
+    |
+    v
+
+Repository
+    |
+    v
+
+Database
+```
+
+---
+
+## Requirements
+
+Critical business workflows require integration coverage.
+
+---
+
+# 6. API Testing Strategy
+
+## Purpose
+
+Validate API behavior.
+
+---
+
+## Scope
+
+Verify:
+
+* Status codes
+* Response structure
+* Validation behavior
+* Authentication
+* Authorization
+
+---
+
+## Tools
+
+```text
+Jest
+Supertest
+```
+
+---
+
+## Test Areas
+
+### Authentication
+
+```text
+Register
+Login
+Refresh Token
+Logout
+Logout All
+```
+
+---
+
+### Meals
+
+```text
+Create
+Update
+Delete
+Retrieve
+```
+
+---
+
+### Goals
+
+```text
+CRUD Operations
+```
+
+---
+
+## API Test Flow
+
+```text
+Request
+   |
+   v
+
+API
+   |
+   v
+
+Database
+   |
+   v
+
+Response Validation
+```
+
+---
+
+# 7. Frontend Testing Strategy
+
+## Purpose
+
+Validate UI behavior and user interactions.
+
+---
+
+## Tools
+
+```text
+Vitest
+React Testing Library
+```
+
+---
+
+## Scope
+
+### Components
+
+Verify:
+
+* Rendering
+* States
+* Props
+* User interaction
+
+---
+
+### Forms
+
+Verify:
+
+* Validation
+* Submission
+* Error handling
+
+---
+
+### State Management
+
+Verify:
+
+* Zustand stores
+* State transitions
+
+---
+
+## Test Philosophy
+
+Test user behavior rather than implementation details.
+
+---
+
+## Example Workflow
+
+```text
+User Click
+     |
+     v
+
+Component Action
+     |
+     v
+
+Expected UI Change
+```
+
+---
+
+# 8. Mobile Testing Strategy
+
+## Purpose
+
+Validate mobile-specific behavior.
+
+---
+
+## Scope
+
+Test:
+
+* Screens
+* Navigation
+* Forms
+* API integration
+
+---
+
+## Areas of Focus
+
+### Navigation
+
+```text
+Screen Routing
+Deep Links
+```
+
+---
+
+### Offline Handling
+
+Future feature.
+
+---
+
+### Device Features
+
+Future feature.
+
+---
+
+## Requirements
+
+Critical user journeys must be validated.
+
+---
+
+# 9. AI Service Testing Strategy
+
+## Purpose
+
+Ensure AI service reliability.
+
+---
+
+## Test Categories
+
+### Engine Tests
+
+Verify:
+
+```text
+Food Parsing
+Recommendations
+Insights
+Reports
+```
+
+---
+
+### Prompt Tests
+
+Verify:
+
+* Expected structure
+* Safety constraints
+
+---
+
+### Provider Tests
+
+Verify:
+
+* Response handling
+* Error handling
+
+---
+
+### Cache Tests
+
+Verify:
+
+* Cache hit
+* Cache miss
+* Invalidation
+
+---
+
+## AI Test Flow
+
+```text
+Input
+  |
+  v
+
+Engine
+  |
+  v
+
+Provider Mock
+  |
+  v
+
+Structured Output
+```
+
+---
+
+## Important Rule
+
+AI tests must never depend on live provider responses.
+
+Use mocks.
+
+---
+
+# 10. End-to-End Testing Strategy
+
+## Purpose
+
+Validate complete user workflows.
+
+---
+
+## Tool
+
+```text
+Playwright
+```
+
+---
+
+## Scope
+
+Test:
+
+* Authentication
+* Goal Management
+* Meal Tracking
+* Dashboard Usage
+* Reports
+
+---
+
+## E2E Flow
+
+```text
+Browser
+   |
+   v
+
+Frontend
+   |
+   v
+
+API
+   |
+   v
+
+Database
+```
+
+---
+
+## Critical User Journeys
+
+### User Registration
+
+### Login
+
+### Create Goal
+
+### Log Meal
+
+### Generate Report
+
+### Logout
+
+---
+
+# 11. Performance Testing Strategy
+
+## Purpose
+
+Validate scalability targets.
+
+---
+
+## Areas Tested
+
+### API
+
+Measure:
+
+* Response time
+* Throughput
+
+---
+
+### Database
+
+Measure:
+
+* Query performance
+* Aggregation performance
+
+---
+
+### AI Service
+
+Measure:
+
+* Latency
+* Cost efficiency
+
+---
+
+## Targets
+
+### API
+
+```text
+< 500 ms
+```
+
+Average response.
+
+---
+
+### AI
+
+```text
+< 10 seconds
+```
+
+Average generation.
+
+---
+
+# 12. Security Testing Strategy
+
+## Scope
+
+Test:
+
+* Authentication
+* Authorization
+* Input validation
+* Session management
+
+---
+
+## Security Areas
+
+### JWT Validation
+
+### Refresh Token Rotation
+
+### Access Control
+
+### Rate Limiting
+
+### Input Sanitization
+
+---
+
+## Requirements
+
+All security-critical workflows must be tested.
+
+---
+
+# 13. Accessibility Testing Strategy
+
+## Purpose
+
+Ensure usability for all users.
+
+---
+
+## Areas
+
+### Keyboard Navigation
+
+### Form Labels
+
+### Semantic HTML
+
+### Screen Reader Support
+
+---
+
+## Requirements
+
+Critical user flows must be accessible.
+
+---
+
+## Future Goal
+
+WCAG 2.1 AA compliance.
+
+---
+
+# 14. Test Data Management
+
+## Principles
+
+Test data must be:
+
+* Repeatable
+* Isolated
+* Disposable
+
+---
+
+## Types
+
+### Unit Test Data
+
+Inline fixtures.
+
+---
+
+### Integration Data
+
+Seeded test database.
+
+---
+
+### E2E Data
+
+Dedicated test accounts.
+
+---
+
+## Prohibited
+
+Using production data.
+
+---
+
+# 15. Test Environment Strategy
+
+## Development
+
+Local execution.
+
+---
+
+## CI Environment
+
+Automated pipeline testing.
+
+---
+
+## Staging
+
+Pre-production validation.
+
+---
+
+## Production
+
+Smoke testing only.
+
+---
+
+# 16. Test Folder Structure
+
+## Web
+
+```text
+apps/web/tests/
+
+├── unit/
+├── integration/
+└── e2e/
+```
+
+---
+
+## Mobile
+
+```text
+apps/mobile/tests/
+
+├── unit/
+├── integration/
+└── e2e/
+```
+
+---
+
+## Desktop
+
+```text
+apps/desktop/tests/
+
+├── unit/
+├── integration/
+└── e2e/
+```
+
+---
+
+## API
+
+```text
+services/api/tests/
+
+├── unit/
+├── integration/
+└── e2e/
+```
+
+---
+
+## AI
+
+```text
+services/ai/tests/
+
+├── unit/
+├── integration/
+└── fixtures/
+```
+
+---
+
+# 17. CI/CD Testing Integration
+
+## Pipeline Flow
+
+```text
+Commit
+   |
+   v
+
+Lint
+   |
+   v
+
+Unit Tests
+   |
+   v
+
+Integration Tests
+   |
+   v
+
+Build
+   |
+   v
+
+Deploy
+```
+
+---
+
+## Rules
+
+Deployment must fail if tests fail.
+
+---
+
+## Mandatory Checks
+
+* Linting
+* Type checking
+* Unit tests
+* Integration tests
+
+---
+
+# 18. Coverage Requirements
+
+## Global Targets
+
+| Area            | Coverage |
+| --------------- | -------- |
+| Services        | 80%      |
+| Utilities       | 90%      |
+| Shared Packages | 90%      |
+| Validation      | 95%      |
+| Critical Flows  | 100%     |
+
+---
+
+## Exclusions
+
+Coverage does not include:
+
+* Configuration files
+* Generated files
+* Build artifacts
+
+---
+
+# 19. Release Criteria
+
+A release may proceed only if:
+
+* All tests pass
+* No critical defects exist
+* Security checks pass
+* Coverage targets met
+* Monitoring enabled
+
+---
+
+## Release Gate Diagram
+
+```text
+Code Complete
+      |
+      v
+
+Tests Pass?
+      |
+      +------+
+      |      |
+      v      v
+
+Yes      No
+ |         |
+ v         v
+
+Release   Fix
+```
+
+---
+
+# 20. Definition of Done
+
+A feature is considered complete only when:
+
+* [ ] Code implemented
+* [ ] Unit tests added
+* [ ] Integration tests added
+* [ ] Validation implemented
+* [ ] Logging implemented
+* [ ] Documentation updated
+* [ ] Code reviewed
+* [ ] CI pipeline passes
+
+---
+
+# 21. Testing Workflow Example
+
+## Example Feature
+
+Meal Tracking.
+
+---
+
+### Step 1
+
+Implement feature.
+
+---
+
+### Step 2
+
+Create unit tests.
+
+---
+
+### Step 3
+
+Create integration tests.
+
+---
+
+### Step 4
+
+Create E2E scenario.
+
+---
+
+### Step 5
+
+Run CI pipeline.
+
+---
+
+### Step 6
+
+Create PR.
+
+---
+
+### Step 7
+
+Review and merge.
+
+---
+
+## Workflow Diagram
+
+```text
+Feature
+   |
+   v
+
+Unit Tests
+   |
+   v
+
+Integration Tests
+   |
+   v
+
+E2E Tests
+   |
+   v
+
+CI Validation
+   |
+   v
+
+Merge
+```
+
+---
+
+# 22. Quality Gates
+
+## Must Pass
+
+### Build
+
+```text
+100%
+```
+
+---
+
+### Unit Tests
+
+```text
+100%
+```
+
+---
+
+### Integration Tests
+
+```text
+100%
+```
+
+---
+
+### Critical E2E Tests
+
+```text
+100%
+```
+
+---
+
+## No Exceptions
+
+Quality gates cannot be bypassed.
+
+---
+
+# 23. AI Agent Testing Rules
+
+## AI Agents Must
+
+* Create tests for business logic
+* Create tests for validation
+* Update existing tests when changing functionality
+* Respect coverage targets
+
+---
+
+## AI Agents Must Never
+
+### Skip Tests
+
+Forbidden.
+
+---
+
+### Disable Tests
+
+Forbidden.
+
+---
+
+### Reduce Coverage
+
+Forbidden.
+
+---
+
+### Mock Business Logic
+
+Forbidden.
+
+Mock external dependencies only.
+
+---
+
+# 24. Testing Review Checklist
+
+## Unit Testing
+
+* [ ] Business logic covered
+* [ ] Utilities covered
+* [ ] Validation covered
+
+---
+
+## Integration Testing
+
+* [ ] API workflows tested
+* [ ] Database workflows tested
+
+---
+
+## Frontend Testing
+
+* [ ] Components tested
+* [ ] Forms tested
+* [ ] State tested
+
+---
+
+## AI Testing
+
+* [ ] Engine tests implemented
+* [ ] Cache tests implemented
+* [ ] Provider mocks implemented
+
+---
+
+## E2E Testing
+
+* [ ] Critical user journeys covered
+
+---
+
+## Security Testing
+
+* [ ] Authentication tested
+* [ ] Authorization tested
+
+---
+
+## CI/CD
+
+* [ ] Tests integrated into pipeline
+* [ ] Failures block deployment
+
+---
+
+# 25. Conclusion
+
+The Kaizen Testing Strategy establishes a comprehensive quality assurance framework built around automated testing, layered validation, coverage targets, CI/CD enforcement, and production readiness requirements. By combining unit, integration, API, frontend, AI, security, accessibility, performance, and end-to-end testing, the platform can maintain high reliability, support rapid development, and scale confidently as new features and platforms are introduced.
+
+
