@@ -28,6 +28,7 @@ import exercisesRouter from './routes/exercises';
 import workoutsRouter from './routes/workouts';
 import summaryRouter from './routes/summary';
 import authRouter from './routes/auth';
+import profileRouter from './routes/profile';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -39,6 +40,7 @@ const swaggerDocument = YAML.load(path.join(__dirname, 'docs', 'swagger.yml'));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/profile', profileRouter);
 app.use('/api/v1/water', waterRouter);
 app.use('/api/v1/meals', mealsRouter);
 app.use('/api/v1/weight', weightRouter);

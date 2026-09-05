@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Scale, Calendar as CalendarIcon, LogOut } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Scale, Calendar as CalendarIcon, LogOut, Settings } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
 import { MealTracker } from '../features/meals/MealTracker';
@@ -72,12 +73,20 @@ export const DashboardLayout = () => {
         </div>
 
         <div>
-          {/* User & Logout */}
-          <div className="mb-4 px-3 flex items-center justify-between">
-             <div className="text-sm font-medium">{user?.firstName || 'User'}</div>
-             <button onClick={logout} className="text-kaizen-muted hover:text-kaizen-text" title="Logout">
-               <LogOut className="w-4 h-4" />
-             </button>
+          {/* User & Actions */}
+          <div className="mb-4 px-3 space-y-1">
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm font-medium text-kaizen-text truncate">{user?.name || 'User'}</span>
+              <button onClick={logout} className="text-kaizen-muted hover:text-kaizen-text transition-colors" title="Logout">
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+            <Link
+              to="/settings/profile"
+              className="flex items-center gap-2 px-2 py-1.5 text-xs text-kaizen-muted hover:text-kaizen-text rounded-control hover:bg-kaizen-surface-hover transition-colors"
+            >
+              <Settings className="w-3.5 h-3.5" /> Profile Settings
+            </Link>
           </div>
           {/* Date Selector in Sidebar */}
           <div className="pt-4 border-t border-kaizen-border/60">
