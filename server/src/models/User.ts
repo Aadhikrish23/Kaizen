@@ -18,6 +18,11 @@ export interface IUser extends Document {
   calorieDailyTarget?: number;
   proteinDailyTargetG?: number;
   waterDailyTargetMl?: number;
+  isPrivateProfile: boolean;
+  healthScore: number;
+  xp: number;
+  level: number;
+  streakDays: number;
   // Preferences
   units?: 'metric' | 'imperial';
   // Onboarding
@@ -48,6 +53,9 @@ const UserSchema = new Schema(
     calorieDailyTarget: { type: Number, default: 2000 },
     proteinDailyTargetG: { type: Number, default: 150 },
     waterDailyTargetMl: { type: Number, default: 2500 },
+    // Privacy & Admin
+    isPrivateProfile: { type: Boolean, default: true },
+
     // Gamification
     healthScore: { type: Number, default: 85, min: 0, max: 100 },
     xp: { type: Number, default: 0, min: 0 },
