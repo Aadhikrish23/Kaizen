@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-kaizen-bg text-kaizen-text font-sans antialiased;
+  }
+
+  /* Accessible, restrained focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-kaizen-primary ring-offset-2 ring-offset-kaizen-bg;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0C0E14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #242A3D;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #363E56;
+}
