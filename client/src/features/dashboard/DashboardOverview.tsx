@@ -48,6 +48,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
           <Badge variant={hydration && hydration.totalWater >= hydration.waterGoal ? 'cyan' : 'neutral'} size="md">
             {hydration && hydration.totalWater >= hydration.waterGoal ? 'Hydrated' : 'Water Incomplete'}
           </Badge>
+          <Button variant="secondary" size="sm" onClick={() => onNavigateTab('analytics')} className="ml-2 hidden sm:flex">
+            View Analytics
+          </Button>
         </div>
       </div>
 

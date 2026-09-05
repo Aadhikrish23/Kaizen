@@ -31,6 +31,9 @@ import authRouter from './routes/auth';
 import profileRouter from './routes/profile';
 import foodsRouter from './routes/foods';
 import recipesRouter from './routes/recipes';
+import measurementsRouter from './routes/measurements';
+import routinesRouter from './routes/routines';
+import analyticsRouter from './routes/analytics';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -45,12 +48,15 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/profile', profileRouter);
 app.use('/api/v1/foods', foodsRouter);
 app.use('/api/v1/recipes', recipesRouter);
+app.use('/api/v1/analytics', analyticsRouter);
 app.use('/api/v1/water', waterRouter);
 app.use('/api/v1/meals', mealsRouter);
 app.use('/api/v1/weight', weightRouter);
 app.use('/api/v1/exercises', exercisesRouter);
 app.use('/api/v1/workouts', workoutsRouter);
 app.use('/api/v1/summary', summaryRouter);
+app.use('/api/v1/measurements', measurementsRouter);
+app.use('/api/v1/routines', routinesRouter);
 
 // Health Check
 app.get('/api/v1/health', (req: Request, res: Response) => {

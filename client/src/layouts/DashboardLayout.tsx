@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Scale, Calendar as CalendarIcon, LogOut, Settings } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Scale, Calendar as CalendarIcon, LogOut, Settings, BarChart3 } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
 import { MealTracker } from '../features/meals/MealTracker';
 import { WaterTracker } from '../features/water/WaterTracker';
 import { WeightTracker } from '../features/weight/WeightTracker';
+import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
 
-type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'weight';
+type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'weight' | 'analytics';
 
 export const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
@@ -31,6 +32,7 @@ export const DashboardLayout = () => {
     { id: 'meals' as const, label: 'Nutrition', icon: Utensils, highlight: 'text-kaizen-calories' },
     { id: 'water' as const, label: 'Hydration', icon: Droplets, highlight: 'text-kaizen-water' },
     { id: 'weight' as const, label: 'Scale Weight', icon: Scale, highlight: 'text-kaizen-weight' },
+    { id: 'analytics' as const, label: 'Analytics', icon: BarChart3, highlight: 'text-emerald-400' },
   ];
 
   return (
@@ -143,6 +145,9 @@ export const DashboardLayout = () => {
         )}
         {activeTab === 'weight' && (
           <WeightTracker currentDate={currentDate} />
+        )}
+        {activeTab === 'analytics' && (
+          <AnalyticsDashboard />
         )}
       </main>
 
