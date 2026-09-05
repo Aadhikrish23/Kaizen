@@ -5,10 +5,12 @@ import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useMealLogs, useAddMealLog, useDeleteMealLog } from '../../services/mealService';
+import { useCreateRecipe } from '../../services/recipeService';
 import { useAuth } from '../../contexts/AuthContext';
 import { MealLog, FoodItem } from '../../types';
 import { Trash2, Plus, Utensils } from 'lucide-react';
 import { FoodSearch } from '../../components/ui/FoodSearch';
+import { RecipeList } from './RecipeList';
 
 interface MealTrackerProps {
   currentDate: string;
@@ -20,6 +22,34 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
   const { data: rawData, isLoading, error } = useMealLogs(currentDate);
   const { mutateAsync: addMealLog } = useAddMealLog();
   const { mutateAsync: deleteMealLog } = useDeleteMealLog(currentDate);
+  const { mutateAsync: createRecipe } = useCreateRecipe();
+
+  const handleSaveRecipe = async () => {
+    if (!name || !calories) {
+      alert('Please enter a name and calories to save as a recipe.');
+      return;
+    }
+    
+    try {
+      await createRecipe({
+        name,
+        description: 'Saved from meal tracker',
+        ingredients: [{
+          name,
+          servingSize: '1 serving',
+          quantity: 1,
+          calories: Number(calories),
+          protein: protein ? Number(protein) : 0,
+          carbs: carbs ? Number(carbs) : 0,
+          fat: fat ? Number(fat) : 0
+        }]
+      });
+      alert('Recipe saved successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save recipe.');
+    }
+  };
 
   const data = (rawData as any) || {
     date: currentDate,
@@ -228,11 +258,17 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
                 </div>
               </div>
 
-              <Button type="submit" variant="primary" size="md" className="w-full mt-2">
-                <Plus className="w-4 h-4 mr-1" /> Log Meal
-              </Button>
+              <div className="flex gap-2 mt-4">
+                <Button type="button" variant="secondary" size="md" className="flex-1" onClick={handleSaveRecipe}>
+                  Save as Recipe
+                </Button>
+                <Button type="submit" variant="primary" size="md" className="flex-1">
+                  <Plus className="w-4 h-4 mr-1" /> Log Meal
+                </Button>
+              </div>
             </form>
           </Card>
+          <RecipeList currentDate={currentDate} />
         </div>
 
         {/* Meal Logs List */}

@@ -12,6 +12,28 @@ export interface FoodItem {
   isCustom: boolean;
 }
 
+export interface RecipeIngredient {
+  foodId?: string;
+  name: string;
+  servingSize: string;
+  quantity: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface Recipe {
+  _id: string;
+  name: string;
+  description?: string;
+  ingredients: RecipeIngredient[];
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+}
+
 export interface WaterLog {
   _id: string;
   amount: number; // in ml
