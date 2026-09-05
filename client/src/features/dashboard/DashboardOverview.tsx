@@ -7,10 +7,11 @@ import { LoadingState } from '../../components/ui/LoadingState';
 import { useSummary } from '../../services/summaryService';
 import { DailySummary } from '../../types';
 import { Dumbbell, Utensils, Scale, ArrowRight, Activity } from 'lucide-react';
+import { AICoach } from './AICoach';
 
 interface DashboardOverviewProps {
   currentDate: string;
-  onNavigateTab: (tab: 'workouts' | 'meals' | 'water' | 'weight') => void;
+  onNavigateTab: (tab: 'workouts' | 'meals' | 'water' | 'weight' | 'analytics') => void;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDate, onNavigateTab }) => {
@@ -158,17 +159,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
           </div>
         </Card>
 
-        {/* Pillar 4: Body Weight */}
+        {/* Pillar 4: Weight Tracking */}
         <Card
           title="Scale Weight"
-          subtitle={`Target: ${bodyMetrics?.targetWeight || 72} kg`}
+          subtitle={`Target: ${bodyMetrics?.targetWeight || '--'} kg`}
           action={
             <Button variant="ghost" size="sm" onClick={() => onNavigateTab('weight')}>
-              Weigh <ArrowRight className="w-3.5 h-3.5 ml-1" />
+              Log <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           }
         >
-          <div className="flex items-center justify-between py-2">
+          <div className="flex items-center justify-between py-1">
             <div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-bold font-mono text-kaizen-weight">
@@ -177,16 +178,35 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
                 <span className="text-xs font-mono text-kaizen-muted">kg</span>
               </div>
               <p className="text-xs text-kaizen-muted mt-1 font-mono">
-                {bodyMetrics?.weight
-                  ? `Goal delta: ${(bodyMetrics.weight - (bodyMetrics.targetWeight || 72)) > 0 ? '+' : ''}${(bodyMetrics.weight - (bodyMetrics.targetWeight || 72)).toFixed(1)} kg`
-                  : 'No weigh-in logged today'}
+                {bodyMetrics?.weight ? 'Logged today' : 'No entry today'}
               </p>
             </div>
-            <div className="w-12 h-12 rounded-control bg-kaizen-weight/10 border border-kaizen-weight/20 flex items-center justify-center text-kaizen-weight">
+            <div className="w-12 h-12 shrink-0 rounded-control bg-kaizen-weight/10 border border-kaizen-weight/20 flex items-center justify-center text-kaizen-weight">
               <Scale className="w-6 h-6" />
             </div>
           </div>
         </Card>
+      </div>
+      
+      {/* AI Coach & Gamification Banner */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+           <AICoach />
+        </div>
+        <div className="lg:col-span-1">
+           <Card title="Your Journey" subtitle="Kaizen Health Score">
+             <div className="flex flex-col items-center justify-center p-4">
+               <div className="text-6xl font-black text-kaizen-primary mb-2 font-mono drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                 85
+               </div>
+               <p className="text-xs text-kaizen-muted mb-4">Level 1 • 0 XP • 0 Day Streak</p>
+               <div className="w-full bg-kaizen-surface-elevated rounded-full h-2 mb-2">
+                  <div className="bg-kaizen-primary h-2 rounded-full" style={{ width: '45%' }}></div>
+               </div>
+               <p className="text-[10px] text-kaizen-subtle font-mono text-center">450 XP to Next Level</p>
+             </div>
+           </Card>
+        </div>
       </div>
     </div>
   );
