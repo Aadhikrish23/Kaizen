@@ -1,5 +1,17 @@
 // Centralized TypeScript Interfaces for Kaizen Platform
 
+export interface FoodItem {
+  _id: string;
+  name: string;
+  brand?: string;
+  servingSize: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  isCustom: boolean;
+}
+
 export interface WaterLog {
   _id: string;
   amount: number; // in ml

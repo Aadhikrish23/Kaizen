@@ -6,8 +6,9 @@ import { Badge } from '../../components/ui/Badge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useMealLogs, useAddMealLog, useDeleteMealLog } from '../../services/mealService';
 import { useAuth } from '../../contexts/AuthContext';
-import { MealLog } from '../../types';
+import { MealLog, FoodItem } from '../../types';
 import { Trash2, Plus, Utensils } from 'lucide-react';
+import { FoodSearch } from '../../components/ui/FoodSearch';
 
 interface MealTrackerProps {
   currentDate: string;
@@ -152,13 +153,25 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
         <div className="lg:col-span-5">
           <Card title="Log Meal" subtitle="Enter meal details and estimated calories">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Meal Name"
-                placeholder="e.g. Scrambled eggs & sourdough"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-kaizen-muted">Find Food or Enter Name</label>
+                <FoodSearch 
+                  onSelectFood={(food: FoodItem) => {
+                    setName(food.name);
+                    setCalories(String(food.calories));
+                    setProtein(String(food.protein));
+                    setCarbs(String(food.carbs));
+                    setFat(String(food.fat));
+                  }} 
+                  className="mb-2" 
+                />
+                <Input
+                  placeholder="Or type manual meal name..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <Input

@@ -29,6 +29,7 @@ import workoutsRouter from './routes/workouts';
 import summaryRouter from './routes/summary';
 import authRouter from './routes/auth';
 import profileRouter from './routes/profile';
+import foodsRouter from './routes/foods';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -41,6 +42,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/profile', profileRouter);
+app.use('/api/v1/foods', foodsRouter);
 app.use('/api/v1/water', waterRouter);
 app.use('/api/v1/meals', mealsRouter);
 app.use('/api/v1/weight', weightRouter);
