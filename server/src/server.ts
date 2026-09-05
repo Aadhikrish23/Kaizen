@@ -27,7 +27,18 @@ import weightRouter from './routes/weight';
 import exercisesRouter from './routes/exercises';
 import workoutsRouter from './routes/workouts';
 import summaryRouter from './routes/summary';
+import authRouter from './routes/auth';
+import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import path from 'path';
 
+app.use(cookieParser());
+
+const swaggerDocument = YAML.load(path.join(__dirname, 'docs', 'swagger.yml'));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/water', waterRouter);
 app.use('/api/v1/meals', mealsRouter);
 app.use('/api/v1/weight', weightRouter);
@@ -47,6 +58,9 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
     }
   });
 });
+
+import { errorHandler } from './middleware/errorHandler';
+app.use(errorHandler);
 
 // 6. Start listener
 app.listen(PORT, () => {

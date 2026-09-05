@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IMealLog extends Document {
+  userId: mongoose.Types.ObjectId;
   name: string;
   calories: number;
   protein?: number;
@@ -14,6 +15,7 @@ export interface IMealLog extends Document {
 }
 
 const MealLogSchema: Schema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true, trim: true },
   calories: { type: Number, required: true, min: 0 },
   protein: { type: Number, default: 0 },

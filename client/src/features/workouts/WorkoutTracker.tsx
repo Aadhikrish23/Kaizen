@@ -3,8 +3,9 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
-import { workoutService } from '../../services/workoutService';
-import { exerciseService } from '../../services/exerciseService';
+import { LoadingState } from '../../components/ui/LoadingState';
+import { useSplitSchedule, useWorkoutLogs, useAddWorkoutLog } from '../../services/workoutService';
+import { useExercises, useAddExercise } from '../../services/exerciseService';
 import { WorkoutLog, WorkoutSplitSchedule, Exercise, WorkoutExercise } from '../../types';
 import { Dumbbell, Plus, Trash2, CheckCircle2, Circle, Calendar, Flame, Clock } from 'lucide-react';
 
@@ -14,9 +15,17 @@ interface WorkoutTrackerProps {
 }
 
 export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onUpdate }) => {
-  const [schedule, setSchedule] = useState<WorkoutSplitSchedule | null>(null);
-  const [currentWorkout, setCurrentWorkout] = useState<WorkoutLog | null>(null);
-  const [exercisesCatalog, setExercisesCatalog] = useState<Exercise[]>([]);
+  const { data: scheduleData, isLoading: loadingSchedule } = useSplitSchedule();
+  const { data: workoutData, isLoading: loadingWorkout } = useWorkoutLogs(currentDate);
+  const { data: catalogData, isLoading: loadingCatalog } = useExercises();
+
+  const { mutateAsync: addWorkoutLog } = useAddWorkoutLog();
+  const { mutateAsync: addExercise } = useAddExercise();
+
+  const schedule: WorkoutSplitSchedule | null = (scheduleData as any) || null;
+  const currentWorkout: WorkoutLog | null = Array.isArray(workoutData) ? (workoutData[0] as any) : ((workoutData as any) || null);
+  const exercisesCatalog: Exercise[] = (catalogData as any) || [];
+
   const [selectedSplitName, setSelectedSplitName] = useState('Push Day');
   const [activeExercises, setActiveExercises] = useState<WorkoutExercise[]>([]);
   const [duration, setDuration] = useState('45');
@@ -28,48 +37,25 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
   const [newExMuscle, setNewExMuscle] = useState<'chest' | 'back' | 'legs' | 'shoulders' | 'biceps' | 'triceps' | 'core'>('chest');
   const [newExEquipment, setNewExEquipment] = useState<'dumbbell' | 'barbell' | 'bodyweight' | 'band' | 'cable' | 'machine' | 'other'>('dumbbell');
 
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const [sched, workout, catalog] = await Promise.all([
-        workoutService.getSplitSchedule(),
-        workoutService.getWorkoutForDate(currentDate),
-        exerciseService.getExercises()
-      ]);
-      setSchedule(sched);
-      setCurrentWorkout(workout);
-      setExercisesCatalog(catalog);
-
-      if (workout) {
-        setSelectedSplitName(workout.splitName);
-        setActiveExercises(workout.exercises);
-        setDuration(workout.durationMinutes ? workout.durationMinutes.toString() : '45');
-        setNotes(workout.notes || '');
-      } else if (sched) {
-        setSelectedSplitName(sched.today.splitName);
-      }
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadData();
-  }, [currentDate]);
+    if (currentWorkout) {
+      setSelectedSplitName(currentWorkout.splitName);
+      setActiveExercises(currentWorkout.exercises);
+      setDuration(currentWorkout.durationMinutes ? currentWorkout.durationMinutes.toString() : '45');
+      setNotes(currentWorkout.notes || '');
+    } else if (schedule) {
+      setSelectedSplitName(schedule.today.splitName);
+      setActiveExercises([]); // Clear when switching to empty date
+    }
+  }, [currentWorkout, schedule]);
 
-  if (loading && !currentWorkout && activeExercises.length === 0) {
-    return (
-      <div className="py-20 text-center text-xs font-mono text-kaizen-muted">
-        Loading workout session...
-      </div>
-    );
+  const isLoading = loadingSchedule || loadingWorkout || loadingCatalog;
+
+  if (isLoading && !currentWorkout && activeExercises.length === 0) {
+    return <LoadingState message="Loading workout session..." />;
   }
 
   // Exercise additions to workout session
@@ -136,7 +122,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
 
     try {
       setError(null);
-      await workoutService.saveWorkout({
+      await addWorkoutLog({
         date: currentDate,
         splitName: selectedSplitName,
         muscleGroups: Array.from(new Set(activeExercises.map(e => e.targetMuscle))),
@@ -146,7 +132,6 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
-      await loadData();
       if (onUpdate) onUpdate();
     } catch (err) {
       setError((err as Error).message);
@@ -158,13 +143,13 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
     if (!newExName) return;
 
     try {
-      const created = await exerciseService.createExercise({
+      await addExercise({
         name: newExName,
         targetMuscle: newExMuscle,
         equipment: newExEquipment
       });
-      setExercisesCatalog([...exercisesCatalog, created]);
-      handleAddExerciseToSession(created);
+      // Optionally we might want to wait and get the created exercise to add it directly to session, 
+      // but without the full return type from addExercise we can just close the modal.
       setNewExName('');
       setShowNewExercise(false);
     } catch (err) {
@@ -224,7 +209,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
               {schedule?.today.splitName || selectedSplitName}
             </h3>
             <div className="flex gap-1.5 mt-2 flex-wrap">
-              {schedule?.today.targetMuscles.map(m => (
+              {schedule?.today.targetMuscles.map((m: string) => (
                 <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
                   {m}
                 </span>
@@ -253,7 +238,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
               {schedule?.tomorrow.splitName || 'Pull Day'}
             </h3>
             <div className="flex gap-1.5 mt-2 flex-wrap">
-              {schedule?.tomorrow.targetMuscles.map(m => (
+              {schedule?.tomorrow.targetMuscles.map((m: string) => (
                 <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
                   {m}
                 </span>

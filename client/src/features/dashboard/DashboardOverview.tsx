@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { ProgressRing } from '../../components/ui/ProgressRing';
-import { summaryService } from '../../services/summaryService';
+import { LoadingState } from '../../components/ui/LoadingState';
+import { useSummary } from '../../services/summaryService';
 import { DailySummary } from '../../types';
 import { Dumbbell, Utensils, Scale, ArrowRight, Activity } from 'lucide-react';
 
@@ -13,33 +14,11 @@ interface DashboardOverviewProps {
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDate, onNavigateTab }) => {
-  const [summary, setSummary] = useState<DailySummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useSummary(currentDate);
+  const summary = data as unknown as DailySummary;
 
-  const loadSummary = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await summaryService.getDailySummary(currentDate);
-      setSummary(data);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSummary();
-  }, [currentDate]);
-
-  if (loading && !summary) {
-    return (
-      <div className="py-20 text-center text-xs font-mono text-kaizen-muted">
-        Loading daily summary metrics...
-      </div>
-    );
+  if (isLoading && !summary) {
+    return <LoadingState message="Loading daily summary metrics..." />;
   }
 
   const nutrition = summary?.nutrition;
@@ -74,7 +53,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
 
       {error && (
         <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-control">
-          {error}
+          {(error as Error).message || 'Failed to load summary'}
         </div>
       )}
 

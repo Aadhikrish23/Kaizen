@@ -16,6 +16,7 @@ export interface IWorkoutExercise {
 }
 
 export interface IWorkoutLog extends Document {
+  userId: mongoose.Types.ObjectId;
   date: string; // format "YYYY-MM-DD"
   splitName: string; // e.g. "Push Day - Chest & Triceps"
   muscleGroups: string[];
@@ -43,6 +44,7 @@ const WorkoutExerciseSchema = new Schema({
 }, { _id: false });
 
 const WorkoutLogSchema: Schema = new Schema({
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: String, required: true, index: true },
   splitName: { type: String, required: true, default: 'Custom Training' },
   muscleGroups: [{ type: String }],

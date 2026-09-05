@@ -1,13 +1,9 @@
-import { DailySummary, ApiResponse } from '../types';
+﻿import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../api/client';
 
-export const summaryService = {
-  // Fetch consolidated dashboard daily health stats for a given day
-  async getDailySummary(date: string): Promise<DailySummary> {
-    const response = await fetch(`/api/v1/summary?date=${date}`);
-    const res: ApiResponse<DailySummary> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to fetch daily summary');
-    }
-    return res.data;
-  }
+export const useSummary = (date: string) => {
+  return useQuery({
+    queryKey: ['summary', date],
+    queryFn: () => apiClient.get(`/summary?date=${date}`),
+  });
 };

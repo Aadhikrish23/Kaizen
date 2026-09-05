@@ -1,39 +1,43 @@
-import { WaterLog, ApiResponse } from '../types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../api/client';
 
-export const waterService = {
-  // Fetch all water logs for a specific day
-  async getWaterLogs(date: string): Promise<{ date: string; totalAmount: number; logs: WaterLog[] }> {
-    const response = await fetch(`/api/v1/water?date=${date}`);
-    const res: ApiResponse<{ date: string; totalAmount: number; logs: WaterLog[] }> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to fetch water logs');
-    }
-    return res.data;
-  },
+const getWaterLogs = async (date: string) => {
+  return apiClient.get(`/water?date=${date}`);
+};
 
-  // Add a new water intake record
-  async addWaterLog(amount: number, time: string, date: string): Promise<WaterLog> {
-    const response = await fetch('/api/v1/water', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, time, date })
-    });
-    const res: ApiResponse<WaterLog> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to add water record');
-    }
-    return res.data;
-  },
+const addWaterLog = async (data: { amount: number; time: string; date: string }) => {
+  return apiClient.post('/water', data);
+};
 
-  // Delete a specific water log by its ID
-  async deleteWaterLog(id: string): Promise<{ id: string }> {
-    const response = await fetch(`/api/v1/water/${id}`, {
-      method: 'DELETE'
-    });
-    const res: ApiResponse<{ id: string }> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to delete water record');
-    }
-    return res.data;
-  }
+const deleteWaterLog = async (id: string) => {
+  return apiClient.delete(`/water/${id}`);
+};
+
+export const useWaterLogs = (date: string) => {
+  return useQuery({
+    queryKey: ['waterLogs', date],
+    queryFn: () => getWaterLogs(date),
+  });
+};
+
+export const useAddWaterLog = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addWaterLog,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['waterLogs', variables.date] });
+      queryClient.invalidateQueries({ queryKey: ['summary', variables.date] });
+    },
+  });
+};
+
+export const useDeleteWaterLog = (date: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteWaterLog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['waterLogs', date] });
+      queryClient.invalidateQueries({ queryKey: ['summary', date] });
+    },
+  });
 };

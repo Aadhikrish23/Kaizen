@@ -1,57 +1,32 @@
-import { MealLog, ApiResponse } from '../types';
+﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../api/client';
+import { MealLog } from '../types';
 
-export interface DailyMealsData {
-  date: string;
-  totalCalories: number;
-  totalProtein: number;
-  totalCarbs: number;
-  totalFat: number;
-  meals: MealLog[];
-}
+export const useMealLogs = (date: string) => {
+  return useQuery({
+    queryKey: ['mealLogs', date],
+    queryFn: () => apiClient.get(`/meals?date=${date}`),
+  });
+};
 
-export const mealService = {
-  // Fetch all meals logged for a specific day
-  async getMealLogs(date: string): Promise<DailyMealsData> {
-    const response = await fetch(`/api/v1/meals?date=${date}`);
-    const res: ApiResponse<DailyMealsData> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to fetch meal logs');
-    }
-    return res.data;
-  },
+export const useAddMealLog = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: Omit<MealLog, '_id' | 'createdAt' | 'updatedAt'>) => apiClient.post('/meals', data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['mealLogs', variables.date] });
+      queryClient.invalidateQueries({ queryKey: ['summary', variables.date] });
+    },
+  });
+};
 
-  // Add a new meal record
-  async addMealLog(mealData: {
-    name: string;
-    calories: number;
-    protein?: number;
-    carbs?: number;
-    fat?: number;
-    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
-    time: string;
-    date: string;
-  }): Promise<MealLog> {
-    const response = await fetch('/api/v1/meals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(mealData)
-    });
-    const res: ApiResponse<MealLog> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to add meal log');
-    }
-    return res.data;
-  },
-
-  // Delete a specific meal record by ID
-  async deleteMealLog(id: string): Promise<{ id: string }> {
-    const response = await fetch(`/api/v1/meals/${id}`, {
-      method: 'DELETE'
-    });
-    const res: ApiResponse<{ id: string }> = await response.json();
-    if (!res.success) {
-      throw new Error(res.error?.message || 'Failed to delete meal log');
-    }
-    return res.data;
-  }
+export const useDeleteMealLog = (date: string) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiClient.delete(`/meals/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mealLogs', date] });
+      queryClient.invalidateQueries({ queryKey: ['summary', date] });
+    },
+  });
 };

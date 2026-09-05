@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
-import { mealService, DailyMealsData } from '../../services/mealService';
+import { LoadingState } from '../../components/ui/LoadingState';
+import { useMealLogs, useAddMealLog, useDeleteMealLog } from '../../services/mealService';
+import { MealLog } from '../../types';
 import { Trash2, Plus, Utensils } from 'lucide-react';
 
 interface MealTrackerProps {
@@ -12,16 +14,18 @@ interface MealTrackerProps {
 }
 
 export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate }) => {
-  const [data, setData] = useState<DailyMealsData>({
+  const { data: rawData, isLoading, error } = useMealLogs(currentDate);
+  const { mutateAsync: addMealLog } = useAddMealLog();
+  const { mutateAsync: deleteMealLog } = useDeleteMealLog(currentDate);
+
+  const data = (rawData as any) || {
     date: currentDate,
     totalCalories: 0,
     totalProtein: 0,
     totalCarbs: 0,
     totalFat: 0,
-    meals: []
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    meals: [] as MealLog[]
+  };
 
   // Form State
   const [name, setName] = useState('');
@@ -33,23 +37,6 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
 
   const calorieGoal = 2200;
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await mealService.getMealLogs(currentDate);
-      setData(res);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, [currentDate]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !calories) return;
@@ -57,7 +44,7 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
     try {
       const now = new Date();
       const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      await mealService.addMealLog({
+      await addMealLog({
         name,
         calories: Number(calories),
         protein: protein ? Number(protein) : 0,
@@ -75,20 +62,18 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
       setCarbs('');
       setFat('');
 
-      await loadData();
       if (onUpdate) onUpdate();
     } catch (err) {
-      setError((err as Error).message);
+      console.error(err);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
-      await mealService.deleteMealLog(id);
-      await loadData();
+      await deleteMealLog(id);
       if (onUpdate) onUpdate();
     } catch (err) {
-      setError((err as Error).message);
+      console.error(err);
     }
   };
 
@@ -110,7 +95,7 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
 
       {error && (
         <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-control">
-          {error}
+          {(error as Error).message || 'Failed to load data'}
         </div>
       )}
 
@@ -218,8 +203,8 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
         {/* Meal Logs List */}
         <div className="lg:col-span-7">
           <Card title="Today's Meals" subtitle={`${data.meals.length} meal entries recorded`}>
-            {loading ? (
-              <p className="text-xs text-kaizen-muted font-mono py-4 text-center">Loading meals...</p>
+            {isLoading ? (
+              <LoadingState message="Loading meals..." />
             ) : data.meals.length === 0 ? (
               <div className="py-8 text-center text-xs text-kaizen-muted border border-dashed border-kaizen-border rounded-control">
                 <Utensils className="w-6 h-6 text-kaizen-subtle mx-auto mb-2 opacity-50" />
@@ -227,7 +212,7 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
               </div>
             ) : (
               <div className="divide-y divide-kaizen-border/60">
-                {data.meals.map((meal) => (
+                {data.meals.map((meal: MealLog) => (
                   <div key={meal._id} className="py-3 flex items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -237,13 +222,13 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
                         </Badge>
                         <span className="text-xs font-mono text-kaizen-subtle">{meal.time}</span>
                       </div>
-                      {(meal.protein || meal.carbs || meal.fat) && (
+                      {(meal.protein || meal.carbs || meal.fat) ? (
                         <div className="text-[11px] font-mono text-kaizen-muted flex gap-2">
                           {meal.protein ? <span>P: {meal.protein}g</span> : null}
                           {meal.carbs ? <span>C: {meal.carbs}g</span> : null}
                           {meal.fat ? <span>F: {meal.fat}g</span> : null}
                         </div>
-                      )}
+                      ) : null}
                     </div>
 
                     <div className="flex items-center gap-3">

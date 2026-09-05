@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { ProgressRing } from '../../components/ui/ProgressRing';
-import { waterService } from '../../services/waterService';
+import { LoadingState } from '../../components/ui/LoadingState';
+import { useWaterLogs, useAddWaterLog, useDeleteWaterLog } from '../../services/waterService';
 import { WaterLog } from '../../types';
 import { Droplets, Trash2, Plus } from 'lucide-react';
 
@@ -13,41 +14,25 @@ interface WaterTrackerProps {
 }
 
 export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdate }) => {
-  const [logs, setLogs] = useState<WaterLog[]>([]);
-  const [totalAmount, setTotalAmount] = useState(0);
   const [customAmount, setCustomAmount] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const goal = 2500; // 2500 ml baseline daily hydration target
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await waterService.getWaterLogs(currentDate);
-      setLogs(data.logs);
-      setTotalAmount(data.totalAmount);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data, isLoading, error } = useWaterLogs(currentDate);
+  const { mutateAsync: addWaterLog } = useAddWaterLog();
+  const { mutateAsync: deleteWaterLog } = useDeleteWaterLog(currentDate);
 
-  useEffect(() => {
-    loadData();
-  }, [currentDate]);
+  const logs: WaterLog[] = (data as any)?.logs || [];
+  const totalAmount: number = (data as any)?.totalAmount || 0;
 
   const handleAddWater = async (amount: number) => {
     try {
       const now = new Date();
       const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      await waterService.addWaterLog(amount, time, currentDate);
-      await loadData();
+      await addWaterLog({ amount, time, date: currentDate });
       if (onUpdate) onUpdate();
     } catch (err) {
-      setError((err as Error).message);
+      console.error(err);
     }
   };
 
@@ -62,11 +47,10 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdat
 
   const handleDelete = async (id: string) => {
     try {
-      await waterService.deleteWaterLog(id);
-      await loadData();
+      await deleteWaterLog(id);
       if (onUpdate) onUpdate();
     } catch (err) {
-      setError((err as Error).message);
+      console.error(err);
     }
   };
 
@@ -84,7 +68,7 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdat
 
       {error && (
         <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-control">
-          {error}
+          {(error as Error).message || 'Failed to load data'}
         </div>
       )}
 
@@ -164,8 +148,8 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdat
 
           {/* Today's History Log */}
           <Card title="Today's Logs" subtitle={`${logs.length} entries recorded today`}>
-            {loading ? (
-              <p className="text-xs text-kaizen-muted font-mono py-4 text-center">Loading logs...</p>
+            {isLoading ? (
+              <LoadingState message="Loading logs..." />
             ) : logs.length === 0 ? (
               <div className="py-6 text-center text-xs text-kaizen-muted border border-dashed border-kaizen-border rounded-control">
                 No water logged yet today.
