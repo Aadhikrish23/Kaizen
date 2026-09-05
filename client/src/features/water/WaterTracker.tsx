@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { ProgressRing } from '../../components/ui/ProgressRing';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useWaterLogs, useAddWaterLog, useDeleteWaterLog } from '../../services/waterService';
+import { useAuth } from '../../contexts/AuthContext';
 import { WaterLog } from '../../types';
 import { Droplets, Trash2, Plus } from 'lucide-react';
 
@@ -15,8 +16,9 @@ interface WaterTrackerProps {
 
 export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdate }) => {
   const [customAmount, setCustomAmount] = useState('');
+  const { user } = useAuth();
 
-  const goal = 2500; // 2500 ml baseline daily hydration target
+  const goal = user?.waterDailyTargetMl ?? 2500;
 
   const { data, isLoading, error } = useWaterLogs(currentDate);
   const { mutateAsync: addWaterLog } = useAddWaterLog();

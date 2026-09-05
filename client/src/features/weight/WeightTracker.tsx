@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useWeightLogs, useAddWeightLog } from '../../services/weightService';
+import { useAuth } from '../../contexts/AuthContext';
 import { WeightLog } from '../../types';
 import { Scale, Trash2, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 
@@ -13,13 +14,14 @@ interface WeightTrackerProps {
 }
 
 export const WeightTracker: React.FC<WeightTrackerProps> = ({ currentDate, onUpdate }) => {
+  const { user } = useAuth();
   const { data: logsData, isLoading, error } = useWeightLogs(currentDate);
   const { mutateAsync: addWeightLog } = useAddWeightLog();
 
   const [weightInput, setWeightInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
 
-  const targetWeight = 72.0; // Target goal weight in kg
+  const targetWeight = user?.targetWeightKg ?? user?.currentWeightKg ?? 70;
 
   const history: WeightLog[] = Array.isArray(logsData) ? (logsData as any) : ((logsData as any) || []);
   const todayLog = history.find(log => log.date === currentDate) || null;

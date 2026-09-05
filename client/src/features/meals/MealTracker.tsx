@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useMealLogs, useAddMealLog, useDeleteMealLog } from '../../services/mealService';
+import { useAuth } from '../../contexts/AuthContext';
 import { MealLog } from '../../types';
 import { Trash2, Plus, Utensils } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface MealTrackerProps {
 }
 
 export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate }) => {
+  const { user } = useAuth();
   const { data: rawData, isLoading, error } = useMealLogs(currentDate);
   const { mutateAsync: addMealLog } = useAddMealLog();
   const { mutateAsync: deleteMealLog } = useDeleteMealLog(currentDate);
@@ -35,7 +37,8 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
   const [fat, setFat] = useState('');
   const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('lunch');
 
-  const calorieGoal = 2200;
+  const calorieGoal = user?.calorieDailyTarget ?? 2000;
+  const proteinGoal = user?.proteinDailyTargetG ?? 150;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,28 +103,47 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
       )}
 
       {/* Overview Stat Bar */}
-      <div className="p-5 bg-kaizen-surface border border-kaizen-border rounded-structural">
-        <div className="flex justify-between items-baseline mb-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-mono text-kaizen-text">
-              {data.totalCalories.toLocaleString()}
-            </span>
-            <span className="text-xs font-mono text-kaizen-muted">/ {calorieGoal} kcal ({caloriePercent}%)</span>
+      <div className="p-5 bg-kaizen-surface border border-kaizen-border rounded-structural space-y-4">
+        {/* Calories */}
+        <div>
+          <div className="flex justify-between items-baseline mb-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold font-mono text-kaizen-text">
+                {data.totalCalories.toLocaleString()}
+              </span>
+              <span className="text-xs font-mono text-kaizen-muted">/ {calorieGoal} kcal ({caloriePercent}%)</span>
+            </div>
+            <span className="text-xs font-mono text-kaizen-muted">Calories</span>
           </div>
-          <div className="flex gap-4 text-xs font-mono">
-            <span className="text-kaizen-muted">P: <strong className="text-kaizen-text">{data.totalProtein}g</strong></span>
-            <span className="text-kaizen-muted">C: <strong className="text-kaizen-text">{data.totalCarbs}g</strong></span>
-            <span className="text-kaizen-muted">F: <strong className="text-kaizen-text">{data.totalFat}g</strong></span>
+          <div className="w-full h-2 bg-kaizen-border rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-500 ${
+                data.totalCalories > calorieGoal ? 'bg-rose-500' : 'bg-kaizen-calories'
+              }`}
+              style={{ width: `${caloriePercent}%` }}
+            />
           </div>
         </div>
-
-        <div className="w-full h-2 bg-kaizen-border rounded-full overflow-hidden">
-          <div
-            className={`h-full transition-all duration-500 ${
-              data.totalCalories > calorieGoal ? 'bg-rose-500' : 'bg-kaizen-calories'
-            }`}
-            style={{ width: `${caloriePercent}%` }}
-          />
+        {/* Protein */}
+        <div>
+          <div className="flex justify-between items-baseline mb-2">
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg font-bold font-mono text-kaizen-text">{data.totalProtein}g</span>
+              <span className="text-xs font-mono text-kaizen-muted">/ {proteinGoal}g ({Math.min(100, Math.round((data.totalProtein / proteinGoal) * 100))}%)</span>
+            </div>
+            <span className="text-xs font-mono text-kaizen-muted">Protein</span>
+          </div>
+          <div className="w-full h-1.5 bg-kaizen-border rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-500 transition-all duration-500"
+              style={{ width: `${Math.min(100, Math.round((data.totalProtein / proteinGoal) * 100))}%` }}
+            />
+          </div>
+        </div>
+        {/* Carbs & Fat inline */}
+        <div className="flex gap-6 text-xs font-mono text-kaizen-muted pt-1 border-t border-kaizen-border">
+          <span>Carbs: <strong className="text-kaizen-text">{data.totalCarbs}g</strong></span>
+          <span>Fat: <strong className="text-kaizen-text">{data.totalFat}g</strong></span>
         </div>
       </div>
 
