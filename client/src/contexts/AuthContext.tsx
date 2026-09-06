@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
 
 export interface User {
@@ -58,12 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (data: User & { accessToken: string }) => {
     const { accessToken: token, ...userData } = data;
     setAccessToken(token);
+    localStorage.setItem('kaizen_access_token', token);
     setUser(userData as User);
   };
 
   const register = (data: User & { accessToken: string }) => {
     const { accessToken: token, ...userData } = data;
     setAccessToken(token);
+    localStorage.setItem('kaizen_access_token', token);
     setUser(userData as User);
   };
 
@@ -78,6 +80,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // ignore
     } finally {
       setAccessToken(null);
+      localStorage.removeItem('kaizen_access_token');
       setUser(null);
     }
   };

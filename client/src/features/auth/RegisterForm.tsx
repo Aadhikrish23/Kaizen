@@ -21,7 +21,11 @@ export const RegisterForm: React.FC = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      const response = await apiClient.post('/auth/register', { email, password, firstName, lastName });
+      const response = await apiClient.post('/auth/register', { 
+        email, 
+        password, 
+        name: `${firstName} ${lastName}`.trim() 
+      });
       register(response as any);
       navigate('/dashboard');
     } catch (err: any) {
