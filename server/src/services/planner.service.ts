@@ -962,7 +962,35 @@ export const removeExerciseFromDay = async (
 
 export const deleteUserPlan = async (userId: string | mongoose.Types.ObjectId): Promise<IUserWorkoutPlan> => {
   await UserWorkoutPlan.findOneAndDelete({ userId });
-  return await configurePlan(userId, DEFAULT_PREFERENCES);
+
+  // If there's an uncompleted/unstarted workout log for today that was loaded from the deleted plan, clear it
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayLog = await WorkoutLog.findOne({ userId, date: todayStr });
+  if (todayLog && todayLog.exercises.every(e => e.sets.every(s => !s.completed))) {
+    await WorkoutLog.findByIdAndDelete(todayLog._id);
+  }
+
+  // Create clean slate: 7 days, all designated as rest with 0 exercises
+  const emptyPlan = new UserWorkoutPlan({
+    userId,
+    programName: 'No Active Routine',
+    isCustomPlan: true,
+    preferences: DEFAULT_PREFERENCES,
+    schedule: DAY_NAMES.map((name, idx) => ({
+      dayNumber: idx + 1,
+      dayName: name,
+      isRestDay: true,
+      title: 'Rest & Recovery',
+      focus: 'Recovery',
+      targetMuscles: [],
+      estimatedDurationMinutes: 0,
+      exercises: [],
+    })),
+    dailyAdaptations: [],
+    adherenceRate: 100,
+  });
+
+  return await emptyPlan.save();
 };
 
 

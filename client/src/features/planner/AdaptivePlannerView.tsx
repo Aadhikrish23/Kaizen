@@ -254,7 +254,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
     try {
       await deletePlanMutation();
       setConfirmDeletePlan(false);
-      setActionNotice('Workout plan reset to default inventory schedule.');
+      setActionNotice('Workout routine cleared.');
       setTimeout(() => setActionNotice(null), 3000);
     } catch (err: any) {
       alert(err?.response?.data?.message || 'Failed to reset plan');

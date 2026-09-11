@@ -29,29 +29,51 @@ export const getSchedule = async (userId?: string) => {
         const tomorrowDay = plan.schedule.find((d: any) => d.dayNumber === nextDayNumber);
 
         if (todayDay && tomorrowDay) {
+          const todayHasExercises = !todayDay.isRestDay && todayDay.exercises && todayDay.exercises.length > 0;
+          const tomorrowHasExercises = !tomorrowDay.isRestDay && tomorrowDay.exercises && tomorrowDay.exercises.length > 0;
+
           return {
             today: {
               dayNumber: todayDay.dayNumber,
-              splitName: todayDay.title,
-              targetMuscles: todayDay.targetMuscles || [],
-              status: todayDay.isRestDay ? 'rest' : 'active',
-              isRestDay: todayDay.isRestDay,
+              splitName: todayHasExercises ? todayDay.title : 'Rest & Recovery',
+              targetMuscles: todayHasExercises ? (todayDay.targetMuscles || []) : [],
+              status: todayHasExercises ? 'active' : 'rest',
+              isRestDay: !todayHasExercises,
               exercisesCount: todayDay.exercises?.length || 0,
             },
             tomorrow: {
               dayNumber: tomorrowDay.dayNumber,
-              splitName: tomorrowDay.title,
-              targetMuscles: tomorrowDay.targetMuscles || [],
-              status: tomorrowDay.isRestDay ? 'rest' : 'upcoming',
-              isRestDay: tomorrowDay.isRestDay,
+              splitName: tomorrowHasExercises ? tomorrowDay.title : 'Rest & Recovery',
+              targetMuscles: tomorrowHasExercises ? (tomorrowDay.targetMuscles || []) : [],
+              status: tomorrowHasExercises ? 'upcoming' : 'rest',
+              isRestDay: !tomorrowHasExercises,
               exercisesCount: tomorrowDay.exercises?.length || 0,
             }
           };
         }
       }
     } catch (e) {
-      // Fallback to default splits
+      // Fallback
     }
+
+    return {
+      today: {
+        dayNumber: jsDay === 0 ? 7 : jsDay,
+        splitName: 'Rest & Recovery',
+        targetMuscles: [],
+        status: 'rest',
+        isRestDay: true,
+        exercisesCount: 0,
+      },
+      tomorrow: {
+        dayNumber: tomorrowDay(jsDay) === 0 ? 7 : tomorrowDay(jsDay),
+        splitName: 'Rest & Recovery',
+        targetMuscles: [],
+        status: 'rest',
+        isRestDay: true,
+        exercisesCount: 0,
+      }
+    };
   }
 
   const todaySplit = DEFAULT_SPLITS.find(s => s.dayIndex === jsDay) || DEFAULT_SPLITS[0];

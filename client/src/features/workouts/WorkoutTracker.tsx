@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { LoadingState } from '../../components/ui/LoadingState';
-import { useSplitSchedule, useWorkoutLogs, useAddWorkoutLog } from '../../services/workoutService';
+import { useSplitSchedule, useWorkoutLogs, useAddWorkoutLog, useDeleteWorkoutLog } from '../../services/workoutService';
 import { useExercises, useAddExercise } from '../../services/exerciseService';
 import { useInventory } from '../../services/inventoryService';
 import { useUserPlan, useActivatePlannedDay } from '../../services/plannerService';
@@ -29,6 +29,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
   const { mutateAsync: addWorkoutLog } = useAddWorkoutLog();
   const { mutateAsync: addExercise } = useAddExercise();
   const { mutateAsync: activatePlannedDay, isPending: isActivatingPlan } = useActivatePlannedDay();
+  const { mutateAsync: deleteWorkoutLog, isPending: isDeletingWorkout } = useDeleteWorkoutLog(currentDate);
 
   const schedule: WorkoutSplitSchedule | null = (scheduleData as any) || null;
   const currentWorkout: WorkoutLog | null = Array.isArray(workoutData) ? (workoutData[0] as any) : ((workoutData as any) || null);
@@ -145,9 +146,49 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
     setIsVideoModalOpen(true);
   };
 
-  const handleRemoveExerciseFromSession = (index: number) => {
+  const handleClearSession = async () => {
+    if (activeExercises.length > 0 && !window.confirm('Clear all movements and discard this active workout session?')) {
+      return;
+    }
+    try {
+      setError(null);
+      if (currentWorkout && (currentWorkout as any)._id) {
+        await deleteWorkoutLog((currentWorkout as any)._id);
+      }
+      setActiveExercises([]);
+      setSelectedSplitName('');
+      setDuration('45');
+      setNotes('');
+      setSavedSuccess(false);
+      if (onUpdate) onUpdate();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err.message || 'Failed to clear session');
+    }
+  };
+
+  const handleRemoveExerciseFromSession = async (index: number) => {
     const updated = activeExercises.filter((_, i) => i !== index);
     setActiveExercises(updated);
+    if (currentWorkout && (currentWorkout as any)._id) {
+      try {
+        if (updated.length === 0) {
+          await deleteWorkoutLog((currentWorkout as any)._id);
+          setSelectedSplitName('');
+        } else {
+          await addWorkoutLog({
+            date: currentDate,
+            splitName: selectedSplitName,
+            muscleGroups: Array.from(new Set(updated.map(e => e.targetMuscle))),
+            exercises: updated,
+            durationMinutes: duration ? parseInt(duration, 10) : 45,
+            notes,
+          });
+        }
+        if (onUpdate) onUpdate();
+      } catch (e) {
+        console.error('Failed to sync exercise removal', e);
+      }
+    }
   };
 
   const handleAddSet = (exerciseIndex: number) => {
@@ -259,6 +300,19 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
               <Calendar className="w-3.5 h-3.5 text-emerald-400" /> Workout Planner
             </Button>
           )}
+          {activeExercises.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isDeletingWorkout}
+              onClick={handleClearSession}
+              className="gap-1.5 text-xs text-kaizen-muted hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30"
+              title="Discard all exercises and clear this active workout session"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {isDeletingWorkout ? 'Clearing...' : 'Clear Session'}
+            </Button>
+          )}
           <Button variant="primary" size="sm" onClick={handleSaveWorkout}>
             {currentWorkout ? 'Update Session' : 'Save Session'}
           </Button>
@@ -285,27 +339,40 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
             <div className="flex items-center gap-2 mb-1">
               <Calendar className="w-3.5 h-3.5 text-kaizen-workout" />
               <span className="text-[11px] font-mono text-kaizen-muted uppercase tracking-wider">Today's Focus</span>
-              <Badge variant="rose" size="sm">Active</Badge>
+              <Badge variant={schedule?.today.isRestDay && activeExercises.length === 0 ? 'neutral' : 'rose'} size="sm">
+                {schedule?.today.isRestDay && activeExercises.length === 0 ? 'Rest' : 'Active'}
+              </Badge>
             </div>
             <h3 className="font-bold text-base text-kaizen-text">
-              {schedule?.today.splitName || selectedSplitName}
+              {activeExercises.length > 0
+                ? (selectedSplitName || schedule?.today.splitName || 'Active Workout')
+                : (schedule?.today.splitName || 'Rest & Recovery')}
             </h3>
             <div className="flex gap-1.5 mt-2 flex-wrap">
-              {schedule?.today.targetMuscles.map((m: string) => (
-                <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
-                  {m}
+              {schedule?.today.targetMuscles && schedule.today.targetMuscles.length > 0 ? (
+                schedule.today.targetMuscles.map((m: string) => (
+                  <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
+                    {m}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[10px] font-mono text-kaizen-subtle">
+                  {schedule?.today.isRestDay && activeExercises.length === 0 ? 'Recovery / Rest Day' : 'Custom Session'}
                 </span>
-              ))}
+              )}
             </div>
           </div>
-          <input
-            type="text"
-            value={selectedSplitName}
-            onChange={(e) => setSelectedSplitName(e.target.value)}
-            className="text-xs font-mono bg-kaizen-bg border border-kaizen-border rounded-control px-2 py-1 text-kaizen-text w-32"
-            placeholder="Custom split"
-            title="Edit today's split name"
-          />
+          <div className="flex flex-col items-end gap-1">
+            <span className="text-[10px] font-mono text-kaizen-muted uppercase">Session Split:</span>
+            <input
+              type="text"
+              value={selectedSplitName}
+              onChange={(e) => setSelectedSplitName(e.target.value)}
+              className="text-xs font-mono bg-kaizen-bg border border-kaizen-border rounded-control px-2.5 py-1 text-kaizen-text w-40 focus:border-kaizen-primary outline-none"
+              placeholder="e.g. Push Day"
+              title="Edit today's split name"
+            />
+          </div>
         </div>
 
         {/* Tomorrow */}
@@ -314,17 +381,25 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-3.5 h-3.5 text-kaizen-muted" />
               <span className="text-[11px] font-mono text-kaizen-muted uppercase tracking-wider">Tomorrow's Preview</span>
-              <Badge variant="neutral" size="sm">Upcoming</Badge>
+              <Badge variant="neutral" size="sm">
+                {schedule?.tomorrow.isRestDay ? 'Rest' : 'Upcoming'}
+              </Badge>
             </div>
             <h3 className="font-semibold text-base text-kaizen-text">
-              {schedule?.tomorrow.splitName || 'Pull Day'}
+              {schedule?.tomorrow.splitName || 'Rest & Recovery'}
             </h3>
             <div className="flex gap-1.5 mt-2 flex-wrap">
-              {schedule?.tomorrow.targetMuscles.map((m: string) => (
-                <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
-                  {m}
+              {schedule?.tomorrow.targetMuscles && schedule.tomorrow.targetMuscles.length > 0 ? (
+                schedule.tomorrow.targetMuscles.map((m: string) => (
+                  <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
+                    {m}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[10px] font-mono text-kaizen-subtle">
+                  Recovery / Rest Day
                 </span>
-              ))}
+              )}
             </div>
           </div>
         </div>

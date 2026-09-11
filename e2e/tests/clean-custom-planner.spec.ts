@@ -149,6 +149,19 @@ test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => 
     await page.screenshot({ path: path.join(artifactDir, '30_workout_tracker_populated.png') });
     console.log('Saved 30_workout_tracker_populated.png');
 
+    // Test Clear Session button
+    console.log('Testing Clear Session button...');
+    page.on('dialog', dialog => dialog.accept());
+    const clearSessionBtn = page.locator('button:has-text("Clear Session")');
+    await expect(clearSessionBtn).toBeVisible();
+    await clearSessionBtn.click();
+    await page.waitForTimeout(1000);
+
+    // Verify session exercises are cleared and empty state displays
+    await expect(page.locator('text=No exercises added to this session yet')).toBeVisible({ timeout: 5000 });
+    await page.screenshot({ path: path.join(artifactDir, '34_workout_session_cleared.png') });
+    console.log('Saved 34_workout_session_cleared.png');
+
     console.log('[7/7] All tests completed successfully!');
   });
 
@@ -287,8 +300,8 @@ test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => 
     await page.waitForTimeout(1000);
 
     // Verify reset notification toast and badge reverts
-    await expect(page.locator('text=Workout plan reset to default inventory schedule.')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('span:has-text("Preset Routine")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=Workout routine cleared.')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('span:has-text("No Active Routine")')).toBeVisible({ timeout: 5000 });
 
     console.log('3-button top header, schedule pane edit and delete flows verified successfully!');
   });

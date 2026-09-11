@@ -182,6 +182,9 @@ export interface SplitScheduleItem {
   splitName: string;
   targetMuscles: string[];
   status: 'active' | 'upcoming' | 'rest';
+  isRestDay?: boolean;
+  exercisesCount?: number;
+  dayNumber?: number;
 }
 
 export interface WorkoutSplitSchedule {
