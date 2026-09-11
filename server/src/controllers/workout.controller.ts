@@ -5,7 +5,9 @@ import { SuccessResponse } from '../types/api';
 import { AppError } from '../middleware/errorHandler';
 
 export const getSchedule = asyncHandler(async (req: Request, res: Response) => {
-  const data = workoutService.getSchedule();
+  // @ts-ignore
+  const userId = req.user?.id;
+  const data = await workoutService.getSchedule(userId);
   const response: SuccessResponse<typeof data> = {
     success: true,
     data

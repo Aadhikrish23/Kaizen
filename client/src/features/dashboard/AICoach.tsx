@@ -3,7 +3,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { useInsights, useChatCoach } from '../../services/aiService';
-import { Sparkles, Bot, User as UserIcon, Send } from 'lucide-react';
+import { MessageSquare, Bot, User as UserIcon, Send } from 'lucide-react';
 
 export const AICoach: React.FC = () => {
   const { data: insights } = useInsights();
@@ -38,16 +38,14 @@ export const AICoach: React.FC = () => {
   return (
     <Card className="h-full flex flex-col">
       <div className="p-4 border-b border-kaizen-border flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-kaizen-primary" />
-          <div>
-            <h3 className="font-bold text-kaizen-text leading-tight">Kaizen AI Coach</h3>
-            <p className="text-[10px] font-mono text-kaizen-muted">Powered by Local Ollama &bull; Phi-3</p>
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-kaizen-primary/10 border border-kaizen-primary/20 flex items-center justify-center text-kaizen-primary">
+            <MessageSquare className="w-4 h-4" />
           </div>
-        </div>
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Phi-3 Mini
+          <div>
+            <h3 className="font-bold text-sm text-kaizen-text leading-tight">Training & Nutrition Advisor</h3>
+            <p className="text-[11px] text-kaizen-muted font-mono">Personalized guidance based on your daily targets</p>
+          </div>
         </div>
       </div>
       

@@ -98,7 +98,7 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
   doc.setFontSize(8.5);
   doc.setTextColor(...textMuted);
   doc.text(
-    'Self-improving resistance training program calibrated to physical equipment inventory & verified biomechanics.',
+    'Personalized weekly training program calibrated to available equipment and progression targets.',
     margin,
     currentY
   );
@@ -353,7 +353,7 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
     '• RPE Benchmark: Maintain Rate of Perceived Exertion between 7.5 and 8.5 (leave 1-2 clean reps in reserve).',
     '• Progressive Overload Trigger: When all prescribed sets & reps are logged with RPE <= 7.5, advance load by +1kg to +2.5kg.',
     '• Controlled Eccentric Tempo: Lower every repetition under 2-3 seconds of tension. Avoid momentum and bounce.',
-    '• Adaptation Sync: Use the live session logger in Kaizen to record performance; your next cycle will auto-calibrate.',
+    '• Training Consistency: Record your sets & weights in Kaizen to systematically track progressive overload over time.',
   ];
 
   doc.setFillColor(...bgLight);

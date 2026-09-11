@@ -1,4 +1,5 @@
 import WorkoutLog from '../models/WorkoutLog';
+import UserWorkoutPlan from '../models/UserWorkoutPlan';
 import * as inventoryService from './inventory.service';
 
 const DEFAULT_SPLITS = [
@@ -11,24 +12,67 @@ const DEFAULT_SPLITS = [
   { dayIndex: 0, splitName: 'Active Recovery / Rest', muscles: [] } // Sunday
 ];
 
-export const getSchedule = () => {
+export const getSchedule = async (userId?: string) => {
   const today = new Date();
-  const todayDay = today.getDay(); // 0-6
-  const tomorrowDay = (todayDay + 1) % 7;
+  const jsDay = today.getDay(); // 0-6
+  const tomorrowDay = (todayDay: number) => (todayDay + 1) % 7;
 
-  const todaySplit = DEFAULT_SPLITS.find(s => s.dayIndex === todayDay) || DEFAULT_SPLITS[0];
-  const tomorrowSplit = DEFAULT_SPLITS.find(s => s.dayIndex === tomorrowDay) || DEFAULT_SPLITS[1];
+  // If user has a workout plan configured, align to their plan
+  if (userId) {
+    try {
+      const plan = await UserWorkoutPlan.findOne({ userId });
+      if (plan && plan.schedule && plan.schedule.length > 0) {
+        const currentDayNumber = jsDay === 0 ? 7 : jsDay;
+        const nextDayNumber = currentDayNumber === 7 ? 1 : currentDayNumber + 1;
+
+        const todayDay = plan.schedule.find((d: any) => d.dayNumber === currentDayNumber);
+        const tomorrowDay = plan.schedule.find((d: any) => d.dayNumber === nextDayNumber);
+
+        if (todayDay && tomorrowDay) {
+          return {
+            today: {
+              dayNumber: todayDay.dayNumber,
+              splitName: todayDay.title,
+              targetMuscles: todayDay.targetMuscles || [],
+              status: todayDay.isRestDay ? 'rest' : 'active',
+              isRestDay: todayDay.isRestDay,
+              exercisesCount: todayDay.exercises?.length || 0,
+            },
+            tomorrow: {
+              dayNumber: tomorrowDay.dayNumber,
+              splitName: tomorrowDay.title,
+              targetMuscles: tomorrowDay.targetMuscles || [],
+              status: tomorrowDay.isRestDay ? 'rest' : 'upcoming',
+              isRestDay: tomorrowDay.isRestDay,
+              exercisesCount: tomorrowDay.exercises?.length || 0,
+            }
+          };
+        }
+      }
+    } catch (e) {
+      // Fallback to default splits
+    }
+  }
+
+  const todaySplit = DEFAULT_SPLITS.find(s => s.dayIndex === jsDay) || DEFAULT_SPLITS[0];
+  const tomorrowSplit = DEFAULT_SPLITS.find(s => s.dayIndex === tomorrowDay(jsDay)) || DEFAULT_SPLITS[1];
 
   return {
     today: {
+      dayNumber: jsDay === 0 ? 7 : jsDay,
       splitName: todaySplit.splitName,
       targetMuscles: todaySplit.muscles,
-      status: todaySplit.muscles.length > 0 ? 'active' : 'rest'
+      status: todaySplit.muscles.length > 0 ? 'active' : 'rest',
+      isRestDay: todaySplit.muscles.length === 0,
+      exercisesCount: 0,
     },
     tomorrow: {
+      dayNumber: tomorrowDay(jsDay) === 0 ? 7 : tomorrowDay(jsDay),
       splitName: tomorrowSplit.splitName,
       targetMuscles: tomorrowSplit.muscles,
-      status: tomorrowSplit.muscles.length > 0 ? 'upcoming' : 'rest'
+      status: tomorrowSplit.muscles.length > 0 ? 'upcoming' : 'rest',
+      isRestDay: tomorrowSplit.muscles.length === 0,
+      exercisesCount: 0,
     }
   };
 };

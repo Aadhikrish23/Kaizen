@@ -7,8 +7,9 @@ import { LoadingState } from '../../components/ui/LoadingState';
 import { useSplitSchedule, useWorkoutLogs, useAddWorkoutLog } from '../../services/workoutService';
 import { useExercises, useAddExercise } from '../../services/exerciseService';
 import { useInventory } from '../../services/inventoryService';
+import { useUserPlan, useActivatePlannedDay } from '../../services/plannerService';
 import { WorkoutLog, WorkoutSplitSchedule, Exercise, WorkoutExercise } from '../../types';
-import { Dumbbell, Plus, Trash2, CheckCircle2, Circle, Calendar, Flame, Clock, BookOpen, Sparkles, Play } from 'lucide-react';
+import { Dumbbell, Plus, Trash2, CheckCircle2, Circle, Calendar, Flame, Clock, BookOpen, Play } from 'lucide-react';
 import { ExerciseCatalogModal } from './ExerciseCatalogModal';
 import { ExerciseVideoModal } from './ExerciseVideoModal';
 
@@ -23,13 +24,41 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
   const { data: workoutData, isLoading: loadingWorkout } = useWorkoutLogs(currentDate);
   const { data: catalogData, isLoading: loadingCatalog } = useExercises();
   const { data: inventory } = useInventory();
+  const { data: userPlan } = useUserPlan();
 
   const { mutateAsync: addWorkoutLog } = useAddWorkoutLog();
   const { mutateAsync: addExercise } = useAddExercise();
+  const { mutateAsync: activatePlannedDay, isPending: isActivatingPlan } = useActivatePlannedDay();
 
   const schedule: WorkoutSplitSchedule | null = (scheduleData as any) || null;
   const currentWorkout: WorkoutLog | null = Array.isArray(workoutData) ? (workoutData[0] as any) : ((workoutData as any) || null);
   const exercisesCatalog: Exercise[] = (catalogData as any) || [];
+
+  const jsDay = new Date(currentDate).getDay(); // 0 is Sun, 1 is Mon...
+  const currentDayNumber = jsDay === 0 ? 7 : jsDay;
+  const todayPlannedDay = userPlan?.schedule?.find((d: any) => d.dayNumber === currentDayNumber);
+  const availableDaysWithExercises = (userPlan?.schedule || []).filter(
+    (d: any) => !d.isRestDay && d.exercises && d.exercises.length > 0
+  );
+
+  const handleLoadPlannedRoutine = async () => {
+    const dayToLoad = todayPlannedDay?.dayNumber || (schedule?.today as any)?.dayNumber || currentDayNumber;
+    try {
+      setError(null);
+      await activatePlannedDay({ dayNumber: dayToLoad, date: currentDate });
+    } catch (err: any) {
+      setError(err.message || 'Failed to load planned routine');
+    }
+  };
+
+  const handleLoadDayRoutine = async (dayNumber: number) => {
+    try {
+      setError(null);
+      await activatePlannedDay({ dayNumber, date: currentDate });
+    } catch (err: any) {
+      setError(err.message || 'Failed to load planned routine');
+    }
+  };
 
   const [selectedSplitName, setSelectedSplitName] = useState('Push Day');
   const [activeExercises, setActiveExercises] = useState<WorkoutExercise[]>([]);
@@ -225,9 +254,9 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
               variant="secondary"
               size="sm"
               onClick={onNavigateToPlanner}
-              className="gap-1.5 text-xs text-violet-400 border-violet-500/30 hover:border-violet-500"
+              className="gap-1.5 text-xs text-kaizen-text border-kaizen-border hover:border-emerald-500/50"
             >
-              <Sparkles className="w-3.5 h-3.5" /> Planner Blueprint
+              <Calendar className="w-3.5 h-3.5 text-emerald-400" /> Workout Planner
             </Button>
           )}
           <Button variant="primary" size="sm" onClick={handleSaveWorkout}>
@@ -306,12 +335,59 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
         {/* Session Exercises & Set Tables */}
         <div className="lg:col-span-8 space-y-4">
           {activeExercises.length === 0 ? (
-            <div className="p-12 text-center border border-dashed border-kaizen-border rounded-structural bg-kaizen-surface/40">
-              <Dumbbell className="w-8 h-8 text-kaizen-subtle mx-auto mb-3 opacity-40" />
-              <h4 className="font-semibold text-sm text-kaizen-text">No exercises added to this workout yet</h4>
-              <p className="text-xs text-kaizen-muted mt-1 max-w-sm mx-auto">
-                Select exercises from your directory on the right, or create a custom home gym movement to begin tracking sets.
-              </p>
+            <div className="p-10 text-center border border-dashed border-kaizen-border rounded-structural bg-kaizen-surface/40 space-y-4">
+              <div className="w-12 h-12 mx-auto rounded-full bg-kaizen-workout/10 border border-kaizen-workout/20 flex items-center justify-center text-kaizen-workout">
+                <Dumbbell className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-base text-kaizen-text">No exercises added to this session yet</h4>
+                <p className="text-xs text-kaizen-muted mt-1 max-w-md mx-auto">
+                  {todayPlannedDay && !todayPlannedDay.isRestDay && todayPlannedDay.exercises?.length > 0
+                    ? `You have a planned ${todayPlannedDay.title} scheduled for today with ${todayPlannedDay.exercises.length} exercises. Load it with 1 click or choose movements manually.`
+                    : availableDaysWithExercises.length > 0
+                    ? 'Load a routine from your custom weekly split, or select movements from the directory.'
+                    : 'Select exercises from your directory on the right, or configure a routine in your Workout Planner.'}
+                </p>
+              </div>
+              <div className="flex items-center justify-center gap-2 pt-2 flex-wrap">
+                {todayPlannedDay && !todayPlannedDay.isRestDay && todayPlannedDay.exercises?.length > 0 ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={isActivatingPlan}
+                    onClick={handleLoadPlannedRoutine}
+                    className="gap-2 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-kaizen-bg"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    {isActivatingPlan ? 'Loading Routine...' : `Load Planned Routine (${todayPlannedDay.title})`}
+                  </Button>
+                ) : (
+                  availableDaysWithExercises.map((d: any) => (
+                    <Button
+                      key={d.dayNumber}
+                      variant="primary"
+                      size="sm"
+                      disabled={isActivatingPlan}
+                      onClick={() => handleLoadDayRoutine(d.dayNumber)}
+                      className="gap-2 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-kaizen-bg"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      {isActivatingPlan ? 'Loading...' : `Load Routine: ${d.title} (${d.exercises.length} moves)`}
+                    </Button>
+                  ))
+                )}
+                {onNavigateToPlanner && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={onNavigateToPlanner}
+                    className="gap-1.5 text-xs text-kaizen-muted hover:text-kaizen-text border-kaizen-border"
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    Open Workout Planner
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             activeExercises.map((ex, exIndex) => (

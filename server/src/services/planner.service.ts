@@ -856,3 +856,104 @@ export const swapPlannedExercise = async (
   return await plan.save();
 };
 
+export const saveCustomPlan = async (
+  userId: string,
+  data: {
+    programName?: string;
+    daysPerWeek?: number;
+    schedule: IPlannedDay[];
+  }
+) => {
+  let plan = await UserWorkoutPlan.findOne({ userId });
+  if (!plan) {
+    plan = new UserWorkoutPlan({
+      userId,
+      preferences: {
+        daysPerWeek: data.daysPerWeek || data.schedule.filter(d => !d.isRestDay).length || 3,
+        sessionDurationMinutes: 45,
+        splitStyle: 'full_body',
+        experienceLevel: 'beginner',
+        targetFocus: 'general_fitness',
+      },
+      schedule: data.schedule,
+      dailyAdaptations: [{
+        date: new Date().toISOString().split('T')[0],
+        reason: `Created routine: "${data.programName || 'Custom Program'}"`,
+        type: 'volume_adjustment',
+      }],
+      adherenceRate: 100,
+    });
+  } else {
+    plan.schedule = data.schedule;
+    if (data.daysPerWeek) {
+      plan.preferences.daysPerWeek = data.daysPerWeek;
+    } else {
+      plan.preferences.daysPerWeek = data.schedule.filter(d => !d.isRestDay).length;
+    }
+    plan.dailyAdaptations.unshift({
+      date: new Date().toISOString().split('T')[0],
+      reason: `Updated routine: "${data.programName || 'Custom Program'}"`,
+      type: 'volume_adjustment',
+    });
+  }
+  return await plan.save();
+};
+
+export const addExerciseToDay = async (
+  userId: string,
+  dayNumber: number,
+  exercise: IPlannedExercise
+) => {
+  const plan = await UserWorkoutPlan.findOne({ userId });
+  if (!plan) throw new Error('No workout plan found to update');
+
+  const day = plan.schedule.find(d => d.dayNumber === dayNumber);
+  if (!day) throw new Error(`Day ${dayNumber} not found in schedule`);
+
+  day.exercises.push(exercise);
+  day.isRestDay = false;
+
+  plan.dailyAdaptations.unshift({
+    date: new Date().toISOString().split('T')[0],
+    reason: `Added "${exercise.exerciseName}" to Day ${dayNumber}`,
+    type: 'exercise_swap',
+    exerciseName: exercise.exerciseName,
+  });
+
+  return await plan.save();
+};
+
+export const removeExerciseFromDay = async (
+  userId: string,
+  dayNumber: number,
+  exerciseIndex: number
+) => {
+  const plan = await UserWorkoutPlan.findOne({ userId });
+  if (!plan) throw new Error('No workout plan found to update');
+
+  const day = plan.schedule.find(d => d.dayNumber === dayNumber);
+  if (!day) throw new Error(`Day ${dayNumber} not found in schedule`);
+
+  if (exerciseIndex < 0 || exerciseIndex >= day.exercises.length) {
+    throw new Error('Invalid exercise index');
+  }
+
+  const removedName = day.exercises[exerciseIndex].exerciseName;
+  day.exercises.splice(exerciseIndex, 1);
+
+  if (day.exercises.length === 0) {
+    day.isRestDay = true;
+    day.title = 'Rest & Recovery';
+  }
+
+  plan.dailyAdaptations.unshift({
+    date: new Date().toISOString().split('T')[0],
+    reason: `Removed "${removedName}" from Day ${dayNumber}`,
+    type: 'exercise_swap',
+    exerciseName: removedName,
+  });
+
+  return await plan.save();
+};
+
+

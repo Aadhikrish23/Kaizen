@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar as CalendarIcon, LogOut, Settings, BarChart3, Package, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
 import { AdaptivePlannerView } from '../features/planner/AdaptivePlannerView';
@@ -93,12 +93,12 @@ export const DashboardLayout = () => {
                         onClick={() => setWorkoutSubTab('planner')}
                         className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-xs font-mono transition-colors ${
                           workoutSubTab === 'planner'
-                            ? 'bg-violet-500/15 text-violet-300 font-bold'
+                            ? 'bg-emerald-500/15 text-emerald-300 font-bold'
                             : 'text-kaizen-muted hover:text-kaizen-text hover:bg-kaizen-surface-hover/50'
                         }`}
                       >
-                        <Sparkles className="w-3 h-3 text-violet-400" />
-                        <span>Adaptive Planner</span>
+                        <Calendar className="w-3 h-3 text-emerald-400" />
+                        <span>Workout Planner</span>
                       </button>
                       <button
                         onClick={() => setWorkoutSubTab('inventory')}
@@ -138,7 +138,7 @@ export const DashboardLayout = () => {
           {/* Date Selector in Sidebar */}
           <div className="pt-4 border-t border-kaizen-border/60">
             <label className="text-[11px] font-mono text-kaizen-subtle uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
-              <CalendarIcon className="w-3.5 h-3.5 text-kaizen-muted" /> Active Date
+              <Calendar className="w-3.5 h-3.5 text-kaizen-muted" /> Active Date
             </label>
             <input
               type="date"
@@ -201,12 +201,12 @@ export const DashboardLayout = () => {
                 onClick={() => setWorkoutSubTab('planner')}
                 className={`pb-3 text-sm font-medium transition-colors flex items-center gap-2 relative ${
                   workoutSubTab === 'planner'
-                    ? 'text-violet-400 border-b-2 border-violet-400 font-bold'
+                    ? 'text-emerald-400 border-b-2 border-emerald-400 font-bold'
                     : 'text-kaizen-muted hover:text-kaizen-text'
                 }`}
               >
-                <Sparkles className="w-4 h-4" />
-                Adaptive Planner
+                <Calendar className="w-4 h-4" />
+                Workout Planner
               </button>
               <button
                 onClick={() => setWorkoutSubTab('inventory')}
