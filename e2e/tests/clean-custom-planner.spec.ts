@@ -292,4 +292,109 @@ test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => 
 
     console.log('3-button top header, schedule pane edit and delete flows verified successfully!');
   });
+
+  test('User can use target focus chips, adjust sets/reps/weight inputs, and toggle inventory-friendly exercises in Custom Plan Builder', async ({ page }) => {
+    test.setTimeout(90000);
+
+    const artifactDir = 'C:\\Users\\aadhi\\.gemini\\antigravity\\brain\\b5d71a0f-2601-4a1a-ae35-846764369900';
+
+    // 1. Register fresh user
+    const testUserEmail = `custom_chips_${Date.now()}@kaizen.com`;
+    await page.goto('http://localhost:5173/register');
+    await page.fill('input[placeholder="John"]', 'Jordan');
+    await page.fill('input[placeholder="Doe"]', 'Peterson');
+    await page.fill('input[placeholder="Enter your email"]', testUserEmail);
+    await page.fill('input[placeholder="Create a password"]', password);
+    await page.click('button[type="submit"]');
+
+    await expect(page).toHaveURL(/.*\/onboarding/, { timeout: 15000 });
+    await page.locator('button:has-text("Skip for now")').first().click();
+    await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
+
+    // 2. Navigate to Workout Planner
+    const sidebar = page.locator('aside');
+    await sidebar.getByRole('button', { name: 'Workouts' }).click();
+    await page.waitForTimeout(400);
+
+    const plannerSubTab = page.locator('button:has-text("Workout Planner")').first();
+    await plannerSubTab.click();
+    await page.waitForTimeout(600);
+
+    // 3. Open Custom Plan Builder Modal
+    const createBtn = page.locator('button:has-text("Create Custom Plan")').first();
+    await createBtn.click();
+    await page.waitForTimeout(400);
+
+    const builderModal = page.locator('div.fixed.inset-0');
+    await expect(builderModal.locator('h3:has-text("Create Custom Workout Plan")')).toBeVisible({ timeout: 10000 });
+
+    // 4. Test Target Focus Chips & Clear Focus
+    console.log('Testing Target Focus chips pick list & Clear Focus...');
+    const clearFocusBtn = builderModal.locator('button:has-text("Clear Focus")');
+    if (await clearFocusBtn.isVisible()) {
+      await clearFocusBtn.click();
+      await page.waitForTimeout(200);
+    }
+
+    // Click "Legs" chip
+    const legsChip = builderModal.locator('button:has-text("Legs")').first();
+    await legsChip.click();
+    await page.waitForTimeout(300);
+
+    const targetFocusInput = builderModal.locator('input[placeholder="e.g. legs, chest, back, shoulders"]');
+    await expect(targetFocusInput).toHaveValue(/Legs/i);
+
+    // Click "Core" chip to multi-select
+    const coreChip = builderModal.locator('button:has-text("Core")').first();
+    await coreChip.click();
+    await page.waitForTimeout(300);
+    await expect(targetFocusInput).toHaveValue(/Core/i);
+
+    // 5. Test Inventory Friendly button next to Exercise Directory
+    console.log('Testing Inventory Friendly button next to Exercise Directory...');
+    const inventoryFriendlyBtn = builderModal.locator('button:has-text("Inventory Friendly")');
+    await expect(inventoryFriendlyBtn).toBeVisible();
+    await inventoryFriendlyBtn.click();
+    await page.waitForTimeout(400);
+
+    // Verify button has active styling class
+    await expect(inventoryFriendlyBtn).toHaveClass(/border-emerald-500/);
+
+    // 6. Add an exercise to Day 1 and adjust Sets, Reps & Weight
+    console.log('Adding exercise and adjusting sets, reps, weight...');
+    const firstAddBtn = builderModal.locator('button:has-text("Add")').first();
+    await firstAddBtn.click();
+    await page.waitForTimeout(300);
+
+    // Verify planned exercise row appears with interactive number inputs
+    const setsInput = builderModal.locator('input[type="number"]').nth(0);
+    const repsInput = builderModal.locator('input[type="number"]').nth(1);
+    const weightInput = builderModal.locator('input[type="number"]').nth(2);
+
+    await setsInput.fill('4');
+    await repsInput.fill('12');
+    await weightInput.fill('32.5');
+    await page.waitForTimeout(300);
+
+    await expect(setsInput).toHaveValue('4');
+    await expect(repsInput).toHaveValue('12');
+    await expect(weightInput).toHaveValue('32.5');
+
+    // 7. Capture visual proof screenshot
+    await page.screenshot({ path: path.join(artifactDir, '33_focus_chips_weight_reps_and_inventory_friendly.png') });
+    console.log('Saved 33_focus_chips_weight_reps_and_inventory_friendly.png');
+
+    // 8. Save the custom plan
+    const planNameInput = builderModal.locator('input[placeholder="e.g. 4-Day Hypertrophy Split"]');
+    await planNameInput.fill('Push & Arms Custom Split');
+    const saveBtn = builderModal.locator('button:has-text("Save Custom Plan")');
+    await saveBtn.click();
+    await page.waitForTimeout(1000);
+    await expect(builderModal).not.toBeVisible({ timeout: 5000 });
+
+    // Verify saved plan on planner page displays 4 sets × 12 reps and 32.5 kg load
+    await expect(page.locator('text=4 sets × 12 reps')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=32.5 kg')).toBeVisible({ timeout: 5000 });
+    console.log('All focus chips, sets/reps/weight adjustments, and inventory friendly filter successfully verified!');
+  });
 });

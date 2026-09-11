@@ -4,7 +4,9 @@ import { useExercises } from '../../services/exerciseService';
 import { PlannedDay, PlannedExercise, Exercise, UserWorkoutPlan } from '../../types';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
-import { X, Plus, Trash2, Check, Calendar, Dumbbell, Search } from 'lucide-react';
+import { X, Plus, Trash2, Check, Calendar, Dumbbell, Search, Package } from 'lucide-react';
+import { useInventory } from '../../services/inventoryService';
+import { isExerciseCompatibleWithEquipment } from './SwapExerciseModal';
 
 interface CustomPlanBuilderModalProps {
   isOpen: boolean;
@@ -15,6 +17,19 @@ interface CustomPlanBuilderModalProps {
 }
 
 const MUSCLE_PILLS = ['all', 'chest', 'back', 'legs', 'shoulders', 'biceps', 'triceps', 'core'] as const;
+
+export const FOCUS_CHIP_OPTIONS = [
+  'Chest',
+  'Back',
+  'Legs',
+  'Shoulders',
+  'Biceps',
+  'Triceps',
+  'Core',
+  'Push',
+  'Pull',
+  'Full Body',
+] as const;
 
 const getDefaultSchedule = (): PlannedDay[] => [
   {
@@ -145,8 +160,10 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
   const { mutateAsync: saveCustomPlan, isPending: isSaving } = useSaveCustomPlan();
   const { mutateAsync: deletePlanMutation, isPending: isDeleting } = useDeletePlan();
   const { data: exercisesData } = useExercises();
+  const { data: inventory } = useInventory();
 
   const exercisesList: Exercise[] = Array.isArray(exercisesData) ? exercisesData : [];
+  const inventoryEquipment = inventory?.equipment || [];
 
   const [programName, setProgramName] = useState('My Custom Split');
   const [activeDayIndex, setActiveDayIndex] = useState(0);
@@ -158,6 +175,7 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<string>('all');
   const [autoFocusFilterEnabled, setAutoFocusFilterEnabled] = useState(true);
+  const [inventoryFriendlyOnly, setInventoryFriendlyOnly] = useState(false);
 
   // Initialize schedule structure with 7 days
   const [schedule, setSchedule] = useState<PlannedDay[]>(getDefaultSchedule());
@@ -199,6 +217,43 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
     setSchedule(prev => {
       const copy = [...prev];
       copy[activeDayIndex] = { ...copy[activeDayIndex], ...updates };
+      return copy;
+    });
+  };
+
+  const handleToggleFocusChip = (chip: string) => {
+    const currentFocus = currentDay.focus || '';
+    const currentChips = currentFocus
+      .split(/[,&/]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const existsIndex = currentChips.findIndex(
+      c => c.toLowerCase() === chip.toLowerCase()
+    );
+
+    let updatedChips: string[];
+    if (existsIndex >= 0) {
+      updatedChips = currentChips.filter((_, idx) => idx !== existsIndex);
+    } else {
+      updatedChips = [...currentChips, chip];
+    }
+
+    updateCurrentDay({ focus: updatedChips.join(', ') });
+  };
+
+  const handleUpdateExercise = (exerciseIndex: number, updates: Partial<PlannedExercise>) => {
+    setSchedule(prev => {
+      const copy = [...prev];
+      const dayExercises = [...copy[activeDayIndex].exercises];
+      dayExercises[exerciseIndex] = {
+        ...dayExercises[exerciseIndex],
+        ...updates,
+      };
+      copy[activeDayIndex] = {
+        ...copy[activeDayIndex],
+        exercises: dayExercises,
+      };
       return copy;
     });
   };
@@ -300,8 +355,15 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
     }
   };
 
-  // Filter exercises by Search Query, Muscle Pill, or Target Focus
+  // Filter exercises by Inventory Friendly, Search Query, Muscle Pill, or Target Focus
   const filteredExercises = exercisesList.filter(ex => {
+    // 0. Inventory Friendly filter
+    if (inventoryFriendlyOnly) {
+      if (!isExerciseCompatibleWithEquipment(ex, inventoryEquipment)) {
+        return false;
+      }
+    }
+
     // 1. Text search takes absolute priority
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
@@ -467,9 +529,20 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-mono text-kaizen-text-muted uppercase mb-1">
-                        Target Focus
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] font-mono text-kaizen-text-muted uppercase">
+                          Target Focus
+                        </label>
+                        {currentDay.focus && (
+                          <button
+                            type="button"
+                            onClick={() => updateCurrentDay({ focus: '' })}
+                            className="text-[10px] font-mono text-kaizen-text-muted hover:text-white"
+                          >
+                            Clear Focus
+                          </button>
+                        )}
+                      </div>
                       <Input
                         type="text"
                         value={currentDay.focus}
@@ -477,6 +550,29 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
                         placeholder="e.g. legs, chest, back, shoulders"
                         className="bg-kaizen-card border-kaizen-border text-xs"
                       />
+                      {/* Pick list pile of chips */}
+                      <div className="flex items-center gap-1.5 flex-wrap mt-2">
+                        {FOCUS_CHIP_OPTIONS.map(chip => {
+                          const isSelected = (currentDay.focus || '')
+                            .split(/[,&/]+/)
+                            .map(s => s.trim().toLowerCase())
+                            .includes(chip.toLowerCase());
+                          return (
+                            <button
+                              key={chip}
+                              type="button"
+                              onClick={() => handleToggleFocusChip(chip)}
+                              className={`px-2 py-0.5 rounded text-[11px] font-medium border transition-all ${
+                                isSelected
+                                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-semibold shadow-sm'
+                                  : 'bg-kaizen-card border-kaizen-border text-kaizen-text-muted hover:text-white hover:border-kaizen-border/80'
+                              }`}
+                            >
+                              {chip}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
@@ -504,23 +600,64 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
                         currentDay.exercises.map((ex, exIdx) => (
                           <div
                             key={exIdx}
-                            className="p-2.5 rounded-lg bg-kaizen-card border border-kaizen-border flex items-center justify-between text-xs"
+                            className="p-3 rounded-lg bg-kaizen-card border border-kaizen-border flex flex-col gap-2 text-xs"
                           >
-                            <div>
-                              <div className="font-medium text-white">{ex.exerciseName}</div>
-                              <div className="text-[11px] font-mono text-kaizen-text-muted flex items-center gap-2 mt-0.5">
-                                <span>{ex.targetSets} sets × {ex.targetReps} reps</span>
-                                {ex.suggestedWeightKg > 0 && <span>• {ex.suggestedWeightKg} kg</span>}
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-white">{ex.exerciseName}</span>
+                                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-kaizen-text-secondary capitalize">
+                                  {ex.targetMuscle}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveExercise(exIdx)}
+                                className="text-kaizen-text-muted hover:text-rose-400 p-1 transition-colors"
+                                title="Remove exercise"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Adjustable Sets, Reps & Weight */}
+                            <div className="flex items-center gap-3 pt-1 border-t border-kaizen-border/40 flex-wrap">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-mono text-kaizen-text-muted uppercase">Sets:</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="20"
+                                  value={ex.targetSets}
+                                  onChange={e => handleUpdateExercise(exIdx, { targetSets: Math.max(1, parseInt(e.target.value) || 1) })}
+                                  className="w-12 bg-kaizen-bg border border-kaizen-border rounded px-1.5 py-0.5 text-xs text-white text-center font-mono focus:border-emerald-500 outline-none"
+                                />
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-mono text-kaizen-text-muted uppercase">Reps:</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="100"
+                                  value={ex.targetReps}
+                                  onChange={e => handleUpdateExercise(exIdx, { targetReps: Math.max(1, parseInt(e.target.value) || 1) })}
+                                  className="w-14 bg-kaizen-bg border border-kaizen-border rounded px-1.5 py-0.5 text-xs text-white text-center font-mono focus:border-emerald-500 outline-none"
+                                />
+                              </div>
+
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] font-mono text-kaizen-text-muted uppercase">Weight:</span>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="0.5"
+                                  value={ex.suggestedWeightKg || 0}
+                                  onChange={e => handleUpdateExercise(exIdx, { suggestedWeightKg: Math.max(0, parseFloat(e.target.value) || 0) })}
+                                  className="w-16 bg-kaizen-bg border border-kaizen-border rounded px-1.5 py-0.5 text-xs text-white text-center font-mono focus:border-emerald-500 outline-none"
+                                />
+                                <span className="text-[10px] font-mono text-kaizen-text-muted">kg</span>
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveExercise(exIdx)}
-                              className="text-kaizen-text-muted hover:text-rose-400 p-1 transition-colors"
-                              title="Remove exercise"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
                           </div>
                         ))
                       )}
@@ -542,9 +679,24 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
             {/* Right: Searchable & Target Focus Filtered Exercise Picker */}
             <div className="flex flex-col overflow-hidden bg-kaizen-bg/70 border border-kaizen-border rounded-xl p-4 space-y-2.5">
               <div className="flex items-center justify-between pb-1 border-b border-kaizen-border/60 shrink-0">
-                <div className="flex items-center gap-2">
-                  <Dumbbell className="w-4 h-4 text-emerald-400" />
-                  <span className="font-semibold text-sm text-white">Exercise Directory</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <Dumbbell className="w-4 h-4 text-emerald-400" />
+                    <span className="font-semibold text-sm text-white">Exercise Directory</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setInventoryFriendlyOnly(!inventoryFriendlyOnly)}
+                    className={`px-2 py-0.5 text-[11px] font-mono rounded border transition-all flex items-center gap-1 ${
+                      inventoryFriendlyOnly
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-semibold shadow-sm'
+                        : 'bg-kaizen-card border-kaizen-border text-kaizen-text-muted hover:text-white hover:border-kaizen-border/80'
+                    }`}
+                    title="Filter directory to movements compatible with your inventory equipment"
+                  >
+                    <Package className="w-3 h-3" />
+                    <span>Inventory Friendly</span>
+                  </button>
                 </div>
                 <span className="text-[11px] font-mono text-kaizen-text-muted">
                   {filteredExercises.length} available
