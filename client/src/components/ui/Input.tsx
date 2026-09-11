@@ -26,7 +26,8 @@ export const Input: React.FC<InputProps> = ({
       <div className="relative flex items-center">
         <input
           id={inputId}
-          className={`w-full bg-[#131722] border border-[#222A3C] rounded-control px-3.5 py-2 text-sm text-kaizen-text placeholder:text-kaizen-subtle transition-all duration-150 focus:border-emerald-500/80 focus:ring-1 focus:ring-emerald-500/40 focus:bg-[#0B0D13] disabled:opacity-50 disabled:cursor-not-allowed outline-none shadow-subtle ${
+          style={{ colorScheme: 'dark', ...props.style }}
+          className={`w-full !bg-[#131722] border border-[#222A3C] rounded-control px-3.5 py-2 text-sm !text-[#F8FAFC] placeholder:text-kaizen-subtle caret-emerald-400 transition-all duration-150 focus:border-emerald-500/80 focus:ring-1 focus:ring-emerald-500/40 focus:!bg-[#0B0D13] disabled:opacity-50 disabled:cursor-not-allowed outline-none shadow-subtle ${
             props.type === 'number' ? 'font-mono' : ''
           } ${suffix ? 'pr-12' : ''} ${error ? 'border-rose-500/60 focus:border-rose-500 focus:ring-rose-500/30' : ''} ${className}`}
           {...props}

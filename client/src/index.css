@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: dark;
   --color-primary: #10B981;
   --color-primary-hover: #059669;
   --color-background: #0B0D13;
@@ -18,6 +19,43 @@
   --space-xl: 32px;
   --space-2xl: 48px;
   --space-3xl: 64px;
+}
+
+html, body {
+  color-scheme: dark;
+  background-color: #0B0D13;
+  color: #F8FAFC;
+}
+
+/* Force dark styling on all form inputs and explicitly neutralize webkit autofill */
+input, textarea, select {
+  color-scheme: dark !important;
+}
+
+/* Chromium & WebKit Autofill Dark Mode Override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #131722 inset !important;
+  -webkit-text-fill-color: #F8FAFC !important;
+  box-shadow: 0 0 0 1000px #131722 inset !important;
+  caret-color: #10B981 !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:focus:-webkit-autofill,
+textarea:focus:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #0B0D13 inset !important;
+  -webkit-text-fill-color: #F8FAFC !important;
+  box-shadow: 0 0 0 1000px #0B0D13 inset !important;
+  caret-color: #10B981 !important;
 }
 
 @layer base {
