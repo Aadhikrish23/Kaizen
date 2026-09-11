@@ -11,6 +11,7 @@ interface CustomPlanBuilderModalProps {
   onClose: () => void;
   initialPlan?: UserWorkoutPlan | null;
   mode?: 'create' | 'edit';
+  initialDayIndex?: number;
 }
 
 const MUSCLE_PILLS = ['all', 'chest', 'back', 'legs', 'shoulders', 'biceps', 'triceps', 'core'] as const;
@@ -139,6 +140,7 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
   onClose,
   initialPlan,
   mode = 'create',
+  initialDayIndex = 0,
 }) => {
   const { mutateAsync: saveCustomPlan, isPending: isSaving } = useSaveCustomPlan();
   const { mutateAsync: deletePlanMutation, isPending: isDeleting } = useDeletePlan();
@@ -163,6 +165,11 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
   // Populate from initialPlan on open or mode switch
   useEffect(() => {
     if (isOpen) {
+      if (initialDayIndex !== undefined && initialDayIndex >= 0 && initialDayIndex < 7) {
+        setActiveDayIndex(initialDayIndex);
+      } else {
+        setActiveDayIndex(0);
+      }
       if (initialPlan && initialPlan.schedule && initialPlan.schedule.length > 0 && mode !== 'create') {
         setProgramName(initialPlan.programName || 'My Custom Split');
         setSchedule(JSON.parse(JSON.stringify(initialPlan.schedule)));
@@ -176,7 +183,7 @@ export const CustomPlanBuilderModal: React.FC<CustomPlanBuilderModalProps> = ({
       setError(null);
       setConfirmDelete(false);
     }
-  }, [isOpen, initialPlan, mode]);
+  }, [isOpen, initialPlan, mode, initialDayIndex]);
 
   if (!isOpen) return null;
 

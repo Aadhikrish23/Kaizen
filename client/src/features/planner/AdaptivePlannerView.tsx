@@ -24,6 +24,7 @@ import {
   useActivatePlannedDay,
   useRemoveExerciseFromPlanDay,
   useDeletePlan,
+  useSaveCustomPlan,
 } from '../../services/plannerService';
 import { useInventory } from '../../services/inventoryService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -55,10 +56,18 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
   const [showConfigurator, setShowConfigurator] = useState(false);
   const [isCustomBuilderOpen, setIsCustomBuilderOpen] = useState(false);
   const [builderMode, setBuilderMode] = useState<'create' | 'edit'>('create');
+  const [builderInitialDay, setBuilderInitialDay] = useState(0);
   const [confirmDeletePlan, setConfirmDeletePlan] = useState(false);
+  const [confirmClearDay, setConfirmClearDay] = useState(false);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
 
   const { mutateAsync: deletePlanMutation, isPending: isDeletingPlan } = useDeletePlan();
+  const { mutateAsync: saveCustomPlan } = useSaveCustomPlan();
+
+  // Inline day editing state
+  const [isEditingDayInline, setIsEditingDayInline] = useState(false);
+  const [inlineTitle, setInlineTitle] = useState('');
+  const [inlineFocus, setInlineFocus] = useState('');
 
   // Preference tuning state
   const [daysPerWeek, setDaysPerWeek] = useState<number>(3);
@@ -181,6 +190,61 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
     }
   };
 
+  const handleSaveDayInline = async () => {
+    if (!plan || !selectedDay) return;
+    try {
+      const updatedSchedule = plan.schedule.map(d => {
+        if (d.dayNumber === selectedDay.dayNumber) {
+          return {
+            ...d,
+            title: inlineTitle.trim() || d.title,
+            focus: inlineFocus.trim() || d.focus,
+          };
+        }
+        return d;
+      });
+      await saveCustomPlan({
+        programName: plan.programName || 'Custom Split',
+        daysPerWeek: updatedSchedule.filter(d => !d.isRestDay).length,
+        schedule: updatedSchedule,
+      });
+      setIsEditingDayInline(false);
+      setActionNotice('Day details saved.');
+      setTimeout(() => setActionNotice(null), 2500);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to save changes');
+    }
+  };
+
+  const handleClearCurrentDay = async (dayNumber: number) => {
+    if (!plan) return;
+    try {
+      const updatedSchedule = plan.schedule.map(d => {
+        if (d.dayNumber === dayNumber) {
+          return {
+            ...d,
+            exercises: [],
+            isRestDay: true,
+            estimatedDurationMinutes: 0,
+            title: 'Rest & Recovery',
+            focus: 'Scheduled Rest & Soft Tissue Recovery',
+          };
+        }
+        return d;
+      });
+      await saveCustomPlan({
+        programName: plan.programName || 'Custom Split',
+        daysPerWeek: updatedSchedule.filter(d => !d.isRestDay).length,
+        schedule: updatedSchedule,
+      });
+      setConfirmClearDay(false);
+      setActionNotice(`Day ${dayNumber} cleared.`);
+      setTimeout(() => setActionNotice(null), 2500);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to clear day');
+    }
+  };
+
   const handleDeleteOrResetPlan = async () => {
     if (!confirmDeletePlan) {
       setConfirmDeletePlan(true);
@@ -196,6 +260,17 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
       alert(err?.response?.data?.message || 'Failed to reset plan');
     }
   };
+
+  // Sync inline edit state when active day changes
+  React.useEffect(() => {
+    if (selectedDay) {
+      setInlineTitle(selectedDay.title);
+      setInlineFocus(selectedDay.focus);
+      setIsEditingDayInline(false);
+      setConfirmClearDay(false);
+      setConfirmDeletePlan(false);
+    }
+  }, [selectedDayNumber, plan]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
@@ -230,6 +305,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
           </p>
         </div>
 
+        {/* Exactly 3 Top Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="secondary"
@@ -239,30 +315,15 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             className="gap-1.5 text-xs text-kaizen-text border-kaizen-border hover:text-white"
           >
             <FileDown className="w-3.5 h-3.5 text-emerald-400" />
-            {isExportingPdf ? 'Exporting...' : 'Export PDF'}
+            Export PDF
           </Button>
-
-          {plan && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                setBuilderMode('edit');
-                setIsCustomBuilderOpen(true);
-              }}
-              className="gap-1.5 text-xs text-kaizen-text border-kaizen-border hover:text-white"
-              title="Edit this routine in custom plan builder"
-            >
-              <Pencil className="w-3.5 h-3.5 text-emerald-400" />
-              Edit Routine
-            </Button>
-          )}
 
           <Button
             variant="secondary"
             size="sm"
             onClick={() => {
               setBuilderMode('create');
+              setBuilderInitialDay(0);
               setIsCustomBuilderOpen(true);
             }}
             className="gap-1.5 text-xs border-emerald-500/30 text-emerald-400 hover:border-emerald-500"
@@ -271,40 +332,6 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             Create Custom Plan
           </Button>
 
-          {plan?.isCustomPlan && (
-            confirmDeletePlan ? (
-              <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-md">
-                <span className="text-xs text-rose-400">Reset custom plan?</span>
-                <button
-                  type="button"
-                  onClick={handleDeleteOrResetPlan}
-                  disabled={isDeletingPlan}
-                  className="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
-                >
-                  {isDeletingPlan ? 'Resetting...' : 'Confirm Reset'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setConfirmDeletePlan(false)}
-                  className="text-xs text-kaizen-text-muted hover:text-white ml-1"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setConfirmDeletePlan(true)}
-                className="gap-1.5 text-xs border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500"
-                title="Reset custom routine to default inventory plan"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                Reset Routine
-              </Button>
-            )
-          )}
-
           <Button
             variant="secondary"
             size="sm"
@@ -312,7 +339,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             className="gap-1.5 text-xs text-kaizen-text-secondary hover:text-white"
           >
             <Sliders className="w-3.5 h-3.5" />
-            {showConfigurator ? 'Close Presets' : 'Plan Settings'}
+            {showConfigurator ? 'Close Presets' : 'Plan Settings (Generate Plan)'}
           </Button>
         </div>
       </div>
@@ -469,8 +496,8 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
         <div className="bg-kaizen-card border border-kaizen-border rounded-xl p-5 sm:p-6 space-y-5">
           {/* Day Header & Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-kaizen-border">
-            <div>
-              <div className="flex items-center gap-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-mono text-emerald-400 font-semibold uppercase">
                   {selectedDay.dayName} • Day {selectedDay.dayNumber}
                 </span>
@@ -479,38 +506,179 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                     • ~{selectedDay.estimatedDurationMinutes || 45} mins
                   </span>
                 )}
+                {!isEditingDayInline && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInlineTitle(selectedDay.title);
+                      setInlineFocus(selectedDay.focus);
+                      setIsEditingDayInline(true);
+                    }}
+                    className="text-kaizen-text-muted hover:text-emerald-400 p-0.5 rounded transition-colors inline-flex items-center gap-1 text-[11px] font-mono ml-1"
+                    title="Edit session title and focus inline"
+                  >
+                    <Pencil className="w-3 h-3" />
+                    <span className="underline">Edit Title</span>
+                  </button>
+                )}
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight mt-1">
-                {selectedDay.title}
-              </h2>
-              <p className="text-xs text-kaizen-text-secondary mt-0.5">
-                {selectedDay.focus}
-              </p>
+
+              {isEditingDayInline ? (
+                <div className="mt-2.5 space-y-2 max-w-md">
+                  <input
+                    type="text"
+                    value={inlineTitle}
+                    onChange={e => setInlineTitle(e.target.value)}
+                    placeholder="Session Title (e.g. Upper Body Push)"
+                    className="w-full bg-kaizen-bg border border-kaizen-border rounded-lg px-3 py-1.5 text-xs text-white placeholder-kaizen-text-muted focus:border-emerald-500 outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={inlineFocus}
+                    onChange={e => setInlineFocus(e.target.value)}
+                    placeholder="Target Focus (e.g. Chest, Shoulders & Triceps)"
+                    className="w-full bg-kaizen-bg border border-kaizen-border rounded-lg px-3 py-1.5 text-xs text-kaizen-text placeholder-kaizen-text-muted focus:border-emerald-500 outline-none"
+                  />
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={handleSaveDayInline}
+                      className="px-3 py-1 rounded-md bg-emerald-500 hover:bg-emerald-400 text-kaizen-bg font-semibold text-xs transition-colors"
+                    >
+                      Save Details
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setInlineTitle(selectedDay.title);
+                        setInlineFocus(selectedDay.focus);
+                        setIsEditingDayInline(false);
+                      }}
+                      className="px-2.5 py-1 rounded-md bg-transparent hover:bg-white/5 text-kaizen-text-muted hover:text-white text-xs transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight mt-1">
+                    {selectedDay.title}
+                  </h2>
+                  <p className="text-xs text-kaizen-text-secondary mt-0.5">
+                    {selectedDay.focus}
+                  </p>
+                </>
+              )}
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {!selectedDay.isRestDay && (
-                <>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setIsAddExerciseOpen(true)}
-                    className="gap-1.5 text-xs text-white border-kaizen-border hover:border-emerald-500/50"
-                  >
-                    <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                    Add Exercise
-                  </Button>
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setBuilderMode('edit');
+                  setBuilderInitialDay(selectedDay.dayNumber - 1);
+                  setIsCustomBuilderOpen(true);
+                }}
+                className="gap-1.5 text-xs text-kaizen-text border-kaizen-border hover:text-white"
+                title="Edit routine in custom plan builder"
+              >
+                <Pencil className="w-3.5 h-3.5 text-emerald-400" />
+                Edit Day
+              </Button>
 
+              {!selectedDay.isRestDay && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsAddExerciseOpen(true)}
+                  className="gap-1.5 text-xs text-white border-kaizen-border hover:border-emerald-500/50"
+                >
+                  <Plus className="w-3.5 h-3.5 text-emerald-400" />
+                  Add Exercise
+                </Button>
+              )}
+
+              {/* Clear Day button */}
+              {selectedDay && !selectedDay.isRestDay && selectedDay.exercises.length > 0 && (
+                confirmClearDay ? (
+                  <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-md">
+                    <span className="text-xs text-rose-400">Clear day?</span>
+                    <button
+                      type="button"
+                      onClick={() => handleClearCurrentDay(selectedDay.dayNumber)}
+                      className="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmClearDay(false)}
+                      className="text-xs text-kaizen-text-muted hover:text-white ml-0.5"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
                   <Button
+                    variant="ghost"
                     size="sm"
-                    disabled={isActivating || selectedDay.exercises.length === 0}
-                    onClick={() => handleActivateDay(selectedDay.dayNumber)}
-                    className="gap-1.5 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-kaizen-bg"
+                    onClick={() => setConfirmClearDay(true)}
+                    className="gap-1.5 text-xs text-kaizen-text-muted hover:text-rose-400 hover:bg-rose-500/10"
+                    title="Clear exercises from this day"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    {isActivating ? 'Loading...' : 'Start This Workout'}
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Clear Day
                   </Button>
-                </>
+                )
+              )}
+
+              {/* Delete Routine option (if custom plan) */}
+              {plan?.isCustomPlan && (
+                confirmDeletePlan ? (
+                  <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-md">
+                    <span className="text-xs text-rose-400">Delete routine?</span>
+                    <button
+                      type="button"
+                      onClick={handleDeleteOrResetPlan}
+                      disabled={isDeletingPlan}
+                      className="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
+                    >
+                      {isDeletingPlan ? 'Deleting...' : 'Confirm'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDeletePlan(false)}
+                      className="text-xs text-kaizen-text-muted hover:text-white ml-0.5"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirmDeletePlan(true)}
+                    className="gap-1.5 text-xs text-kaizen-text-muted hover:text-rose-400 hover:bg-rose-500/10"
+                    title="Delete custom routine and reset to default inventory plan"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Delete Routine
+                  </Button>
+                )
+              )}
+
+              {!selectedDay.isRestDay && (
+                <Button
+                  size="sm"
+                  disabled={isActivating || selectedDay.exercises.length === 0}
+                  onClick={() => handleActivateDay(selectedDay.dayNumber)}
+                  className="gap-1.5 text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-kaizen-bg"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  {isActivating ? 'Loading...' : 'Start This Workout'}
+                </Button>
               )}
             </div>
           </div>
@@ -665,6 +833,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
         onClose={() => setIsCustomBuilderOpen(false)}
         initialPlan={plan}
         mode={builderMode}
+        initialDayIndex={builderInitialDay}
       />
 
       <ExerciseVideoModal

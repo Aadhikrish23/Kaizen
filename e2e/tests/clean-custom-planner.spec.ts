@@ -239,16 +239,25 @@ test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => 
     await page.waitForTimeout(1000);
     await expect(builderModal).not.toBeVisible({ timeout: 5000 });
 
-    // 5. Test Edit Routine
-    console.log('[5/6] Testing Edit Routine flow...');
-    // Header should now show Custom Plan badge and custom name
+    // 5. Verify Top Header has the 3 buttons: Export PDF, Create Custom Plan, Plan Settings (Generate Plan)
+    console.log('[5/7] Verifying top header has only 3 buttons...');
+    const exportPdfBtn = page.getByRole('button', { name: 'Export PDF' });
+    const createPlanBtn = page.getByRole('button', { name: 'Create Custom Plan' });
+    const planSettingsBtn = page.getByRole('button', { name: /Plan Settings/ });
+    await expect(exportPdfBtn).toBeVisible();
+    await expect(createPlanBtn).toBeVisible();
+    await expect(planSettingsBtn).toBeVisible();
+
+    // 6. Test Edit from Schedule Pane
+    console.log('[6/7] Testing Edit from Schedule Pane...');
+    // Header shows Custom Plan badge and custom name
     await expect(page.locator('span:has-text("Legs & Strength Custom Routine")')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('span:has-text("Custom Plan")')).toBeVisible();
 
-    // Click "Edit Routine"
-    const editBtn = page.locator('button:has-text("Edit Routine")').first();
-    await expect(editBtn).toBeVisible();
-    await editBtn.click();
+    // Click "Edit Day" button located inside the schedule pane
+    const editDayBtn = page.locator('button:has-text("Edit Day")').first();
+    await expect(editDayBtn).toBeVisible();
+    await editDayBtn.click();
     await page.waitForTimeout(500);
 
     // Verify modal is in Edit Mode
@@ -260,23 +269,27 @@ test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => 
     await builderModal.locator('button:has-text("Cancel")').first().click();
     await page.waitForTimeout(400);
 
-    // 6. Test Delete / Reset Routine
-    console.log('[6/6] Testing Reset / Delete Routine flow...');
-    const resetBtn = page.locator('button:has-text("Reset Routine")').first();
-    await expect(resetBtn).toBeVisible();
-    await resetBtn.click();
+    // Screenshot: Clean 3 top header buttons and schedule pane with edit/delete controls
+    await page.screenshot({ path: path.join(artifactDir, '32_clean_three_buttons_and_schedule_pane_edit.png') });
+    console.log('Saved 32_clean_three_buttons_and_schedule_pane_edit.png');
+
+    // 7. Test Delete / Reset Routine from Schedule Pane
+    console.log('[7/7] Testing Delete Routine from Schedule Pane...');
+    const deleteRoutineBtn = page.locator('button:has-text("Delete Routine")').first();
+    await expect(deleteRoutineBtn).toBeVisible();
+    await deleteRoutineBtn.click();
     await page.waitForTimeout(300);
 
     // Confirm button appears
-    const confirmResetBtn = page.locator('button:has-text("Confirm Reset")');
-    await expect(confirmResetBtn).toBeVisible();
-    await confirmResetBtn.click();
+    const confirmDeleteBtn = page.locator('button:has-text("Confirm")');
+    await expect(confirmDeleteBtn).toBeVisible();
+    await confirmDeleteBtn.click();
     await page.waitForTimeout(1000);
 
     // Verify reset notification toast and badge reverts
     await expect(page.locator('text=Workout plan reset to default inventory schedule.')).toBeVisible({ timeout: 5000 });
     await expect(page.locator('span:has-text("Preset Routine")')).toBeVisible({ timeout: 5000 });
 
-    console.log('Target focus synchronization, edit, and delete flows verified successfully!');
+    console.log('3-button top header, schedule pane edit and delete flows verified successfully!');
   });
 });
