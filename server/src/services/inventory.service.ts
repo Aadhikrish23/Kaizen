@@ -1,4 +1,4 @@
-﻿import mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import UserInventory, { IUserInventory, IEquipmentItem } from '../models/UserInventory';
 
 export const DEFAULT_EQUIPMENT: IEquipmentItem[] = [
@@ -35,13 +35,21 @@ export const DEFAULT_EQUIPMENT: IEquipmentItem[] = [
 export const getUserInventory = async (userId: string | mongoose.Types.ObjectId): Promise<IUserInventory> => {
   let inventory = await UserInventory.findOne({ userId });
   if (!inventory) {
-    inventory = await UserInventory.create({
-      userId,
-      equipment: DEFAULT_EQUIPMENT,
-      workingWeights: []
-    });
+    try {
+      inventory = await UserInventory.create({
+        userId,
+        equipment: DEFAULT_EQUIPMENT,
+        workingWeights: []
+      });
+    } catch (err: any) {
+      if (err.code === 11000) {
+        inventory = await UserInventory.findOne({ userId });
+      } else {
+        throw err;
+      }
+    }
   }
-  return inventory;
+  return inventory!;
 };
 
 export const updateUserInventory = async (

@@ -158,56 +158,60 @@ export const Onboarding: React.FC = () => {
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-lg border transition-all duration-150 ${
+      className={`w-full text-left p-4 rounded-control border transition-all duration-150 ${
         active
-          ? 'border-emerald-500 bg-emerald-500/10 text-kaizen-text'
-          : 'border-kaizen-border bg-kaizen-surface hover:border-kaizen-border/80 text-kaizen-muted hover:text-kaizen-text'
+          ? 'border-emerald-500/80 bg-emerald-500/15 text-white shadow-glow-emerald ring-1 ring-emerald-500/30'
+          : 'border-kaizen-border bg-kaizen-bg/70 hover:border-kaizen-border/80 text-kaizen-muted hover:text-white hover:bg-kaizen-surface-hover/50'
       }`}
     >
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold text-kaizen-text">{label}</p>
+          <p className="text-sm font-semibold text-white">{label}</p>
           <p className="text-xs text-kaizen-muted mt-0.5">{desc}</p>
         </div>
-        {active && <Check className="w-4 h-4 text-emerald-500 shrink-0" />}
+        {active && <Check className="w-4 h-4 text-emerald-400 shrink-0" />}
       </div>
     </button>
   );
 
   return (
-    <div className="min-h-screen bg-kaizen-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen bg-kaizen-bg flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none"></div>
+
+      <div className="w-full max-w-lg relative z-10 space-y-6">
         {/* Header */}
-        <div className="mb-8 text-center relative">
+        <div className="text-center relative">
           <button
             type="button"
             onClick={handleSkip}
-            className="absolute right-0 top-1 text-xs font-mono text-kaizen-muted hover:text-emerald-400 transition-colors"
+            className="absolute right-0 top-1 text-xs font-mono text-kaizen-subtle hover:text-emerald-400 transition-colors"
           >
             Skip for now &rarr;
           </button>
-          <div className="inline-flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold font-mono text-sm">K</div>
-            <span className="font-bold text-kaizen-text text-lg">Kaizen</span>
+          <div className="inline-flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 rounded-control bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-extrabold font-display text-base shadow-glow-emerald">
+              KZ
+            </div>
+            <span className="font-display font-extrabold text-white text-xl tracking-wider">KAIZEN</span>
           </div>
-          <h1 className="text-2xl font-bold text-kaizen-text">Set up your profile</h1>
-          <p className="text-kaizen-muted text-sm mt-1">Step {step} of 5</p>
+          <h1 className="text-2xl font-display font-extrabold text-white tracking-tight">Athlete Profiling & Calibration</h1>
+          <p className="text-kaizen-muted text-xs font-mono mt-1">Calibration Phase {step} of 5</p>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-kaizen-border rounded-full h-1 mb-8">
+        <div className="w-full bg-kaizen-border rounded-full h-1.5 overflow-hidden">
           <div
-            className="bg-emerald-500 h-1 rounded-full transition-all duration-500"
+            className="bg-gradient-to-r from-emerald-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-glow-emerald"
             style={{ width: `${(step / 5) * 100}%` }}
           />
         </div>
 
         {/* Card */}
-        <div className="bg-kaizen-surface border border-kaizen-border rounded-xl p-6">
+        <div className="bg-kaizen-surface border border-kaizen-border rounded-structural p-6 sm:p-7 card-sheen shadow-subtle">
           {/* Step 1 — Personal */}
           {step === 1 && (
             <div className="space-y-4">
-              <h2 className="text-base font-semibold text-kaizen-text">Personal Details</h2>
+              <h2 className="text-sm font-mono uppercase tracking-wider text-emerald-400 font-semibold">Personal Baselines</h2>
               <Input
                 label="Full Name"
                 type="text"
@@ -222,17 +226,17 @@ export const Onboarding: React.FC = () => {
                 onChange={(e) => set('dob', e.target.value)}
               />
               <div>
-                <label className="block text-xs font-medium text-kaizen-muted mb-2 uppercase tracking-wide">Gender</label>
-                <div className="grid grid-cols-3 gap-2">
+                <label className="block text-xs font-mono text-kaizen-subtle mb-2 uppercase tracking-wider">Biological Sex</label>
+                <div className="grid grid-cols-3 gap-2.5">
                   {(['male', 'female', 'other'] as const).map((g) => (
                     <button
                       key={g}
                       type="button"
                       onClick={() => set('gender', g)}
-                      className={`py-2.5 text-sm font-medium rounded-lg border capitalize transition-all duration-150 ${
+                      className={`py-2 text-xs font-mono font-semibold rounded-control border capitalize transition-all ${
                         form.gender === g
-                          ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                          : 'border-kaizen-border bg-transparent text-kaizen-muted hover:text-kaizen-text'
+                          ? 'border-emerald-500/80 bg-emerald-500/15 text-emerald-300 shadow-sm'
+                          : 'border-kaizen-border bg-kaizen-bg text-kaizen-muted hover:text-white'
                       }`}
                     >
                       {g}

@@ -137,24 +137,24 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
   const recoveryScore = sleepLog?.recoveryScore ?? Math.min(100, Math.round((liveDurationMinutes / 480) * 60 + (quality / 5) * 40));
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div className="space-y-6 animate-fadeIn">
       {/* Top Banner / Headline Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {/* Recovery Score */}
-        <Card className="relative overflow-hidden border-indigo-500/20 bg-gradient-to-br from-indigo-950/20 to-kaizen-card">
+        <Card className="relative overflow-hidden border-indigo-500/30 bg-gradient-to-br from-indigo-950/30 via-kaizen-surface to-kaizen-surface card-sheen shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-indigo-300 uppercase tracking-wider">Sleep Recovery</span>
+            <span className="text-[10px] font-mono font-semibold text-indigo-300 uppercase tracking-wider">Recovery Readiness</span>
             <BatteryCharging className="w-4 h-4 text-indigo-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold font-mono text-white tracking-tight">{recoveryScore}</span>
             <span className="text-xs font-mono text-indigo-300/70">/ 100</span>
           </div>
-          <div className="mt-2 text-xs text-kaizen-text-secondary flex items-center gap-1.5">
+          <div className="mt-2 text-xs text-kaizen-muted flex items-center gap-1.5 font-sans">
             {recoveryScore >= 85 ? (
               <span className="text-emerald-400 font-medium">Optimal Neuro-Physical Reset</span>
             ) : recoveryScore >= 70 ? (
-              <span className="text-sky-400 font-medium">Good Restorative Window</span>
+              <span className="text-cyan-400 font-medium">Good Restorative Window</span>
             ) : (
               <span className="text-amber-400 font-medium">Mild Sleep Debt Detected</span>
             )}
@@ -162,10 +162,10 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
         </Card>
 
         {/* Total Sleep Time */}
-        <Card className="border-kaizen-border">
+        <Card className="card-sheen shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-kaizen-text-secondary uppercase tracking-wider">Total Rest</span>
-            <Clock className="w-4 h-4 text-sky-400" />
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase tracking-wider">Total Rest Window</span>
+            <Clock className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="text-3xl font-bold font-mono text-white">
@@ -173,38 +173,38 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
               {sleepLog ? sleepLog.durationMinutes % 60 : liveMinutes}m
             </span>
           </div>
-          <p className="mt-2 text-xs text-kaizen-text-muted">Target: 8h 00m (480 min)</p>
+          <p className="mt-2 text-xs font-mono text-kaizen-muted">Target: 8h 00m (480 min)</p>
         </Card>
 
         {/* 90-Min Cycles */}
-        <Card className="border-kaizen-border">
+        <Card className="card-sheen shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-kaizen-text-secondary uppercase tracking-wider">Ultradian Cycles</span>
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase tracking-wider">Ultradian Cycles</span>
             <Zap className="w-4 h-4 text-amber-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold font-mono text-amber-400">
               {sleepLog ? sleepLog.cyclesCount : liveCycles}
             </span>
-            <span className="text-xs text-kaizen-text-muted">cycles (90m ea)</span>
+            <span className="text-xs font-mono text-kaizen-muted">cycles (90m)</span>
           </div>
-          <p className="mt-2 text-xs text-kaizen-text-muted">5 complete cycles recommended</p>
+          <p className="mt-2 text-xs font-mono text-kaizen-muted">5 complete cycles recommended</p>
         </Card>
 
         {/* Sleep Quality */}
-        <Card className="border-kaizen-border">
+        <Card className="card-sheen shadow-subtle">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-kaizen-text-secondary uppercase tracking-wider">Subjective Quality</span>
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase tracking-wider">Subjective Depth</span>
             <Award className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-3xl font-bold font-mono text-emerald-400">
               {sleepLog ? sleepLog.quality : quality}
             </span>
-            <span className="text-xs text-kaizen-text-muted">/ 5 stars</span>
+            <span className="text-xs font-mono text-kaizen-muted">/ 5 rating</span>
           </div>
-          <p className="mt-2 text-xs text-kaizen-text-muted">
-            {quality >= 4 ? 'Deep, undisturbed sleep' : quality === 3 ? 'Average recovery' : 'Restless or interrupted'}
+          <p className="mt-2 text-xs text-kaizen-muted font-sans">
+            {quality >= 4 ? 'Deep, restorative sleep' : quality === 3 ? 'Average recovery' : 'Restless or fragmented'}
           </p>
         </Card>
       </div>

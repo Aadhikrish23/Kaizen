@@ -57,78 +57,89 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdat
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-kaizen-border">
+    <div className="space-y-6 animate-fadeIn">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-kaizen-border">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-kaizen-text">Hydration Tracking</h2>
-          <p className="text-xs text-kaizen-muted mt-0.5 font-mono">Target: {goal} ml / day</p>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-control bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center text-cyan-400">
+              <Droplets className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight text-white">Hydration & Electrolyte Index</h2>
+              <p className="text-xs text-kaizen-muted font-mono">Daily Target: {goal} ml / day • Fluid Telemetry</p>
+            </div>
+          </div>
         </div>
-        <div className="text-xs font-mono px-2.5 py-1 bg-kaizen-surface border border-kaizen-border rounded-control text-kaizen-water">
-          {totalAmount >= goal ? 'Goal Achieved' : `${goal - totalAmount} ml remaining`}
+        <div className="text-xs font-mono px-3 py-1.5 bg-kaizen-surface border border-kaizen-border rounded-control text-cyan-400 font-semibold shadow-subtle">
+          {totalAmount >= goal ? 'Goal Achieved • Optimal Hydration' : `${goal - totalAmount} ml deficit remaining`}
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-control">
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono rounded-control">
           {(error as Error).message || 'Failed to load data'}
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Visual Progress Meter */}
-        <div className="md:col-span-5 flex flex-col items-center justify-center p-6 bg-kaizen-surface border border-kaizen-border rounded-structural">
+        <div className="md:col-span-5 flex flex-col items-center justify-center p-6 sm:p-8 bg-kaizen-surface border border-kaizen-border rounded-structural card-sheen shadow-subtle">
           <ProgressRing
             value={totalAmount}
             max={goal}
-            size={180}
+            size={190}
             strokeWidth={12}
-            colorClass="text-kaizen-water"
-            label="Intake"
+            colorClass="text-cyan-400"
+            label="Current"
             unit="ml"
           />
-          <div className="mt-4 text-center">
-            <span className="text-2xl font-bold font-mono tracking-tight text-kaizen-text">
+          <div className="mt-5 text-center">
+            <span className="text-3xl font-bold font-mono tracking-tight text-white">
               {totalAmount.toLocaleString()}
             </span>
             <span className="text-sm font-mono text-kaizen-muted"> / {goal.toLocaleString()} ml</span>
+            <span className="block text-[11px] font-mono text-cyan-400 mt-1 uppercase tracking-wider">
+              {Math.round((totalAmount / goal) * 100)}% of daily quota
+            </span>
           </div>
         </div>
 
         {/* Quick Log Controls & Custom Input */}
-        <div className="md:col-span-7 flex flex-col gap-4">
-          <Card title="Log Water Intake" subtitle="Tap a preset or enter a custom amount">
-            <div className="grid grid-cols-3 gap-2.5 mb-4">
+        <div className="md:col-span-7 flex flex-col gap-5">
+          <Card title="Log Hydration Intake" subtitle="Select a calibrated volume or enter custom milliliters">
+            <div className="grid grid-cols-3 gap-3 mb-4">
               <Button
                 variant="secondary"
                 size="md"
-                className="flex-col py-3 border-kaizen-border hover:border-kaizen-water/50 group"
+                className="flex-col py-3.5 border-kaizen-border hover:border-cyan-400/50 group bg-kaizen-bg/60"
                 onClick={() => handleAddWater(250)}
               >
-                <Droplets className="w-4 h-4 text-kaizen-water mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-mono font-semibold text-xs">+250 ml</span>
-                <span className="text-[10px] text-kaizen-subtle">Glass</span>
+                <Droplets className="w-5 h-5 text-cyan-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                <span className="font-mono font-bold text-xs text-white">+250 ml</span>
+                <span className="text-[10px] font-mono text-kaizen-subtle uppercase">Standard Cup</span>
               </Button>
 
               <Button
                 variant="secondary"
                 size="md"
-                className="flex-col py-3 border-kaizen-border hover:border-kaizen-water/50 group"
+                className="flex-col py-3.5 border-kaizen-border hover:border-cyan-400/50 group bg-kaizen-bg/60"
                 onClick={() => handleAddWater(500)}
               >
-                <Droplets className="w-4 h-4 text-kaizen-water mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-mono font-semibold text-xs">+500 ml</span>
-                <span className="text-[10px] text-kaizen-subtle">Bottle</span>
+                <Droplets className="w-5 h-5 text-cyan-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                <span className="font-mono font-bold text-xs text-white">+500 ml</span>
+                <span className="text-[10px] font-mono text-kaizen-subtle uppercase">Sports Bottle</span>
               </Button>
 
               <Button
                 variant="secondary"
                 size="md"
-                className="flex-col py-3 border-kaizen-border hover:border-kaizen-water/50 group"
+                className="flex-col py-3.5 border-kaizen-border hover:border-cyan-400/50 group bg-kaizen-bg/60"
                 onClick={() => handleAddWater(750)}
               >
-                <Droplets className="w-4 h-4 text-kaizen-water mb-1 group-hover:scale-110 transition-transform" />
-                <span className="font-mono font-semibold text-xs">+750 ml</span>
-                <span className="text-[10px] text-kaizen-subtle">Large Flask</span>
+                <Droplets className="w-5 h-5 text-cyan-400 mb-1.5 group-hover:scale-110 transition-transform" />
+                <span className="font-mono font-bold text-xs text-white">+750 ml</span>
+                <span className="text-[10px] font-mono text-kaizen-subtle uppercase">Hydration Flask</span>
               </Button>
             </div>
 
@@ -137,32 +148,33 @@ export const WaterTracker: React.FC<WaterTrackerProps> = ({ currentDate, onUpdat
                 type="number"
                 min="10"
                 max="5000"
-                placeholder="Custom amount"
+                placeholder="Enter custom milliliters..."
                 suffix="ml"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
+                className="flex-1"
               />
-              <Button type="submit" variant="primary" size="md" className="shrink-0">
-                <Plus className="w-4 h-4 mr-1" /> Log
+              <Button type="submit" variant="primary" size="md" className="shrink-0 font-semibold px-5">
+                <Plus className="w-4 h-4 mr-1" /> Log Water
               </Button>
             </form>
           </Card>
 
           {/* Today's History Log */}
-          <Card title="Today's Logs" subtitle={`${logs.length} entries recorded today`}>
+          <Card title="Intake Timeline" subtitle={`${logs.length} logged entries recorded today`}>
             {isLoading ? (
               <LoadingState message="Loading logs..." />
             ) : logs.length === 0 ? (
-              <div className="py-6 text-center text-xs text-kaizen-muted border border-dashed border-kaizen-border rounded-control">
-                No water logged yet today.
+              <div className="py-8 text-center text-xs text-kaizen-muted border border-dashed border-kaizen-border rounded-control">
+                No hydration intake logged for this date.
               </div>
             ) : (
               <div className="divide-y divide-kaizen-border/60 max-h-48 overflow-y-auto pr-1">
                 {logs.slice().reverse().map((item) => (
                   <div key={item._id} className="py-2.5 flex items-center justify-between group">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-kaizen-water"></span>
-                      <span className="font-mono font-medium text-sm text-kaizen-text">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-sm"></span>
+                      <span className="font-mono font-bold text-xs text-white">
                         +{item.amount} ml
                       </span>
                       <span className="text-xs font-mono text-kaizen-subtle">

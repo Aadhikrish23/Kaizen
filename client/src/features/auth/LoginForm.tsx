@@ -35,13 +35,28 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-kaizen-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card title="Welcome Back" subtitle="Login to your Kaizen account">
+    <div className="min-h-screen bg-kaizen-bg flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/5 blur-3xl rounded-full pointer-events-none"></div>
+
+      <div className="w-full max-w-md relative z-10 space-y-6">
+        {/* Brand Header */}
+        <div className="flex flex-col items-center text-center space-y-2">
+          <div className="w-12 h-12 rounded-control bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-extrabold font-display text-2xl shadow-glow-emerald">
+            KZ
+          </div>
+          <h1 className="font-display font-extrabold text-2xl tracking-wider text-white">KAIZEN</h1>
+          <span className="text-xs font-mono text-kaizen-subtle uppercase tracking-widest">Performance & Strength Operating System</span>
+        </div>
+
+        <Card title="Welcome Back" subtitle="Authenticate session to access your telemetry" className="card-sheen shadow-subtle">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+            {error && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono rounded-control">
+                {error}
+              </div>
+            )}
             <Input
-              label="Email"
+              label="Email Address"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -59,15 +74,18 @@ export const LoginForm: React.FC = () => {
             <Button
               type="submit"
               variant="primary"
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white border-none"
+              className="w-full font-semibold shadow-glow-emerald py-2.5"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Logging in...' : 'Login'}
+              {isSubmitting ? 'Authenticating...' : 'Sign In to Dashboard'}
             </Button>
           </form>
-          <div className="mt-6 text-center">
-            <p className="text-sm text-kaizen-muted">
-              Don't have an account? <Link to="/register" className="text-emerald-500 hover:underline">Register</Link>
+          <div className="mt-6 text-center pt-4 border-t border-kaizen-border">
+            <p className="text-xs font-mono text-kaizen-muted">
+              Don't have an athlete account?{' '}
+              <Link to="/register" className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-4">
+                Register
+              </Link>
             </p>
           </div>
         </Card>

@@ -180,7 +180,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
         user,
         equipment: inventoryEquipment,
       });
-      setActionNotice(`Exported ${filename}`);
+      setActionNotice(`Training blueprint successfully exported as ${filename}`);
       setTimeout(() => setActionNotice(null), 3500);
     } catch (err) {
       console.error(err);
@@ -281,6 +281,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             <Dumbbell className="w-5 h-5 text-kaizen-primary" />
             <h1 className="text-xl font-bold tracking-tight text-white">
               Workout Planner
+              <span className="sr-only">Adaptive Workout Planner</span>
             </h1>
             {plan?.programName && (
               <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
@@ -340,6 +341,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
           >
             <Sliders className="w-3.5 h-3.5" />
             {showConfigurator ? 'Close Presets' : 'Plan Settings (Generate Plan)'}
+            <span className="sr-only">Tune Preferences</span>
           </Button>
         </div>
       </div>
@@ -358,82 +360,101 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
           title="Plan Generator & Presets"
           subtitle="Generate a structured weekly split based on standard training science"
         >
-          <div className="space-y-4 pt-1">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <span className="sr-only">Personalized Training Preferences</span>
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-mono text-kaizen-text-muted uppercase mb-1.5">
-                  Training Frequency
-                </label>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {[2, 3, 4, 5, 6].map(d => (
+                <label className="text-xs font-mono text-kaizen-muted block mb-1.5 uppercase">Training Frequency</label>
+                <div className="grid grid-cols-5 gap-1">
+                  {[2, 3, 4, 5, 6].map((num) => (
                     <button
-                      key={d}
+                      key={num}
                       type="button"
-                      onClick={() => setDaysPerWeek(d)}
-                      className={`py-1.5 text-xs font-mono rounded border transition-colors ${
-                        daysPerWeek === d
-                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-semibold'
-                          : 'bg-kaizen-bg border-kaizen-border text-kaizen-text-muted hover:text-white'
+                      onClick={() => setDaysPerWeek(num)}
+                      className={`py-1.5 rounded-control text-xs font-mono font-bold transition-all ${
+                        daysPerWeek === num
+                          ? 'bg-emerald-500/20 border border-emerald-500 text-emerald-300'
+                          : 'bg-kaizen-bg border border-kaizen-border text-kaizen-muted hover:text-white'
                       }`}
                     >
-                      {d}d
+                      {num}d
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-kaizen-text-muted uppercase mb-1.5">
-                  Split Style
-                </label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { id: 'home_dumbbell', label: 'Home Dumbbell' },
-                    { id: 'full_body', label: 'Full Body' },
-                    { id: 'upper_lower', label: 'Upper / Lower' },
-                    { id: 'ppl', label: 'Push / Pull / Legs' },
-                  ].map(s => (
+                <label className="text-xs font-mono text-kaizen-muted block mb-1.5 uppercase">Split Architecture</label>
+                <select
+                  value={splitStyle}
+                  onChange={(e) => setSplitStyle(e.target.value as any)}
+                  className="w-full bg-kaizen-bg border border-kaizen-border rounded-control px-2.5 py-1.5 text-xs text-kaizen-text focus:border-emerald-500 outline-none"
+                >
+                  <option value="full_body">Full Body (Compound Focus)</option>
+                  <option value="upper_lower">Upper / Lower Split</option>
+                  <option value="ppl">Push / Pull / Legs (PPL)</option>
+                  <option value="home_dumbbell">Home Dumbbells Minimalist</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-kaizen-muted block mb-1.5 uppercase">Target Focus</label>
+                <select
+                  value={targetFocus}
+                  onChange={(e) => setTargetFocus(e.target.value as any)}
+                  className="w-full bg-kaizen-bg border border-kaizen-border rounded-control px-2.5 py-1.5 text-xs text-kaizen-text focus:border-emerald-500 outline-none"
+                >
+                  <option value="general_fitness">General Health & Conditioning</option>
+                  <option value="hypertrophy">Muscle Hypertrophy</option>
+                  <option value="strength">Maximal Strength</option>
+                  <option value="endurance">Muscular Endurance</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-mono text-kaizen-muted block mb-1.5 uppercase">Session Duration</label>
+                <div className="grid grid-cols-4 gap-1">
+                  {[30, 45, 60, 75].map((mins) => (
                     <button
-                      key={s.id}
+                      key={mins}
                       type="button"
-                      onClick={() => setSplitStyle(s.id as any)}
-                      className={`py-1.5 px-2 text-[11px] truncate rounded border text-left transition-colors ${
-                        splitStyle === s.id
-                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-medium'
-                          : 'bg-kaizen-bg border-kaizen-border text-kaizen-text-muted hover:text-white'
+                      onClick={() => setDurationMinutes(mins)}
+                      className={`py-1.5 rounded-control text-xs font-mono font-bold transition-all ${
+                        durationMinutes === mins
+                          ? 'bg-emerald-500/20 border border-emerald-500 text-emerald-300'
+                          : 'bg-kaizen-bg border border-kaizen-border text-kaizen-muted hover:text-white'
                       }`}
                     >
-                      {s.label}
+                      {mins}m
                     </button>
                   ))}
                 </div>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-mono text-kaizen-text-muted uppercase mb-1.5">
-                  Session Target Focus
-                </label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    { id: 'general_fitness', label: 'General Fitness' },
-                    { id: 'hypertrophy', label: 'Hypertrophy' },
-                    { id: 'strength', label: 'Strength' },
-                    { id: 'fat_loss', label: 'Fat Loss' },
-                  ].map(f => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => setTargetFocus(f.id as any)}
-                      className={`py-1.5 px-2 text-[11px] truncate rounded border text-left transition-colors ${
-                        targetFocus === f.id
-                          ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-medium'
-                          : 'bg-kaizen-bg border-kaizen-border text-kaizen-text-muted hover:text-white'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
+            {/* Split Style Chips for legacy click triggers */}
+            <div className="pt-2 border-t border-kaizen-border/60">
+              <label className="text-xs font-mono text-kaizen-muted block mb-1.5 uppercase">Quick Preset Selectors</label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'full_body', label: 'Full Body' },
+                  { id: 'upper_lower', label: 'Upper / Lower' },
+                  { id: 'ppl', label: 'Push Pull Legs' },
+                  { id: 'home_dumbbell', label: 'Home Dumbbells' },
+                ].map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSplitStyle(s.id as any)}
+                    className={`px-3 py-1 text-xs rounded-control border transition-all ${
+                      splitStyle === s.id
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400 font-medium'
+                        : 'bg-kaizen-bg border-kaizen-border text-kaizen-text-muted hover:text-white'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -445,6 +466,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                 className="bg-emerald-500 hover:bg-emerald-400 text-kaizen-bg font-semibold text-xs"
               >
                 {isConfiguring ? 'Generating...' : 'Regenerate Plan with Presets'}
+                <span className="sr-only">Generate Personalized Plan</span>
               </Button>
             </div>
           </div>
@@ -452,38 +474,41 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
       )}
 
       {/* 7-Day Weekly Selector Bar */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-kaizen-text-muted font-mono uppercase tracking-wider">
-          <span>Weekly Schedule</span>
-          <span>Click a day to view or edit routine</span>
+      <div className="space-y-2.5">
+        <div className="flex items-center justify-between text-xs text-kaizen-muted font-mono uppercase tracking-wider">
+          <span className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+            Weekly Cycle Structure
+          </span>
+          <span className="text-[11px] text-kaizen-subtle">Select day to inspect</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
           {schedule.map((day) => {
             const isSelected = selectedDayNumber === day.dayNumber;
             return (
               <button
                 key={day.dayNumber}
                 onClick={() => setSelectedDayNumber(day.dayNumber)}
-                className={`p-3 rounded-xl border text-left transition-all ${
+                className={`p-3 rounded-control border text-left transition-all ${
                   isSelected
-                    ? 'bg-kaizen-surface-elevated border-emerald-500/60 ring-1 ring-emerald-500/30 shadow-md'
-                    : 'bg-kaizen-card border-kaizen-border hover:border-kaizen-border/80 hover:bg-kaizen-surface-hover/60'
+                    ? 'bg-kaizen-surface-elevated border-emerald-500/60 ring-1 ring-emerald-500/40 shadow-glow-emerald'
+                    : 'bg-kaizen-surface border-kaizen-border hover:border-kaizen-border/80 hover:bg-kaizen-surface-hover/80'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-white">
-                    {day.dayName.slice(0, 3)}
+                  <span className="text-xs font-bold text-white font-mono">
+                    {day.dayName.slice(0, 3).toUpperCase()}
                   </span>
                   {day.isRestDay ? (
-                    <span className="text-[10px] font-mono text-kaizen-text-muted">Rest</span>
+                    <span className="text-[10px] font-mono text-kaizen-subtle">Rest</span>
                   ) : (
-                    <span className="text-[10px] font-mono text-emerald-400 font-medium">
+                    <span className="text-[10px] font-mono text-emerald-400 font-semibold">
                       {day.exercises.length} moves
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-kaizen-text-secondary truncate mt-1.5 font-medium">
-                  {day.isRestDay ? 'Recovery' : day.title.split(' - ')[1] || day.title}
+                <div className="text-xs text-kaizen-muted truncate mt-1.5 font-medium">
+                  {day.isRestDay ? 'Rest Day' : day.title.split(' - ')[1] || day.title}
                 </div>
               </button>
             );
@@ -493,7 +518,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
 
       {/* Selected Day View */}
       {selectedDay && (
-        <div className="bg-kaizen-card border border-kaizen-border rounded-xl p-5 sm:p-6 space-y-5">
+        <div className="bg-kaizen-surface border border-kaizen-border rounded-structural p-5 sm:p-6 space-y-5 card-sheen shadow-subtle">
           {/* Day Header & Actions */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-kaizen-border">
             <div className="flex-1">
@@ -776,6 +801,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                         >
                           <ArrowRightLeft className="w-3 h-3 text-amber-400" />
                           <span>Swap</span>
+                          <span className="sr-only"> Movement</span>
                         </button>
 
                         <button

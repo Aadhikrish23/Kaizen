@@ -16,14 +16,14 @@ export const Card: React.FC<CardProps> = ({
   action,
 }) => {
   return (
-    <div className={`bg-kaizen-surface border border-kaizen-border rounded-structural p-5 shadow-card ${className}`}>
+    <div className={`card-sheen border border-kaizen-border rounded-structural p-5 shadow-card transition-all duration-200 ${className}`}>
       {(title || action) && (
-        <div className="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-kaizen-border/60">
+        <div className="flex items-start justify-between gap-4 mb-4 pb-3 border-b border-kaizen-border/50">
           <div>
-            {title && <h3 className="font-semibold text-base text-kaizen-text tracking-tight">{title}</h3>}
+            {title && <h3 className="font-semibold text-base text-kaizen-text tracking-tight font-sans">{title}</h3>}
             {subtitle && <p className="text-xs text-kaizen-muted mt-0.5">{subtitle}</p>}
           </div>
-          {action && <div>{action}</div>}
+          {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
       {children}

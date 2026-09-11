@@ -278,18 +278,25 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
   }, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fadeIn">
       {/* Header & Status */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-kaizen-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-kaizen-border">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-kaizen-text">Strength & Workout Training</h2>
-          <p className="text-xs text-kaizen-muted mt-0.5 font-mono">Progressive overload & home gym set tracker</p>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-control bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+              <Dumbbell className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight text-white">Strength & Workout Training</h2>
+              <p className="text-xs text-kaizen-muted font-mono">Active workout session · progressive overload & set telemetry</p>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-mono text-kaizen-muted flex items-center gap-1 mr-1">
-            <Flame className="w-3.5 h-3.5 text-kaizen-workout" />
-            <span className="hidden sm:inline">Volume:</span> <strong className="text-kaizen-text">{currentVolume.toLocaleString()} kg</strong>
-          </span>
+          <div className="px-3 py-1.5 rounded-control bg-kaizen-surface border border-kaizen-border text-xs font-mono text-kaizen-muted flex items-center gap-1.5 shadow-subtle">
+            <Flame className="w-3.5 h-3.5 text-rose-400" />
+            <span>Volume:</span> <strong className="text-rose-400 font-bold">{currentVolume.toLocaleString()} kg</strong>
+          </div>
           {onNavigateToPlanner && (
             <Button
               variant="secondary"
@@ -306,27 +313,28 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
               size="sm"
               disabled={isDeletingWorkout}
               onClick={handleClearSession}
-              className="gap-1.5 text-xs text-kaizen-muted hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/30"
+              className="gap-1.5 text-xs text-rose-400/90 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20"
               title="Discard all exercises and clear this active workout session"
             >
               <Trash2 className="w-3.5 h-3.5" />
               {isDeletingWorkout ? 'Clearing...' : 'Clear Session'}
             </Button>
           )}
-          <Button variant="primary" size="sm" onClick={handleSaveWorkout}>
+          <Button variant="primary" size="sm" onClick={handleSaveWorkout} className="font-semibold shadow-glow-emerald">
             {currentWorkout ? 'Update Session' : 'Save Session'}
           </Button>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-control">
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono rounded-control">
           {error}
         </div>
       )}
 
       {savedSuccess && (
-        <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-control font-mono">
+        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs rounded-control font-mono flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           Workout session recorded successfully!
         </div>
       )}
@@ -334,16 +342,16 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
       {/* Split Schedule Banner: Today vs Tomorrow */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Today */}
-        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-start justify-between">
+        <div className="p-4 sm:p-5 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-start justify-between card-sheen shadow-subtle">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Calendar className="w-3.5 h-3.5 text-kaizen-workout" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-400 inline-block"></span>
               <span className="text-[11px] font-mono text-kaizen-muted uppercase tracking-wider">Today's Focus</span>
               <Badge variant={schedule?.today.isRestDay && activeExercises.length === 0 ? 'neutral' : 'rose'} size="sm">
                 {schedule?.today.isRestDay && activeExercises.length === 0 ? 'Rest' : 'Active'}
               </Badge>
             </div>
-            <h3 className="font-bold text-base text-kaizen-text">
+            <h3 className="font-display font-bold text-lg text-white">
               {activeExercises.length > 0
                 ? (selectedSplitName || schedule?.today.splitName || 'Active Workout')
                 : (schedule?.today.splitName || 'Rest & Recovery')}
@@ -351,7 +359,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
             <div className="flex gap-1.5 mt-2 flex-wrap">
               {schedule?.today.targetMuscles && schedule.today.targetMuscles.length > 0 ? (
                 schedule.today.targetMuscles.map((m: string) => (
-                  <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded-sm text-kaizen-muted uppercase">
+                  <span key={m} className="text-[10px] font-mono px-2 py-0.5 bg-kaizen-bg border border-kaizen-border rounded text-kaizen-muted uppercase">
                     {m}
                   </span>
                 ))
@@ -363,12 +371,12 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <span className="text-[10px] font-mono text-kaizen-muted uppercase">Session Split:</span>
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase">Split Name:</span>
             <input
               type="text"
               value={selectedSplitName}
               onChange={(e) => setSelectedSplitName(e.target.value)}
-              className="text-xs font-mono bg-kaizen-bg border border-kaizen-border rounded-control px-2.5 py-1 text-kaizen-text w-40 focus:border-kaizen-primary outline-none"
+              className="text-xs font-mono bg-kaizen-bg border border-kaizen-border rounded-control px-2.5 py-1.5 text-white w-40 focus:border-rose-500 outline-none"
               placeholder="e.g. Push Day"
               title="Edit today's split name"
             />
@@ -376,7 +384,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
         </div>
 
         {/* Tomorrow */}
-        <div className="p-4 bg-kaizen-surface/60 border border-kaizen-border rounded-structural flex items-start justify-between">
+        <div className="p-4 sm:p-5 bg-kaizen-surface/60 border border-kaizen-border rounded-structural flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-3.5 h-3.5 text-kaizen-muted" />

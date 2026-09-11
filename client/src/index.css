@@ -2,14 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #10B981;
+  --color-primary-hover: #059669;
+  --color-background: #0B0D13;
+  --color-foreground: #F8FAFC;
+  --color-card: #131722;
+  --color-border: #222A3C;
+  --color-muted: #94A3B8;
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+}
+
 @layer base {
   body {
-    @apply bg-kaizen-bg text-kaizen-text font-sans antialiased;
+    @apply bg-kaizen-bg text-kaizen-text font-sans antialiased selection:bg-emerald-500/20 selection:text-emerald-300;
   }
 
   /* Accessible, restrained focus ring */
   *:focus-visible {
-    @apply outline-none ring-2 ring-kaizen-primary ring-offset-2 ring-offset-kaizen-bg;
+    @apply outline-none ring-2 ring-emerald-500/70 ring-offset-2 ring-offset-[#0B0D13];
   }
 }
 
@@ -20,14 +38,30 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0C0E14;
+  background: #0B0D13;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #242A3D;
+  background: #222A3C;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #363E56;
+  background: #333E56;
+}
+
+/* Glass card sheen utility */
+.card-sheen {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, rgba(255, 255, 255, 0) 100%), #131722;
+}
+
+/* Shimmer pulse for skeletons */
+@keyframes subtle-shimmer {
+  0% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.5; }
+}
+
+.animate-shimmer {
+  animation: subtle-shimmer 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

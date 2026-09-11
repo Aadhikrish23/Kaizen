@@ -137,7 +137,7 @@ export const createOrUpdateWorkout = async (data: any) => {
         if (completedSetsWithWeight.length > 0) {
           const bestSet = completedSetsWithWeight.reduce((prev: any, curr: any) => (curr.weightKg > prev.weightKg ? curr : prev), completedSetsWithWeight[0]);
           inventoryService.recordWorkingWeight(data.userId, {
-            exerciseName: ex.name,
+            exerciseName: ex.exerciseName || ex.name || 'Exercise',
             exerciseId: ex.exerciseId,
             currentWeightKg: bestSet.weightKg,
             targetReps: bestSet.reps || 10,

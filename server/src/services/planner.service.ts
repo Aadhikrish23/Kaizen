@@ -30,7 +30,15 @@ export const getUserPlan = async (userId: string | mongoose.Types.ObjectId): Pro
   if (existing) {
     return existing;
   }
-  return await configurePlan(userId, DEFAULT_PREFERENCES);
+  try {
+    return await configurePlan(userId, DEFAULT_PREFERENCES);
+  } catch (err: any) {
+    if (err.code === 11000) {
+      const plan = await UserWorkoutPlan.findOne({ userId });
+      if (plan) return plan;
+    }
+    throw err;
+  }
 };
 
 /**
@@ -561,22 +569,33 @@ export const configurePlan = async (
 
   let plan = await UserWorkoutPlan.findOne({ userId });
   if (!plan) {
-    plan = new UserWorkoutPlan({
-      userId,
-      preferences,
-      schedule,
-      dailyAdaptations: [
-        {
-          date: new Date().toISOString().split('T')[0],
-          reason: `Initial ${preferences.splitStyle.replace('_', ' ').toUpperCase()} program synthesized for ${preferences.experienceLevel} level and ${preferences.targetFocus.replace('_', ' ')}. Inventory equipment matched.`,
-          type: 'streak_milestone',
-          exerciseName: 'Program Initialized'
-        }
-      ],
-      adherenceRate: 100,
-      lastEvaluatedDate: new Date().toISOString().split('T')[0]
-    });
-  } else {
+    try {
+      plan = new UserWorkoutPlan({
+        userId,
+        preferences,
+        schedule,
+        dailyAdaptations: [
+          {
+            date: new Date().toISOString().split('T')[0],
+            reason: `Initial ${preferences.splitStyle.replace('_', ' ').toUpperCase()} program synthesized for ${preferences.experienceLevel} level and ${preferences.targetFocus.replace('_', ' ')}. Inventory equipment matched.`,
+            type: 'streak_milestone',
+            exerciseName: 'Program Initialized'
+          }
+        ],
+        adherenceRate: 100,
+        lastEvaluatedDate: new Date().toISOString().split('T')[0]
+      });
+      return await plan.save();
+    } catch (err: any) {
+      if (err.code === 11000) {
+        plan = await UserWorkoutPlan.findOne({ userId });
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  if (plan) {
     plan.preferences = preferences;
     plan.schedule = schedule;
     plan.dailyAdaptations.unshift({
@@ -585,9 +604,9 @@ export const configurePlan = async (
       type: 'volume_adjustment',
       exerciseName: 'Preferences Updated'
     });
+    return await plan.save();
   }
-
-  return await plan.save();
+  return plan!;
 };
 
 /**

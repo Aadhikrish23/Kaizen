@@ -136,53 +136,61 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
   const caloriePercent = Math.min(100, Math.round((data.totalCalories / calorieGoal) * 100));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-kaizen-border">
+    <div className="space-y-6 animate-fadeIn">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-kaizen-border">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-kaizen-text">Nutrition & Calories</h2>
-          <p className="text-xs text-kaizen-muted mt-0.5 font-mono">Calorie Budget: {calorieGoal} kcal / day</p>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-control bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
+              <Utensils className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight text-white">Nutrition & Energy Balance</h2>
+              <p className="text-xs text-kaizen-muted font-mono">Calorie Budget: {calorieGoal} kcal / day • Protein Goal: {proteinGoal}g</p>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setShowRecipeExplorer(true)}
-            className="text-xs flex items-center gap-1.5 text-amber-400 hover:text-amber-300"
+            className="text-xs flex items-center gap-1.5 text-amber-400 hover:text-amber-300 border-amber-400/30 hover:border-amber-400 shadow-sm"
           >
             <Sparkles className="w-3.5 h-3.5" />
             Discover Recipes
           </Button>
-          <div className="text-xs font-mono px-2.5 py-1 bg-kaizen-surface border border-kaizen-border rounded-control text-kaizen-calories">
+          <div className="text-xs font-mono px-3 py-1.5 bg-kaizen-surface border border-kaizen-border rounded-control text-amber-400 font-semibold shadow-subtle">
             {data.totalCalories > calorieGoal
-              ? `+${data.totalCalories - calorieGoal} kcal over budget`
+              ? `+${data.totalCalories - calorieGoal} kcal surplus`
               : `${calorieGoal - data.totalCalories} kcal remaining`}
           </div>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs rounded-control">
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono rounded-control">
           {(error as Error).message || 'Failed to load data'}
         </div>
       )}
 
       {/* Overview Stat Bar */}
-      <div className="p-5 bg-kaizen-surface border border-kaizen-border rounded-structural space-y-4">
+      <div className="p-5 sm:p-6 bg-kaizen-surface border border-kaizen-border rounded-structural space-y-4 card-sheen shadow-subtle">
         {/* Calories */}
         <div>
           <div className="flex justify-between items-baseline mb-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold font-mono text-kaizen-text">
+              <span className="text-3xl font-bold font-mono text-amber-400">
                 {data.totalCalories.toLocaleString()}
               </span>
               <span className="text-xs font-mono text-kaizen-muted">/ {calorieGoal} kcal ({caloriePercent}%)</span>
             </div>
-            <span className="text-xs font-mono text-kaizen-muted">Calories</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-kaizen-subtle">Caloric Adherence</span>
           </div>
-          <div className="w-full h-2 bg-kaizen-border rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-kaizen-bg rounded-full overflow-hidden border border-kaizen-border">
             <div
               className={`h-full transition-all duration-500 ${
-                data.totalCalories > calorieGoal ? 'bg-rose-500' : 'bg-kaizen-calories'
+                data.totalCalories > calorieGoal ? 'bg-rose-500' : 'bg-gradient-to-r from-amber-500 to-amber-400'
               }`}
               style={{ width: `${caloriePercent}%` }}
             />
@@ -192,22 +200,22 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
         <div>
           <div className="flex justify-between items-baseline mb-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-bold font-mono text-kaizen-text">{data.totalProtein}g</span>
+              <span className="text-xl font-bold font-mono text-emerald-400">{data.totalProtein}g</span>
               <span className="text-xs font-mono text-kaizen-muted">/ {proteinGoal}g ({Math.min(100, Math.round((data.totalProtein / proteinGoal) * 100))}%)</span>
             </div>
-            <span className="text-xs font-mono text-kaizen-muted">Protein</span>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-kaizen-subtle">Muscle Protein Synthesis</span>
           </div>
-          <div className="w-full h-1.5 bg-kaizen-border rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-kaizen-bg rounded-full overflow-hidden border border-kaizen-border">
             <div
-              className="h-full bg-emerald-500 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500"
               style={{ width: `${Math.min(100, Math.round((data.totalProtein / proteinGoal) * 100))}%` }}
             />
           </div>
         </div>
         {/* Carbs & Fat inline */}
-        <div className="flex gap-6 text-xs font-mono text-kaizen-muted pt-1 border-t border-kaizen-border">
-          <span>Carbs: <strong className="text-kaizen-text">{data.totalCarbs}g</strong></span>
-          <span>Fat: <strong className="text-kaizen-text">{data.totalFat}g</strong></span>
+        <div className="flex gap-4 text-xs font-mono text-kaizen-muted pt-2 border-t border-kaizen-border">
+          <span className="bg-kaizen-bg px-2 py-0.5 rounded border border-kaizen-border">Carbohydrates: <strong className="text-white">{data.totalCarbs}g</strong></span>
+          <span className="bg-kaizen-bg px-2 py-0.5 rounded border border-kaizen-border">Dietary Fat: <strong className="text-white">{data.totalFat}g</strong></span>
         </div>
       </div>
 

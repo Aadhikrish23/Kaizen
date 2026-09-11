@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Save, RefreshCw, Scale } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -137,28 +138,59 @@ export const ProfileSettings: React.FC = () => {
   );
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-kaizen-text">Profile Settings</h1>
-        <p className="text-sm text-kaizen-muted mt-0.5">Update your personal details and health targets.</p>
+    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 space-y-6 animate-fadeIn">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-kaizen-border">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Link to="/dashboard" className="text-xs font-mono text-emerald-400 hover:underline">
+              &larr; Return to Dashboard
+            </Link>
+          </div>
+          <h1 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight text-white">Athlete Profile & Calibration</h1>
+          <p className="text-xs text-kaizen-muted font-mono">Biometric baselines, metabolic TDEE, and daily adherence targets</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {success && (
+            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">
+              Profile Calibrated
+            </span>
+          )}
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="gap-2 font-semibold shadow-glow-emerald"
+          >
+            <Save className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </div>
       </div>
 
-      <Card title="Personal">
+      {error && (
+        <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono rounded-control">
+          {error}
+        </div>
+      )}
+
+      {/* Personal Details */}
+      <Card title="Personal Details" subtitle="Athlete identification and age parameters" className="card-sheen shadow-subtle">
         <div className="space-y-4">
           <Input label="Full Name" type="text" value={form.name} onChange={(e) => set('name', e.target.value)} />
           <Input label="Date of Birth" type="date" value={form.dob} onChange={(e) => set('dob', e.target.value)} />
           <div>
-            <label className="block text-xs font-medium text-kaizen-muted mb-2 uppercase tracking-wide">Gender</label>
-            <div className="grid grid-cols-3 gap-2">
+            <label className="block text-xs font-mono text-kaizen-subtle mb-2 uppercase tracking-wider">Gender</label>
+            <div className="grid grid-cols-3 gap-2.5">
               {(['male', 'female', 'other'] as const).map((g) => (
                 <button
                   key={g}
                   type="button"
                   onClick={() => set('gender', g)}
-                  className={`py-2 text-sm font-medium rounded-lg border capitalize transition-all duration-150 ${
+                  className={`py-2 text-xs font-mono font-semibold rounded-control border capitalize transition-all ${
                     form.gender === g
-                      ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
-                      : 'border-kaizen-border text-kaizen-muted hover:text-kaizen-text'
+                      ? 'border-emerald-500/80 bg-emerald-500/15 text-emerald-300 shadow-sm'
+                      : 'border-kaizen-border bg-kaizen-bg text-kaizen-muted hover:text-white hover:bg-kaizen-surface-hover/60'
                   }`}
                 >
                   {g}
@@ -169,17 +201,19 @@ export const ProfileSettings: React.FC = () => {
         </div>
       </Card>
 
+      {/* Body Composition & Scale Weight */}
       <Card 
         title="Body Composition & Scale Weight"
-        subtitle="Manage your physical measurements and target weight"
+        subtitle="Anthropometric dimensions and target scale calibration"
+        className="card-sheen shadow-subtle"
         action={
           <Button
             variant="secondary"
             size="sm"
             onClick={() => setIsWeighInOpen(true)}
-            className="flex items-center gap-1.5 text-xs font-mono"
+            className="flex items-center gap-1.5 text-xs font-mono border-violet-500/30 text-violet-300 hover:border-violet-400"
           >
-            <Scale className="w-3.5 h-3.5 text-emerald-400" />
+            <Scale className="w-3.5 h-3.5 text-violet-400" />
             <span>Quick Weigh-In</span>
           </Button>
         }
@@ -192,8 +226,8 @@ export const ProfileSettings: React.FC = () => {
           </div>
 
           {form.heightCm && form.currentWeightKg && (
-            <div className="p-3 rounded-lg bg-kaizen-bg border border-kaizen-border flex items-center justify-between text-xs">
-              <span className="text-kaizen-muted">Computed Body Mass Index (BMI):</span>
+            <div className="p-3.5 rounded-control bg-kaizen-bg border border-kaizen-border flex items-center justify-between text-xs">
+              <span className="font-mono text-kaizen-muted">Computed Body Mass Index (BMI):</span>
               <span className="font-mono font-bold text-white">
                 {(Number(form.currentWeightKg) / Math.pow(Number(form.heightCm) / 100, 2)).toFixed(1)}{' '}
                 <span className="text-emerald-400 font-normal">
@@ -211,36 +245,37 @@ export const ProfileSettings: React.FC = () => {
         </div>
       </Card>
 
-      <Card title="Goal">
+      {/* Primary Goal */}
+      <Card title="Primary Fitness Directive" subtitle="Determines your surplus or deficit baseline" className="card-sheen shadow-subtle">
         <SelectRow options={GOALS} value={form.goal} field="goal" />
       </Card>
 
-      <Card title="Activity Level">
+      {/* Activity Level */}
+      <Card title="Weekly Activity Multiplier" subtitle="Calibrates Mifflin-St Jeor TDEE energy output" className="card-sheen shadow-subtle">
         <SelectRow options={ACTIVITY_LEVELS} value={form.activityLevel} field="activityLevel" />
         {tdee !== null && (
-          <div className="mt-3 p-3 rounded-lg bg-kaizen-bg border border-kaizen-border flex items-center gap-3">
+          <div className="mt-3.5 p-3.5 rounded-control bg-kaizen-bg border border-kaizen-border flex items-center gap-3">
             {isComputingTdee
-              ? <RefreshCw className="w-4 h-4 text-kaizen-muted animate-spin" />
-              : <span className="text-xs text-kaizen-muted">Estimated TDEE: <span className="font-mono text-emerald-400 font-semibold">{tdee.toLocaleString()} kcal/day</span></span>
+              ? <RefreshCw className="w-4 h-4 text-emerald-400 animate-spin" />
+              : <span className="text-xs font-mono text-kaizen-muted">Estimated Daily TDEE Expenditure: <strong className="text-emerald-400 font-bold">{tdee.toLocaleString()} kcal/day</strong></span>
             }
           </div>
         )}
       </Card>
 
-      <Card title="Daily Targets">
-        <div className="space-y-4">
-          <Input label="Calories (kcal)" type="number" value={form.calorieDailyTarget} onChange={(e) => set('calorieDailyTarget', e.target.value)} />
-          <Input label="Protein (g)" type="number" value={form.proteinDailyTargetG} onChange={(e) => set('proteinDailyTargetG', e.target.value)} />
-          <Input label="Water (ml)" type="number" value={form.waterDailyTargetMl} onChange={(e) => set('waterDailyTargetMl', e.target.value)} />
+      {/* Daily Targets */}
+      <Card title="Daily Nutritional & Hydration Targets" subtitle="Overridable targets synced across dashboard pillars" className="card-sheen shadow-subtle">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Input label="Calorie Target (kcal)" type="number" value={form.calorieDailyTarget} onChange={(e) => set('calorieDailyTarget', e.target.value)} />
+          <Input label="Protein Target (g)" type="number" value={form.proteinDailyTargetG} onChange={(e) => set('proteinDailyTargetG', e.target.value)} />
+          <Input label="Water Target (ml)" type="number" value={form.waterDailyTargetMl} onChange={(e) => set('waterDailyTargetMl', e.target.value)} />
         </div>
       </Card>
 
-      <div className="flex items-center gap-3">
-        <Button variant="primary" onClick={handleSave} disabled={isSaving} className="gap-2">
-          <Save className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save Changes'}
+      <div className="flex items-center justify-end gap-3 pt-2">
+        <Button variant="primary" onClick={handleSave} disabled={isSaving} className="gap-2 px-6 font-semibold shadow-glow-emerald">
+          <Save className="w-4 h-4" /> {isSaving ? 'Saving...' : 'Save Profile Changes'}
         </Button>
-        {success && <span className="text-sm text-emerald-400">Saved successfully.</span>}
-        {error && <span className="text-sm text-rose-400">{error}</span>}
       </div>
 
       <QuickWeighInModal

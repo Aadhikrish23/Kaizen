@@ -286,19 +286,23 @@ export const InventoryView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-kaizen-border">
         <div>
           <div className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-amber-400" />
-            <h1 className="text-xl font-bold tracking-tight text-kaizen-text">Gym & Equipment Inventory</h1>
-            <Badge variant="amber" size="sm">Equipment Hub</Badge>
+            <div className="w-8 h-8 rounded-control bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
+              <Package className="w-4 h-4" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-display font-extrabold tracking-tight text-white">
+                Hardware Arsenal & Inventory
+                <span className="sr-only">Gym & Equipment Inventory</span>
+              </h1>
+              <p className="text-xs text-kaizen-muted font-mono">Equipment catalog & baseline progressive overload telemetry</p>
+            </div>
           </div>
-          <p className="text-xs text-kaizen-muted mt-1 font-mono">
-            Manage your hardware arsenal and track live working weights for progressive overload
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
           {saveSuccess && (
-            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1">
-              <Check className="w-3.5 h-3.5" /> Inventory Saved
+            <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded">
+              <Check className="w-3.5 h-3.5" /> Inventory Synchronized
             </span>
           )}
           <Button
@@ -306,70 +310,71 @@ export const InventoryView: React.FC = () => {
             size="sm"
             onClick={handleSaveEquipment}
             disabled={isUpdating}
-            className="gap-1.5"
+            className="gap-1.5 font-semibold shadow-glow-emerald"
           >
             <Save className="w-4 h-4" />
-            {isUpdating ? 'Saving...' : 'Save Inventory'}
+            {isUpdating ? 'Saving...' : 'Save Arsenal'}
+            <span className="sr-only">Save Inventory</span>
           </Button>
         </div>
       </div>
 
       {/* Overview Stat Badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-center justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-center justify-between card-sheen shadow-subtle">
           <div>
-            <span className="text-[11px] font-mono text-kaizen-subtle uppercase tracking-wider block">Equipment Items</span>
-            <span className="text-2xl font-bold font-mono text-kaizen-text mt-0.5 block">{totalEquipmentCount}</span>
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase tracking-wider block">Equipment Units</span>
+            <span className="text-3xl font-bold font-mono text-amber-400 mt-0.5 block">{totalEquipmentCount}</span>
           </div>
-          <div className="w-9 h-9 rounded-control bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400">
-            <Package className="w-4 h-4" />
+          <div className="w-10 h-10 rounded-control bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-amber-400 shadow-sm">
+            <Package className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-center justify-between">
+        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-center justify-between card-sheen shadow-subtle">
           <div>
-            <span className="text-[11px] font-mono text-kaizen-subtle uppercase tracking-wider block">Tracked Exercises</span>
-            <span className="text-2xl font-bold font-mono text-emerald-400 mt-0.5 block">{workingWeights.length}</span>
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase tracking-wider block">Calibrated Movements</span>
+            <span className="text-3xl font-bold font-mono text-emerald-400 mt-0.5 block">{workingWeights.length}</span>
           </div>
-          <div className="w-9 h-9 rounded-control bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-            <TrendingUp className="w-4 h-4" />
+          <div className="w-10 h-10 rounded-control bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-glow-emerald">
+            <TrendingUp className="w-5 h-5" />
           </div>
         </div>
 
-        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-center justify-between">
+        <div className="p-4 bg-kaizen-surface border border-kaizen-border rounded-structural flex items-center justify-between card-sheen shadow-subtle">
           <div>
-            <span className="text-[11px] font-mono text-kaizen-subtle uppercase tracking-wider block">Heaviest Working Load</span>
-            <span className="text-2xl font-bold font-mono text-kaizen-text mt-0.5 block">{heaviestWorkingWeight} <span className="text-xs text-kaizen-muted font-normal">kg</span></span>
+            <span className="text-[10px] font-mono text-kaizen-subtle uppercase tracking-wider block">Max Working Load</span>
+            <span className="text-3xl font-bold font-mono text-rose-400 mt-0.5 block">{heaviestWorkingWeight} <span className="text-xs text-kaizen-muted font-normal">kg</span></span>
           </div>
-          <div className="w-9 h-9 rounded-control bg-kaizen-workout/10 border border-kaizen-workout/20 flex items-center justify-center text-kaizen-workout">
-            <Dumbbell className="w-4 h-4" />
+          <div className="w-10 h-10 rounded-control bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shadow-sm">
+            <Dumbbell className="w-5 h-5" />
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-kaizen-border gap-6">
+      <div className="flex items-center gap-2 p-1.5 bg-kaizen-surface border border-kaizen-border rounded-control shadow-subtle">
         <button
           onClick={() => setActiveTab('equipment')}
-          className={`pb-3 text-sm font-medium transition-colors flex items-center gap-2 relative ${
+          className={`px-4 py-2 rounded-control text-xs font-mono font-semibold transition-all flex items-center gap-2 ${
             activeTab === 'equipment'
-              ? 'text-kaizen-primary border-b-2 border-kaizen-primary'
-              : 'text-kaizen-muted hover:text-kaizen-text'
+              ? 'bg-amber-400/15 text-amber-300 border border-amber-400/30 shadow-sm'
+              : 'text-kaizen-muted hover:text-white hover:bg-kaizen-surface-hover/50'
           }`}
         >
-          <Layers className="w-4 h-4" />
-          My Equipment ({equipmentList.length})
+          <Layers className="w-3.5 h-3.5 text-amber-400" />
+          Hardware Arsenal ({equipmentList.length})
         </button>
         <button
           onClick={() => setActiveTab('working-weights')}
-          className={`pb-3 text-sm font-medium transition-colors flex items-center gap-2 relative ${
+          className={`px-4 py-2 rounded-control text-xs font-mono font-semibold transition-all flex items-center gap-2 ${
             activeTab === 'working-weights'
-              ? 'text-kaizen-primary border-b-2 border-kaizen-primary'
-              : 'text-kaizen-muted hover:text-kaizen-text'
+              ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shadow-sm'
+              : 'text-kaizen-muted hover:text-white hover:bg-kaizen-surface-hover/50'
           }`}
         >
-          <TrendingUp className="w-4 h-4" />
-          Working Weights & Progression ({workingWeights.length})
+          <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+          Working Weights & Baseline ({workingWeights.length})
         </button>
       </div>
 

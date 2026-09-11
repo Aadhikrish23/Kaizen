@@ -8,21 +8,24 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Outfit', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        sans: ['Outfit', 'Barlow', 'system-ui', '-apple-system', 'sans-serif'],
+        condensed: ['"Barlow Condensed"', 'Outfit', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       colors: {
         kaizen: {
-          bg: '#0C0E14',
-          surface: '#141721',
-          'surface-hover': '#1A1E2B',
-          'surface-elevated': '#202534',
-          border: '#242A3D',
-          'border-muted': '#1A1E2B',
-          text: '#F0F2F5',
-          muted: '#8B93A7',
-          subtle: '#5A6275',
+          bg: '#0B0D13',
+          surface: '#131722',
+          'surface-hover': '#1A202E',
+          'surface-elevated': '#22293A',
+          card: '#131722',
+          border: '#222A3C',
+          'border-muted': '#181E2B',
+          text: '#F8FAFC',
+          muted: '#94A3B8',
+          subtle: '#64748B',
           primary: '#10B981', // Athletic Emerald
+          'primary-hover': '#059669',
           'primary-subtle': 'rgba(16, 185, 129, 0.12)',
           workout: '#F43F5E', // Strength / Coral Crimson
           'workout-subtle': 'rgba(244, 63, 94, 0.12)',
@@ -32,6 +35,10 @@ export default {
           'calories-subtle': 'rgba(245, 158, 11, 0.12)',
           weight: '#8B5CF6',   // Weight Metric Violet
           'weight-subtle': 'rgba(139, 92, 246, 0.12)',
+          sleep: '#6366F1',    // Sleep Cycle Indigo
+          'sleep-subtle': 'rgba(99, 102, 241, 0.12)',
+          energy: '#F97316',   // Energy Orange
+          'energy-subtle': 'rgba(249, 115, 22, 0.12)',
         }
       },
       borderRadius: {
@@ -40,9 +47,11 @@ export default {
         'sm-control': '6px',
       },
       boxShadow: {
-        'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.35)',
-        'card': '0 4px 12px -2px rgba(0, 0, 0, 0.45)',
-        'modal': '0 20px 40px -10px rgba(0, 0, 0, 0.7)',
+        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.35)',
+        'card': '0 4px 16px -2px rgba(0, 0, 0, 0.5)',
+        'card-hover': '0 10px 25px -4px rgba(0, 0, 0, 0.6), 0 0 15px -3px rgba(16, 185, 129, 0.08)',
+        'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.85)',
+        'glow-emerald': '0 0 20px -3px rgba(16, 185, 129, 0.35)',
       }
     },
   },
