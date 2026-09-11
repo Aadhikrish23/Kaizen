@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Scale, Calendar as CalendarIcon, LogOut, Settings, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar as CalendarIcon, LogOut, Settings, BarChart3, Package, Sparkles } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
+import { AdaptivePlannerView } from '../features/planner/AdaptivePlannerView';
+import { InventoryView } from '../features/inventory/InventoryView';
 import { MealTracker } from '../features/meals/MealTracker';
 import { WaterTracker } from '../features/water/WaterTracker';
+import { SleepTracker } from '../features/sleep/SleepTracker';
 import { WeightTracker } from '../features/weight/WeightTracker';
 import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
 
-type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'weight' | 'analytics';
+type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight';
+type WorkoutSubTab = 'tracker' | 'planner' | 'inventory';
 
 export const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
+  const [workoutSubTab, setWorkoutSubTab] = useState<WorkoutSubTab>('tracker');
   const { logout, user } = useAuth();
   
   // Format today's date as YYYY-MM-DD
@@ -31,7 +36,7 @@ export const DashboardLayout = () => {
     { id: 'workouts' as const, label: 'Workouts', icon: Dumbbell, highlight: 'text-kaizen-workout' },
     { id: 'meals' as const, label: 'Nutrition', icon: Utensils, highlight: 'text-kaizen-calories' },
     { id: 'water' as const, label: 'Hydration', icon: Droplets, highlight: 'text-kaizen-water' },
-    { id: 'weight' as const, label: 'Scale Weight', icon: Scale, highlight: 'text-kaizen-weight' },
+    { id: 'sleep' as const, label: 'Sleep Cycle', icon: Moon, highlight: 'text-indigo-400' },
     { id: 'analytics' as const, label: 'Analytics', icon: BarChart3, highlight: 'text-emerald-400' },
   ];
 
@@ -57,18 +62,58 @@ export const DashboardLayout = () => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-control text-sm font-medium transition-colors duration-150 ${
-                    isActive
-                      ? 'bg-kaizen-surface-elevated text-kaizen-text font-semibold border border-kaizen-border'
-                      : 'text-kaizen-muted hover:text-kaizen-text hover:bg-kaizen-surface-hover/60'
-                  }`}
-                >
-                  <Icon className={`w-4 h-4 ${isActive && item.highlight ? item.highlight : ''}`} />
-                  <span>{item.label}</span>
-                </button>
+                <div key={item.id}>
+                  <button
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-control text-sm font-medium transition-colors duration-150 ${
+                      isActive
+                        ? 'bg-kaizen-surface-elevated text-kaizen-text font-semibold border border-kaizen-border'
+                        : 'text-kaizen-muted hover:text-kaizen-text hover:bg-kaizen-surface-hover/60'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 ${isActive && item.highlight ? item.highlight : ''}`} />
+                    <span>{item.label}</span>
+                  </button>
+
+                  {/* Sub-items under Workouts */}
+                  {item.id === 'workouts' && activeTab === 'workouts' && (
+                    <div className="pl-4 pr-1 py-1 space-y-1 border-l-2 border-kaizen-workout/40 ml-4 my-1">
+                      <button
+                        onClick={() => setWorkoutSubTab('tracker')}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-xs font-mono transition-colors ${
+                          workoutSubTab === 'tracker'
+                            ? 'bg-kaizen-workout/15 text-kaizen-workout font-bold'
+                            : 'text-kaizen-muted hover:text-kaizen-text hover:bg-kaizen-surface-hover/50'
+                        }`}
+                      >
+                        <Dumbbell className="w-3 h-3" />
+                        <span>Active Session</span>
+                      </button>
+                      <button
+                        onClick={() => setWorkoutSubTab('planner')}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-xs font-mono transition-colors ${
+                          workoutSubTab === 'planner'
+                            ? 'bg-violet-500/15 text-violet-300 font-bold'
+                            : 'text-kaizen-muted hover:text-kaizen-text hover:bg-kaizen-surface-hover/50'
+                        }`}
+                      >
+                        <Sparkles className="w-3 h-3 text-violet-400" />
+                        <span>Adaptive Planner</span>
+                      </button>
+                      <button
+                        onClick={() => setWorkoutSubTab('inventory')}
+                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-control text-xs font-mono transition-colors ${
+                          workoutSubTab === 'inventory'
+                            ? 'bg-amber-400/15 text-amber-300 font-bold'
+                            : 'text-kaizen-muted hover:text-kaizen-text hover:bg-kaizen-surface-hover/50'
+                        }`}
+                      >
+                        <Package className="w-3 h-3 text-amber-400" />
+                        <span>Equipment Inventory</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </nav>
@@ -131,17 +176,77 @@ export const DashboardLayout = () => {
         {activeTab === 'dashboard' && (
           <DashboardOverview
             currentDate={currentDate}
-            onNavigateTab={(tab) => setActiveTab(tab)}
+            onNavigateTab={(tab) => {
+              setActiveTab(tab);
+              if (tab === 'workouts') setWorkoutSubTab('tracker');
+            }}
           />
         )}
         {activeTab === 'workouts' && (
-          <WorkoutTracker currentDate={currentDate} />
+          <div className="space-y-6">
+            {/* Workouts Top Sub-Navigation Bar */}
+            <div className="flex border-b border-kaizen-border gap-6">
+              <button
+                onClick={() => setWorkoutSubTab('tracker')}
+                className={`pb-3 text-sm font-medium transition-colors flex items-center gap-2 relative ${
+                  workoutSubTab === 'tracker'
+                    ? 'text-kaizen-workout border-b-2 border-kaizen-workout font-bold'
+                    : 'text-kaizen-muted hover:text-kaizen-text'
+                }`}
+              >
+                <Dumbbell className="w-4 h-4" />
+                Active Session
+              </button>
+              <button
+                onClick={() => setWorkoutSubTab('planner')}
+                className={`pb-3 text-sm font-medium transition-colors flex items-center gap-2 relative ${
+                  workoutSubTab === 'planner'
+                    ? 'text-violet-400 border-b-2 border-violet-400 font-bold'
+                    : 'text-kaizen-muted hover:text-kaizen-text'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                Adaptive Planner
+              </button>
+              <button
+                onClick={() => setWorkoutSubTab('inventory')}
+                className={`pb-3 text-sm font-medium transition-colors flex items-center gap-2 relative ${
+                  workoutSubTab === 'inventory'
+                    ? 'text-amber-400 border-b-2 border-amber-400 font-bold'
+                    : 'text-kaizen-muted hover:text-kaizen-text'
+                }`}
+              >
+                <Package className="w-4 h-4" />
+                Equipment & Inventory
+              </button>
+            </div>
+
+            {/* Sub-tab view render */}
+            {workoutSubTab === 'tracker' && (
+              <WorkoutTracker
+                currentDate={currentDate}
+                onNavigateToPlanner={() => setWorkoutSubTab('planner')}
+              />
+            )}
+            {workoutSubTab === 'planner' && (
+              <AdaptivePlannerView
+                currentDate={currentDate}
+                onNavigateToWorkouts={() => setWorkoutSubTab('tracker')}
+              />
+            )}
+            {workoutSubTab === 'inventory' && (
+              <InventoryView />
+            )}
+          </div>
         )}
         {activeTab === 'meals' && (
           <MealTracker currentDate={currentDate} />
         )}
         {activeTab === 'water' && (
           <WaterTracker currentDate={currentDate} />
+        )}
+        {activeTab === 'sleep' && (
+          <SleepTracker currentDate={currentDate} />
         )}
         {activeTab === 'weight' && (
           <WeightTracker currentDate={currentDate} />

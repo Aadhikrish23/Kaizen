@@ -24,8 +24,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (userData: User & { accessToken: string }) => void;
-  register: (userData: User & { accessToken: string }) => void;
+  login: (userData: any) => void;
+  register: (userData: any) => void;
   updateUser: (partial: Partial<User>) => void;
   logout: () => void;
 }
@@ -42,12 +42,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const restoreSession = async () => {
+      const token = localStorage.getItem('kaizen_access_token');
+      if (!token) {
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+      setAccessToken(token);
       try {
         const response = await apiClient.get('/auth/me');
         const userData = (response as any)?.user || response;
+        if (userData && !userData.id && userData._id) {
+          userData.id = userData._id;
+        }
         setUser(userData as User);
       } catch {
         setUser(null);
+        localStorage.removeItem('kaizen_access_token');
       } finally {
         setIsLoading(false);
       }
@@ -55,18 +66,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     restoreSession();
   }, []);
 
-  const login = (data: User & { accessToken: string }) => {
-    const { accessToken: token, ...userData } = data;
-    setAccessToken(token);
-    localStorage.setItem('kaizen_access_token', token);
-    setUser(userData as User);
+  const login = (data: any) => {
+    const token = data.accessToken;
+    const userData = data.user || data;
+    if (token) {
+      setAccessToken(token);
+      localStorage.setItem('kaizen_access_token', token);
+    }
+    if (userData) {
+      if (!userData.id && userData._id) {
+        userData.id = userData._id;
+      }
+      setUser(userData as User);
+    }
   };
 
-  const register = (data: User & { accessToken: string }) => {
-    const { accessToken: token, ...userData } = data;
-    setAccessToken(token);
-    localStorage.setItem('kaizen_access_token', token);
-    setUser(userData as User);
+  const register = (data: any) => {
+    const token = data.accessToken;
+    const userData = data.user || data;
+    if (token) {
+      setAccessToken(token);
+      localStorage.setItem('kaizen_access_token', token);
+    }
+    if (userData) {
+      if (!userData.id && userData._id) {
+        userData.id = userData._id;
+      }
+      setUser(userData as User);
+    }
   };
 
   const updateUser = (partial: Partial<User>) => {

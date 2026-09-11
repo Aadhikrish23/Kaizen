@@ -21,7 +21,12 @@ export const LoginForm: React.FC = () => {
     try {
       const response = await apiClient.post('/auth/login', { email, password });
       login(response as any);
-      navigate('/dashboard');
+      const userData = (response as any)?.user || response;
+      if (userData?.onboardingComplete) {
+        navigate('/dashboard');
+      } else {
+        navigate('/onboarding');
+      }
     } catch (err: any) {
       setError(err?.message || 'Failed to login');
     } finally {

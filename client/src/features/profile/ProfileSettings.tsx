@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw } from 'lucide-react';
+import { Save, RefreshCw, Scale } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiClient } from '../../api/client';
+import { QuickWeighInModal } from '../weight/QuickWeighInModal';
 
 const GOALS = [
   { id: 'lose_weight', label: 'Lose Weight' },
@@ -24,6 +25,7 @@ export const ProfileSettings: React.FC = () => {
   const { user, updateUser } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [isComputingTdee, setIsComputingTdee] = useState(false);
+  const [isWeighInOpen, setIsWeighInOpen] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [tdee, setTdee] = useState<number | null>(null);
@@ -34,6 +36,7 @@ export const ProfileSettings: React.FC = () => {
     gender: user?.gender || '',
     heightCm: user?.heightCm ? String(user.heightCm) : '',
     currentWeightKg: user?.currentWeightKg ? String(user.currentWeightKg) : '',
+    targetWeightKg: user?.targetWeightKg ? String(user.targetWeightKg) : '',
     goal: user?.goal || '',
     activityLevel: user?.activityLevel || '',
     calorieDailyTarget: user?.calorieDailyTarget ? String(user.calorieDailyTarget) : '2000',
@@ -87,6 +90,7 @@ export const ProfileSettings: React.FC = () => {
         gender: form.gender || undefined,
         heightCm: form.heightCm ? Number(form.heightCm) : undefined,
         currentWeightKg: form.currentWeightKg ? Number(form.currentWeightKg) : undefined,
+        targetWeightKg: form.targetWeightKg ? Number(form.targetWeightKg) : undefined,
         goal: form.goal || undefined,
         activityLevel: form.activityLevel || undefined,
         calorieDailyTarget: Number(form.calorieDailyTarget),
@@ -165,10 +169,45 @@ export const ProfileSettings: React.FC = () => {
         </div>
       </Card>
 
-      <Card title="Body">
-        <div className="grid grid-cols-2 gap-4">
-          <Input label="Height (cm)" type="number" value={form.heightCm} onChange={(e) => set('heightCm', e.target.value)} placeholder="175" />
-          <Input label="Weight (kg)" type="number" value={form.currentWeightKg} onChange={(e) => set('currentWeightKg', e.target.value)} placeholder="75.5" />
+      <Card 
+        title="Body Composition & Scale Weight"
+        subtitle="Manage your physical measurements and target weight"
+        action={
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsWeighInOpen(true)}
+            className="flex items-center gap-1.5 text-xs font-mono"
+          >
+            <Scale className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Quick Weigh-In</span>
+          </Button>
+        }
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Input label="Height (cm)" type="number" value={form.heightCm} onChange={(e) => set('heightCm', e.target.value)} placeholder="175" />
+            <Input label="Current Weight (kg)" type="number" step="0.1" value={form.currentWeightKg} onChange={(e) => set('currentWeightKg', e.target.value)} placeholder="75.5" />
+            <Input label="Target Weight (kg)" type="number" step="0.1" value={form.targetWeightKg} onChange={(e) => set('targetWeightKg', e.target.value)} placeholder="70.0" />
+          </div>
+
+          {form.heightCm && form.currentWeightKg && (
+            <div className="p-3 rounded-lg bg-kaizen-bg border border-kaizen-border flex items-center justify-between text-xs">
+              <span className="text-kaizen-muted">Computed Body Mass Index (BMI):</span>
+              <span className="font-mono font-bold text-white">
+                {(Number(form.currentWeightKg) / Math.pow(Number(form.heightCm) / 100, 2)).toFixed(1)}{' '}
+                <span className="text-emerald-400 font-normal">
+                  {(() => {
+                    const bmi = Number(form.currentWeightKg) / Math.pow(Number(form.heightCm) / 100, 2);
+                    if (bmi < 18.5) return '(Underweight)';
+                    if (bmi < 25) return '(Normal range)';
+                    if (bmi < 30) return '(Overweight)';
+                    return '(Obese)';
+                  })()}
+                </span>
+              </span>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -203,6 +242,11 @@ export const ProfileSettings: React.FC = () => {
         {success && <span className="text-sm text-emerald-400">Saved successfully.</span>}
         {error && <span className="text-sm text-rose-400">{error}</span>}
       </div>
+
+      <QuickWeighInModal
+        isOpen={isWeighInOpen}
+        onClose={() => setIsWeighInOpen(false)}
+      />
     </div>
   );
 };

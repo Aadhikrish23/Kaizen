@@ -10,6 +10,9 @@ export interface FoodItem {
   carbs: number;
   fat: number;
   isCustom: boolean;
+  imageUrl?: string;
+  externalId?: string;
+  source?: 'local' | 'spoonacular' | 'openfoodfacts';
 }
 
 export interface RecipeIngredient {
@@ -32,6 +35,37 @@ export interface Recipe {
   totalProtein: number;
   totalCarbs: number;
   totalFat: number;
+  imageUrl?: string;
+  sourceUrl?: string;
+  instructions?: string[];
+  prepTimeMinutes?: number;
+  cookTimeMinutes?: number;
+  servings?: number;
+}
+
+export interface ExternalRecipe {
+  externalId: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  sourceUrl?: string;
+  servings: number;
+  prepTimeMinutes?: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  ingredients: Array<{
+    name: string;
+    amount: number;
+    unit: string;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+  }>;
+  instructions: string[];
+  source: 'spoonacular' | 'local';
 }
 
 export interface WaterLog {
@@ -73,6 +107,47 @@ export interface Exercise {
   secondaryMuscles?: string[];
   equipment: 'dumbbell' | 'barbell' | 'bodyweight' | 'band' | 'cable' | 'machine' | 'other';
   instructions?: string;
+  gifUrl?: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  formTips?: string[];
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  userId?: string;
+}
+
+export interface EquipmentItem {
+  id: string;
+  type: 'dumbbell' | 'barbell' | 'plates' | 'bench' | 'pullup_bar' | 'bands' | 'cable' | 'machine' | 'kettlebell' | 'other';
+  name: string;
+  availableWeightsKg: number[];
+  platePairsKg?: number[];
+  barbellWeightKg?: number;
+  notes?: string;
+}
+
+export interface WorkingWeightHistory {
+  date: string;
+  weightKg: number;
+  reps: number;
+  rpe?: number;
+}
+
+export interface ExerciseWorkingWeight {
+  exerciseName: string;
+  exerciseId?: string;
+  currentWeightKg: number;
+  targetReps: number;
+  lastUsedDate: string;
+  history: WorkingWeightHistory[];
+}
+
+export interface UserInventory {
+  _id?: string;
+  userId?: string;
+  equipment: EquipmentItem[];
+  workingWeights: ExerciseWorkingWeight[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface WorkoutSet {
@@ -133,6 +208,17 @@ export interface DailySummary {
     weight: number | null;
     targetWeight: number;
   };
+  sleep?: {
+    logged: boolean;
+    durationMinutes: number;
+    cyclesCount: number;
+    quality: number;
+    recoveryScore: number;
+    bedtime: string | null;
+    wakeTime: string | null;
+    deepSleepMinutes: number;
+    remSleepMinutes: number;
+  };
   strength: {
     workoutCompleted: boolean;
     splitName: string | null;
@@ -150,3 +236,87 @@ export interface ApiResponse<T> {
     message: string;
   };
 }
+
+export interface PlannedExercise {
+  exerciseId?: string;
+  exerciseName: string;
+  targetMuscle: string;
+  equipment: string;
+  targetSets: number;
+  targetReps: number;
+  suggestedWeightKg: number;
+  restSeconds: number;
+  videoUrl?: string;
+  formTips?: string[];
+  notes?: string;
+}
+
+export interface PlannedDay {
+  dayNumber: number;
+  dayName: string;
+  isRestDay: boolean;
+  title: string;
+  focus: string;
+  targetMuscles: string[];
+  estimatedDurationMinutes: number;
+  exercises: PlannedExercise[];
+}
+
+export interface DailyAdaptation {
+  date: string;
+  reason: string;
+  type: 'weight_increase' | 'volume_adjustment' | 'rest_shift' | 'deload' | 'streak_milestone' | 'exercise_swap';
+  exerciseName?: string;
+  oldValue?: number | string;
+  newValue?: number | string;
+}
+
+export interface PlannerPreferences {
+  daysPerWeek: number;
+  sessionDurationMinutes: number;
+  splitStyle: 'full_body' | 'upper_lower' | 'ppl' | 'home_dumbbell';
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced';
+  targetFocus: 'hypertrophy' | 'strength' | 'fat_loss' | 'general_fitness';
+  preferredDays?: string[];
+}
+
+export interface UserWorkoutPlan {
+  _id?: string;
+  userId?: string;
+  preferences: PlannerPreferences;
+  schedule: PlannedDay[];
+  dailyAdaptations: DailyAdaptation[];
+  adherenceRate: number;
+  lastEvaluatedDate?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SleepLog {
+  _id?: string;
+  userId?: string;
+  date: string; // format "YYYY-MM-DD"
+  bedtime: string; // e.g. "23:00"
+  wakeTime: string; // e.g. "07:00"
+  durationMinutes: number; // e.g. 480
+  quality: number; // 1 to 5
+  cyclesCount: number; // durationMinutes / 90
+  deepSleepMinutes: number;
+  remSleepMinutes: number;
+  lightSleepMinutes: number;
+  awakeMinutes: number;
+  recoveryScore: number; // 0 to 100
+  notes?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CircadianWindow {
+  cycles: number;
+  durationHours: string;
+  label: string;
+  desc: string;
+  bedtime: string;
+}
+
+

@@ -100,6 +100,25 @@ export const Onboarding: React.FC = () => {
     setStep((s) => s + 1);
   };
 
+  React.useEffect(() => {
+    if (user?.name && !form.name) {
+      setForm((prev) => ({ ...prev, name: user.name }));
+    }
+  }, [user]);
+
+  const handleSkip = async () => {
+    setIsLoading(true);
+    try {
+      await apiClient.patch('/profile', { onboardingComplete: true });
+    } catch {
+      // ignore
+    } finally {
+      updateUser({ onboardingComplete: true });
+      navigate('/dashboard');
+      setIsLoading(false);
+    }
+  };
+
   const handleComplete = async () => {
     setIsLoading(true);
     setError('');
@@ -159,7 +178,14 @@ export const Onboarding: React.FC = () => {
     <div className="min-h-screen bg-kaizen-bg flex items-center justify-center p-4">
       <div className="w-full max-w-lg">
         {/* Header */}
-        <div className="mb-8 text-center">
+        <div className="mb-8 text-center relative">
+          <button
+            type="button"
+            onClick={handleSkip}
+            className="absolute right-0 top-1 text-xs font-mono text-kaizen-muted hover:text-emerald-400 transition-colors"
+          >
+            Skip for now &rarr;
+          </button>
           <div className="inline-flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold font-mono text-sm">K</div>
             <span className="font-bold text-kaizen-text text-lg">Kaizen</span>

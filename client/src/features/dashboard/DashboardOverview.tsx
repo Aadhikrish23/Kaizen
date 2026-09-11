@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -6,15 +6,17 @@ import { ProgressRing } from '../../components/ui/ProgressRing';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useSummary } from '../../services/summaryService';
 import { DailySummary } from '../../types';
-import { Dumbbell, Utensils, Scale, ArrowRight, Activity } from 'lucide-react';
+import { Dumbbell, Utensils, Scale, Moon, ArrowRight, Activity, Zap } from 'lucide-react';
+import { QuickWeighInModal } from '../weight/QuickWeighInModal';
 import { AICoach } from './AICoach';
 
 interface DashboardOverviewProps {
   currentDate: string;
-  onNavigateTab: (tab: 'workouts' | 'meals' | 'water' | 'weight' | 'analytics') => void;
+  onNavigateTab: (tab: 'workouts' | 'meals' | 'water' | 'sleep' | 'weight' | 'analytics') => void;
 }
 
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDate, onNavigateTab }) => {
+  const [isWeighInOpen, setIsWeighInOpen] = useState(false);
   const { data, isLoading, error } = useSummary(currentDate);
   const summary = data as unknown as DailySummary;
 
@@ -26,6 +28,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
   const hydration = summary?.hydration;
   const bodyMetrics = summary?.bodyMetrics;
   const strength = summary?.strength;
+  const sleep = summary?.sleep;
 
   const caloriePercent = nutrition ? Math.min(100, Math.round((nutrition.totalCalories / nutrition.calorieGoal) * 100)) : 0;
 
@@ -46,8 +49,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
           <Badge variant={strength?.workoutCompleted ? 'emerald' : 'neutral'} size="md">
             {strength?.workoutCompleted ? 'Workout Logged' : 'Workout Pending'}
           </Badge>
-          <Badge variant={hydration && hydration.totalWater >= hydration.waterGoal ? 'cyan' : 'neutral'} size="md">
-            {hydration && hydration.totalWater >= hydration.waterGoal ? 'Hydrated' : 'Water Incomplete'}
+          <Badge variant={sleep?.logged ? 'cyan' : 'neutral'} size="md">
+            {sleep?.logged ? `Sleep: ${Math.floor(sleep.durationMinutes / 60)}h` : 'Sleep Unlogged'}
           </Badge>
           <Button variant="secondary" size="sm" onClick={() => onNavigateTab('analytics')} className="ml-2 hidden sm:flex">
             View Analytics
@@ -61,8 +64,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
         </div>
       )}
 
-      {/* 4 Pillars Dashboard Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      {/* 6 Core Pillars Dashboard Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* Pillar 1: Strength & Training */}
         <Card
           title="Strength & Workout"
@@ -159,13 +162,45 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
           </div>
         </Card>
 
-        {/* Pillar 4: Weight Tracking */}
+        {/* Pillar 4: Sleep Cycle & Circadian Reset */}
+        <Card
+          title="Sleep & Circadian"
+          subtitle={sleep?.logged ? `${Math.floor(sleep.durationMinutes / 60)}h ${sleep.durationMinutes % 60}m recorded` : 'No sleep logged yet'}
+          action={
+            <Button variant="ghost" size="sm" onClick={() => onNavigateTab('sleep')}>
+              Track <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          }
+        >
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold font-mono text-indigo-400">
+                  {sleep?.logged ? `${Math.floor(sleep.durationMinutes / 60)}h ${sleep.durationMinutes % 60}m` : '--'}
+                </span>
+              </div>
+              <p className="text-xs text-kaizen-muted mt-1 font-mono flex items-center gap-1.5">
+                <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>
+                  {sleep?.logged
+                    ? `${sleep.cyclesCount} cycles • Score: ${sleep.recoveryScore}`
+                    : 'Target: 5 cycles (7.5h)'}
+                </span>
+              </p>
+            </div>
+            <div className="w-12 h-12 shrink-0 rounded-control bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+              <Moon className="w-6 h-6" />
+            </div>
+          </div>
+        </Card>
+
+        {/* Pillar 5: Scale Weight (Quick Weigh-In Modal) */}
         <Card
           title="Scale Weight"
           subtitle={`Target: ${bodyMetrics?.targetWeight || '--'} kg`}
           action={
-            <Button variant="ghost" size="sm" onClick={() => onNavigateTab('weight')}>
-              Log <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            <Button variant="ghost" size="sm" onClick={() => setIsWeighInOpen(true)}>
+              Weigh-In <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </Button>
           }
         >
@@ -178,7 +213,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
                 <span className="text-xs font-mono text-kaizen-muted">kg</span>
               </div>
               <p className="text-xs text-kaizen-muted mt-1 font-mono">
-                {bodyMetrics?.weight ? 'Logged today' : 'No entry today'}
+                {bodyMetrics?.weight ? 'Logged for today' : 'Tap Weigh-In to record'}
               </p>
             </div>
             <div className="w-12 h-12 shrink-0 rounded-control bg-kaizen-weight/10 border border-kaizen-weight/20 flex items-center justify-center text-kaizen-weight">
@@ -186,28 +221,52 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
             </div>
           </div>
         </Card>
+
+        {/* Pillar 6: Kaizen Health Score */}
+        <Card
+          title="Kaizen Health Score"
+          subtitle="Holistic adherence index"
+          action={
+            <Button variant="ghost" size="sm" onClick={() => onNavigateTab('analytics')}>
+              View <ArrowRight className="w-3.5 h-3.5 ml-1" />
+            </Button>
+          }
+        >
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold font-mono text-emerald-400">
+                  {Math.round(
+                    ((caloriePercent > 0 ? Math.min(100, caloriePercent) : 50) +
+                     (hydration ? Math.min(100, (hydration.totalWater / hydration.waterGoal) * 100) : 50) +
+                     (strength?.workoutCompleted ? 100 : 40) +
+                     (sleep?.logged ? sleep.recoveryScore : 60)) / 4
+                  )}
+                </span>
+                <span className="text-xs font-mono text-kaizen-muted">/ 100</span>
+              </div>
+              <p className="text-xs text-kaizen-muted mt-1 font-mono">
+                Level 1 • High Readiness
+              </p>
+            </div>
+            <div className="w-12 h-12 shrink-0 rounded-control bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Activity className="w-6 h-6" />
+            </div>
+          </div>
+        </Card>
       </div>
       
-      {/* AI Coach & Gamification Banner */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-           <AICoach />
-        </div>
-        <div className="lg:col-span-1">
-           <Card title="Your Journey" subtitle="Kaizen Health Score">
-             <div className="flex flex-col items-center justify-center p-4">
-               <div className="text-6xl font-black text-kaizen-primary mb-2 font-mono drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                 85
-               </div>
-               <p className="text-xs text-kaizen-muted mb-4">Level 1 • 0 XP • 0 Day Streak</p>
-               <div className="w-full bg-kaizen-surface-elevated rounded-full h-2 mb-2">
-                  <div className="bg-kaizen-primary h-2 rounded-full" style={{ width: '45%' }}></div>
-               </div>
-               <p className="text-[10px] text-kaizen-subtle font-mono text-center">450 XP to Next Level</p>
-             </div>
-           </Card>
-        </div>
+      {/* AI Coach Assistant */}
+      <div className="w-full">
+        <AICoach />
       </div>
+
+      {/* Quick Weigh-In Modal */}
+      <QuickWeighInModal
+        isOpen={isWeighInOpen}
+        onClose={() => setIsWeighInOpen(false)}
+        defaultDate={currentDate}
+      />
     </div>
   );
 };

@@ -49,8 +49,12 @@ import foodsRouter from './routes/foods';
 import recipesRouter from './routes/recipes';
 import measurementsRouter from './routes/measurements';
 import routinesRouter from './routes/routines';
+import inventoryRouter from './routes/inventory';
+import plannerRouter from './routes/planner';
+import sleepRouter from './routes/sleep';
 import analyticsRouter from './routes/analytics';
 import aiRouter from './routes/ai';
+import externalFoodRouter from './routes/externalFood';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';
@@ -67,6 +71,7 @@ app.use('/api/v1/foods', foodsRouter);
 app.use('/api/v1/recipes', recipesRouter);
 app.use('/api/v1/analytics', analyticsRouter);
 app.use('/api/v1/ai', aiRouter);
+app.use('/api/v1/external', externalFoodRouter);
 app.use('/api/v1/water', waterRouter);
 app.use('/api/v1/meals', mealsRouter);
 app.use('/api/v1/weight', weightRouter);
@@ -75,6 +80,9 @@ app.use('/api/v1/workouts', workoutsRouter);
 app.use('/api/v1/summary', summaryRouter);
 app.use('/api/v1/measurements', measurementsRouter);
 app.use('/api/v1/routines', routinesRouter);
+app.use('/api/v1/inventory', inventoryRouter);
+app.use('/api/v1/planner', plannerRouter);
+app.use('/api/v1/sleep', sleepRouter);
 
 // Health Check
 app.get('/api/v1/health', (req: Request, res: Response) => {

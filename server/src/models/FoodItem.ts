@@ -1,4 +1,4 @@
-﻿import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IFoodItem extends Document {
   name: string;
@@ -10,6 +10,9 @@ export interface IFoodItem extends Document {
   fat: number;
   isCustom: boolean;
   userId?: mongoose.Types.ObjectId; // null if global
+  imageUrl?: string;
+  externalId?: string;
+  source?: 'local' | 'spoonacular' | 'openfoodfacts';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,7 +27,10 @@ const FoodItemSchema = new Schema(
     carbs: { type: Number, required: true, min: 0 },
     fat: { type: Number, required: true, min: 0 },
     isCustom: { type: Boolean, default: false },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true }
+    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    imageUrl: { type: String },
+    externalId: { type: String },
+    source: { type: String, enum: ['local', 'spoonacular', 'openfoodfacts'], default: 'local' }
   },
   { timestamps: true }
 );

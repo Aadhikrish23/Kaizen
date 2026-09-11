@@ -8,9 +8,10 @@ import { useMealLogs, useAddMealLog, useDeleteMealLog } from '../../services/mea
 import { useCreateRecipe } from '../../services/recipeService';
 import { useAuth } from '../../contexts/AuthContext';
 import { MealLog, FoodItem } from '../../types';
-import { Trash2, Plus, Utensils } from 'lucide-react';
+import { Trash2, Plus, Utensils, Sparkles } from 'lucide-react';
 import { FoodSearch } from '../../components/ui/FoodSearch';
 import { RecipeList } from './RecipeList';
+import { RecipeExplorerModal } from './RecipeExplorerModal';
 
 interface MealTrackerProps {
   currentDate: string;
@@ -67,9 +68,30 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
   const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('lunch');
+  const [showRecipeExplorer, setShowRecipeExplorer] = useState(false);
 
   const calorieGoal = user?.calorieDailyTarget ?? 2000;
   const proteinGoal = user?.proteinDailyTargetG ?? 150;
+
+  const handleLogFromRecipe = async (meal: { name: string; calories: number; protein: number; carbs: number; fat: number }) => {
+    try {
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      await addMealLog({
+        name: meal.name,
+        calories: meal.calories,
+        protein: meal.protein,
+        carbs: meal.carbs,
+        fat: meal.fat,
+        mealType: 'lunch',
+        time,
+        date: currentDate,
+      });
+      if (onUpdate) onUpdate();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,10 +142,21 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
           <h2 className="text-xl font-bold tracking-tight text-kaizen-text">Nutrition & Calories</h2>
           <p className="text-xs text-kaizen-muted mt-0.5 font-mono">Calorie Budget: {calorieGoal} kcal / day</p>
         </div>
-        <div className="text-xs font-mono px-2.5 py-1 bg-kaizen-surface border border-kaizen-border rounded-control text-kaizen-calories">
-          {data.totalCalories > calorieGoal
-            ? `+${data.totalCalories - calorieGoal} kcal over budget`
-            : `${calorieGoal - data.totalCalories} kcal remaining`}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowRecipeExplorer(true)}
+            className="text-xs flex items-center gap-1.5 text-amber-400 hover:text-amber-300"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Discover Recipes
+          </Button>
+          <div className="text-xs font-mono px-2.5 py-1 bg-kaizen-surface border border-kaizen-border rounded-control text-kaizen-calories">
+            {data.totalCalories > calorieGoal
+              ? `+${data.totalCalories - calorieGoal} kcal over budget`
+              : `${calorieGoal - data.totalCalories} kcal remaining`}
+          </div>
         </div>
       </div>
 
@@ -321,6 +354,12 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
           </Card>
         </div>
       </div>
+
+      <RecipeExplorerModal
+        isOpen={showRecipeExplorer}
+        onClose={() => setShowRecipeExplorer(false)}
+        onLogMeal={handleLogFromRecipe}
+      />
     </div>
   );
 };

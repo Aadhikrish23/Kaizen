@@ -30,6 +30,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to="/onboarding" replace />;
   }
 
+  // If already completed onboarding, redirect from /onboarding to /dashboard
+  if (user?.onboardingComplete && location.pathname === '/onboarding') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return children;
 };
 

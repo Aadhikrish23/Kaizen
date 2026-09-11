@@ -1,4 +1,4 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import * as authService from '../services/auth.service';
 import { SuccessResponse } from '../types/api';
@@ -58,5 +58,5 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 export const getMe = asyncHandler(async (req: Request, res: Response) => {
   // @ts-ignore
   const user = req.user;
-  res.json({ success: true, data: { user } });
+  res.json({ success: true, data: { user: authService.formatUserResponse(user) } });
 });

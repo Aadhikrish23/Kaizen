@@ -6,18 +6,23 @@ import { Badge } from '../../components/ui/Badge';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { useSplitSchedule, useWorkoutLogs, useAddWorkoutLog } from '../../services/workoutService';
 import { useExercises, useAddExercise } from '../../services/exerciseService';
+import { useInventory } from '../../services/inventoryService';
 import { WorkoutLog, WorkoutSplitSchedule, Exercise, WorkoutExercise } from '../../types';
-import { Dumbbell, Plus, Trash2, CheckCircle2, Circle, Calendar, Flame, Clock } from 'lucide-react';
+import { Dumbbell, Plus, Trash2, CheckCircle2, Circle, Calendar, Flame, Clock, BookOpen, Sparkles, Play } from 'lucide-react';
+import { ExerciseCatalogModal } from './ExerciseCatalogModal';
+import { ExerciseVideoModal } from './ExerciseVideoModal';
 
 interface WorkoutTrackerProps {
   currentDate: string;
   onUpdate?: () => void;
+  onNavigateToPlanner?: () => void;
 }
 
-export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onUpdate }) => {
+export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onUpdate, onNavigateToPlanner }) => {
   const { data: scheduleData, isLoading: loadingSchedule } = useSplitSchedule();
   const { data: workoutData, isLoading: loadingWorkout } = useWorkoutLogs(currentDate);
   const { data: catalogData, isLoading: loadingCatalog } = useExercises();
+  const { data: inventory } = useInventory();
 
   const { mutateAsync: addWorkoutLog } = useAddWorkoutLog();
   const { mutateAsync: addExercise } = useAddExercise();
@@ -33,6 +38,9 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
   
   // Custom Exercise modal/form state
   const [showNewExercise, setShowNewExercise] = useState(false);
+  const [showCatalogModal, setShowCatalogModal] = useState(false);
+  const [selectedVideoExercise, setSelectedVideoExercise] = useState<Exercise | null>(null);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [newExName, setNewExName] = useState('');
   const [newExMuscle, setNewExMuscle] = useState<'chest' | 'back' | 'legs' | 'shoulders' | 'biceps' | 'triceps' | 'core'>('chest');
   const [newExEquipment, setNewExEquipment] = useState<'dumbbell' | 'barbell' | 'bodyweight' | 'band' | 'cable' | 'machine' | 'other'>('dumbbell');
@@ -58,19 +66,54 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
     return <LoadingState message="Loading workout session..." />;
   }
 
-  // Exercise additions to workout session
+  // Exercise additions to workout session (inventory-aware default weights)
   const handleAddExerciseToSession = (exercise: Exercise) => {
+    let initialWeight = 15;
+    const workingWeight = inventory?.workingWeights?.find(
+      (ww) => ww.exerciseName.toLowerCase() === exercise.name.toLowerCase()
+    );
+    if (workingWeight && workingWeight.currentWeightKg > 0) {
+      initialWeight = workingWeight.currentWeightKg;
+    } else if (exercise.equipment === 'bodyweight') {
+      initialWeight = 0;
+    } else if (exercise.equipment === 'barbell') {
+      initialWeight = 20;
+    } else if (exercise.equipment === 'dumbbell' && inventory?.equipment) {
+      const db = inventory.equipment.find((e) => e.type === 'dumbbell');
+      if (db?.availableWeightsKg?.length) {
+        initialWeight = db.availableWeightsKg[0] || 10;
+      }
+    }
+
     const newEx: WorkoutExercise = {
       exerciseId: exercise._id,
       exerciseName: exercise.name,
       targetMuscle: exercise.targetMuscle,
       sets: [
-        { setNumber: 1, weightKg: 15, reps: 10, rpe: 8, completed: true },
-        { setNumber: 2, weightKg: 15, reps: 10, rpe: 8, completed: true },
-        { setNumber: 3, weightKg: 17.5, reps: 8, rpe: 9, completed: false }
+        { setNumber: 1, weightKg: initialWeight, reps: 10, rpe: 8, completed: true },
+        { setNumber: 2, weightKg: initialWeight, reps: 10, rpe: 8, completed: true },
+        { setNumber: 3, weightKg: initialWeight, reps: 8, rpe: 9, completed: false }
       ]
     };
     setActiveExercises([...activeExercises, newEx]);
+  };
+
+  const handleOpenVideoForExercise = (exerciseName: string) => {
+    const found = exercisesCatalog.find(
+      (e) => e.name.toLowerCase() === exerciseName.toLowerCase()
+    );
+    if (found) {
+      setSelectedVideoExercise(found);
+    } else {
+      setSelectedVideoExercise({
+        _id: 'temp',
+        name: exerciseName,
+        targetMuscle: 'chest',
+        equipment: 'dumbbell',
+        instructions: 'Follow standard movement path with strict controlled form.',
+      });
+    }
+    setIsVideoModalOpen(true);
   };
 
   const handleRemoveExerciseFromSession = (index: number) => {
@@ -172,11 +215,21 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
           <h2 className="text-xl font-bold tracking-tight text-kaizen-text">Strength & Workout Training</h2>
           <p className="text-xs text-kaizen-muted mt-0.5 font-mono">Progressive overload & home gym set tracker</p>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-kaizen-muted flex items-center gap-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-mono text-kaizen-muted flex items-center gap-1 mr-1">
             <Flame className="w-3.5 h-3.5 text-kaizen-workout" />
-            Session Volume: <strong className="text-kaizen-text">{currentVolume.toLocaleString()} kg</strong>
+            <span className="hidden sm:inline">Volume:</span> <strong className="text-kaizen-text">{currentVolume.toLocaleString()} kg</strong>
           </span>
+          {onNavigateToPlanner && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onNavigateToPlanner}
+              className="gap-1.5 text-xs text-violet-400 border-violet-500/30 hover:border-violet-500"
+            >
+              <Sparkles className="w-3.5 h-3.5" /> Planner Blueprint
+            </Button>
+          )}
           <Button variant="primary" size="sm" onClick={handleSaveWorkout}>
             {currentWorkout ? 'Update Session' : 'Save Session'}
           </Button>
@@ -267,6 +320,14 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-sm text-kaizen-text">{ex.exerciseName}</h4>
                     <Badge variant="rose" size="sm">{ex.targetMuscle}</Badge>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenVideoForExercise(ex.exerciseName)}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400 hover:text-emerald-300 transition-colors bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"
+                      title="Watch live form demonstration video"
+                    >
+                      <Play className="w-2.5 h-2.5 fill-current" /> Demo Video
+                    </button>
                   </div>
                   <button
                     onClick={() => handleRemoveExerciseFromSession(exIndex)}
@@ -391,13 +452,24 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
             title="Exercise Directory"
             subtitle="Add exercises to today's workout"
             action={
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowNewExercise(!showNewExercise)}
-              >
-                <Plus className="w-3.5 h-3.5 mr-1" /> New
-              </Button>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setShowCatalogModal(true)}
+                  className="text-xs"
+                >
+                  <BookOpen className="w-3.5 h-3.5 mr-1" /> Library
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setShowNewExercise(!showNewExercise)}
+                  className="text-xs"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> New
+                </Button>
+              </div>
             }
           >
             {showNewExercise && (
@@ -481,6 +553,22 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
           </Card>
         </div>
       </div>
+
+      <ExerciseCatalogModal
+        isOpen={showCatalogModal}
+        onClose={() => setShowCatalogModal(false)}
+        onSelectExercise={(ex) => handleAddExerciseToSession(ex)}
+      />
+
+      <ExerciseVideoModal
+        exercise={selectedVideoExercise}
+        isOpen={isVideoModalOpen}
+        onClose={() => {
+          setIsVideoModalOpen(false);
+          setSelectedVideoExercise(null);
+        }}
+        onAddToWorkout={(ex) => handleAddExerciseToSession(ex)}
+      />
     </div>
   );
 };

@@ -1,4 +1,4 @@
-﻿import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import RefreshToken from '../models/RefreshToken';
@@ -23,6 +23,29 @@ export const generateTokens = async (userId: string) => {
   return { accessToken, refreshToken: refreshString };
 };
 
+export const formatUserResponse = (user: any) => ({
+  id: user._id?.toString() || user.id,
+  name: user.name,
+  email: user.email,
+  role: user.role || 'user',
+  onboardingComplete: !!user.onboardingComplete,
+  dob: user.dob,
+  gender: user.gender,
+  heightCm: user.heightCm,
+  currentWeightKg: user.currentWeightKg,
+  activityLevel: user.activityLevel,
+  goal: user.goal,
+  targetWeightKg: user.targetWeightKg,
+  calorieDailyTarget: user.calorieDailyTarget,
+  proteinDailyTargetG: user.proteinDailyTargetG,
+  waterDailyTargetMl: user.waterDailyTargetMl,
+  units: user.units || 'metric',
+  healthScore: user.healthScore,
+  xp: user.xp,
+  level: user.level,
+  streakDays: user.streakDays,
+});
+
 export const register = async (data: any) => {
   const existingUser = await User.findOne({ email: data.email });
   if (existingUser) {
@@ -35,14 +58,15 @@ export const register = async (data: any) => {
   const user = new User({
     name: data.name,
     email: data.email,
-    passwordHash
+    passwordHash,
+    onboardingComplete: false,
   });
   await user.save();
 
   const tokens = await generateTokens(user.id);
   
   return {
-    user: { id: user.id, name: user.name, email: user.email },
+    user: formatUserResponse(user),
     ...tokens
   };
 };
@@ -61,7 +85,7 @@ export const login = async (data: any) => {
   const tokens = await generateTokens(user.id);
   
   return {
-    user: { id: user.id, name: user.name, email: user.email },
+    user: formatUserResponse(user),
     ...tokens
   };
 };

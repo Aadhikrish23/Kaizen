@@ -1,4 +1,4 @@
-﻿import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 
 export const useParseFood = () => {
@@ -30,10 +30,17 @@ export const useRecommendations = () => {
   });
 };
 
+export interface CoachMessagePayload {
+  message: string;
+  history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+  date?: string;
+}
+
 export const useChatCoach = () => {
   return useMutation({
-    mutationFn: async (message: string) => {
-      const response = await apiClient.post('/ai/chat', { message });
+    mutationFn: async (payload: string | CoachMessagePayload) => {
+      const data = typeof payload === 'string' ? { message: payload } : payload;
+      const response = await apiClient.post('/ai/chat', data);
       return response as any;
     }
   });

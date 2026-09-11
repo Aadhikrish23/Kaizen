@@ -37,6 +37,16 @@ lerna-debug.log*
 .DS_Store
 *.suo
 *.ntvs*
-*.njsproj
-*.sln
 *.sw?
+
+# Python
+venv/
+.venv/
+ai_services/venv/
+__pycache__/
+*.pyc
+
+# Test artifacts
+e2e/test-results/
+e2e/playwright-report/
+

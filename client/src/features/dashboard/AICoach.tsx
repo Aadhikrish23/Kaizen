@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -16,11 +16,19 @@ export const AICoach: React.FC = () => {
     if (!input.trim()) return;
 
     const userText = input;
+    const historyPayload = chat.map(c => ({
+      role: (c.role === 'coach' ? 'assistant' : 'user') as 'assistant' | 'user',
+      content: c.text
+    }));
+
     setChat(prev => [...prev, { role: 'user', text: userText }]);
     setInput('');
 
     try {
-      const res = await sendMessage(userText);
+      const res = await sendMessage({
+        message: userText,
+        history: historyPayload
+      });
       setChat(prev => [...prev, { role: 'coach', text: res.reply }]);
     } catch (err) {
       setChat(prev => [...prev, { role: 'coach', text: 'I am currently offline. Please try again later.' }]);
@@ -32,7 +40,14 @@ export const AICoach: React.FC = () => {
       <div className="p-4 border-b border-kaizen-border flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-kaizen-primary" />
-          <h3 className="font-bold text-kaizen-text">Kaizen AI Coach</h3>
+          <div>
+            <h3 className="font-bold text-kaizen-text leading-tight">Kaizen AI Coach</h3>
+            <p className="text-[10px] font-mono text-kaizen-muted">Powered by Local Ollama &bull; Phi-3</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Phi-3 Mini
         </div>
       </div>
       
@@ -54,7 +69,7 @@ export const AICoach: React.FC = () => {
               <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-kaizen-surface-elevated' : 'bg-kaizen-primary/20'}`}>
                 {msg.role === 'user' ? <UserIcon className="w-3 h-3 text-kaizen-text" /> : <Bot className="w-3 h-3 text-kaizen-primary" />}
               </div>
-              <div className={`px-3 py-2 rounded-lg text-sm max-w-[80%] ${msg.role === 'user' ? 'bg-kaizen-surface-elevated text-kaizen-text rounded-tr-none' : 'bg-kaizen-surface text-kaizen-text border border-kaizen-border rounded-tl-none'}`}>
+              <div className={`px-3 py-2 rounded-lg text-sm max-w-[85%] whitespace-pre-line leading-relaxed ${msg.role === 'user' ? 'bg-kaizen-surface-elevated text-kaizen-text rounded-tr-none' : 'bg-kaizen-surface text-kaizen-text border border-kaizen-border rounded-tl-none'}`}>
                 {msg.text}
               </div>
             </div>

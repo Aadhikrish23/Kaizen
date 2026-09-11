@@ -1,4 +1,5 @@
 import WorkoutLog from '../models/WorkoutLog';
+import * as inventoryService from './inventory.service';
 
 const DEFAULT_SPLITS = [
   { dayIndex: 1, splitName: 'Push Day', muscles: ['chest', 'shoulders', 'triceps'] },
@@ -40,6 +41,7 @@ export const getWorkouts = async (userId: string, date?: string) => {
 };
 
 export const createOrUpdateWorkout = async (data: any) => {
+  let savedWorkout;
   let workout = await WorkoutLog.findOne({ date: String(data.date), userId: data.userId });
   if (workout) {
     workout.splitName = data.splitName;
@@ -47,7 +49,7 @@ export const createOrUpdateWorkout = async (data: any) => {
     workout.exercises = data.exercises;
     workout.durationMinutes = data.durationMinutes;
     workout.notes = data.notes;
-    return await workout.save();
+    savedWorkout = await workout.save();
   } else {
     workout = new WorkoutLog({
       date: data.date,
@@ -58,8 +60,30 @@ export const createOrUpdateWorkout = async (data: any) => {
       durationMinutes: data.durationMinutes,
       notes: data.notes
     });
-    return await workout.save();
+    savedWorkout = await workout.save();
   }
+
+  // Synchronize completed exercise weights to user inventory
+  if (Array.isArray(data.exercises) && data.userId) {
+    for (const ex of data.exercises) {
+      if (Array.isArray(ex.sets) && ex.sets.length > 0) {
+        const completedSetsWithWeight = ex.sets.filter((s: any) => s.completed && typeof s.weightKg === 'number' && s.weightKg > 0);
+        if (completedSetsWithWeight.length > 0) {
+          const bestSet = completedSetsWithWeight.reduce((prev: any, curr: any) => (curr.weightKg > prev.weightKg ? curr : prev), completedSetsWithWeight[0]);
+          inventoryService.recordWorkingWeight(data.userId, {
+            exerciseName: ex.name,
+            exerciseId: ex.exerciseId,
+            currentWeightKg: bestSet.weightKg,
+            targetReps: bestSet.reps || 10,
+            date: data.date,
+            rpe: bestSet.rpe
+          }).catch(err => console.error('[InventorySync] Error updating working weight:', err));
+        }
+      }
+    }
+  }
+
+  return savedWorkout;
 };
 
 export const deleteWorkout = async (id: string, userId: string) => {

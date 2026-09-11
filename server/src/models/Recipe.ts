@@ -1,4 +1,4 @@
-﻿import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IRecipeIngredient {
   foodId?: mongoose.Types.ObjectId;
@@ -20,6 +20,12 @@ export interface IRecipe extends Document {
   totalProtein: number;
   totalCarbs: number;
   totalFat: number;
+  imageUrl?: string;
+  sourceUrl?: string;
+  instructions?: string[];
+  prepTimeMinutes?: number;
+  cookTimeMinutes?: number;
+  servings?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,7 +50,13 @@ const RecipeSchema = new Schema(
     totalCalories: { type: Number, required: true, min: 0 },
     totalProtein: { type: Number, default: 0 },
     totalCarbs: { type: Number, default: 0 },
-    totalFat: { type: Number, default: 0 }
+    totalFat: { type: Number, default: 0 },
+    imageUrl: { type: String },
+    sourceUrl: { type: String },
+    instructions: [{ type: String }],
+    prepTimeMinutes: { type: Number },
+    cookTimeMinutes: { type: Number },
+    servings: { type: Number, default: 1 }
   },
   { timestamps: true }
 );

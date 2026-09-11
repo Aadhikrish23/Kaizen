@@ -1,6 +1,7 @@
-﻿import { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { SuccessResponse } from '../types/api';
+import * as aiMicroservice from '../services/aiMicroservice.service';
 
 // Phase 13-16: Mock AI Controller
 export const parseFoodText = asyncHandler(async (req: Request, res: Response) => {
@@ -17,7 +18,10 @@ export const parseFoodText = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const getInsights = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: { insight: 'You have been hitting your protein goals consistently for 3 days. Great job!' } });
+  const user = (req as any).user;
+  const date = (req.query.date as string) || undefined;
+  const data = await aiMicroservice.getDailyInsight(user, date);
+  res.json({ success: true, data });
 });
 
 export const getRecommendations = asyncHandler(async (req: Request, res: Response) => {
@@ -28,8 +32,10 @@ export const getRecommendations = asyncHandler(async (req: Request, res: Respons
 });
 
 export const chatWithCoach = asyncHandler(async (req: Request, res: Response) => {
-  const { message } = req.body;
-  res.json({ success: true, data: { reply: `I see you asked about "${message}". As your AI coach, I recommend staying hydrated and resting.` } });
+  const { message, history, date } = req.body;
+  const user = (req as any).user;
+  const data = await aiMicroservice.chatWithCoach(user, message, history, date);
+  res.json({ success: true, data });
 });
 
 // Phase 20: Search

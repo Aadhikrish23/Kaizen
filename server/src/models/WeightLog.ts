@@ -10,12 +10,14 @@ export interface IWeightLog extends Document {
 }
 
 const WeightLogSchema: Schema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   weight: { type: Number, required: true, min: 0.1 },
-  date: { type: String, required: true, unique: true, index: true },
+  date: { type: String, required: true },
   notes: { type: String, trim: true }
 }, {
   timestamps: true
 });
+
+WeightLogSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 export default mongoose.model<IWeightLog>('WeightLog', WeightLogSchema);

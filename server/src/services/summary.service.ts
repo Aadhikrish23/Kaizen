@@ -2,14 +2,16 @@ import WaterLog from '../models/WaterLog';
 import MealLog from '../models/MealLog';
 import WeightLog from '../models/WeightLog';
 import WorkoutLog from '../models/WorkoutLog';
+import SleepLog from '../models/SleepLog';
 import User from '../models/User';
 
 export const getSummaryByDate = async (dateStr: string, userId: string) => {
-  const [waterLogs, meals, weightLog, workoutLog, user] = await Promise.all([
+  const [waterLogs, meals, weightLog, workoutLog, sleepLog, user] = await Promise.all([
     WaterLog.find({ date: dateStr, userId }).sort({ createdAt: 1 }),
     MealLog.find({ date: dateStr, userId }).sort({ createdAt: 1 }),
     WeightLog.findOne({ date: dateStr, userId }),
     WorkoutLog.findOne({ date: dateStr, userId }),
+    SleepLog.findOne({ date: dateStr, userId }),
     User.findById(userId).select('calorieDailyTarget proteinDailyTargetG waterDailyTargetMl targetWeightKg currentWeightKg')
   ]);
 
@@ -44,6 +46,17 @@ export const getSummaryByDate = async (dateStr: string, userId: string) => {
     bodyMetrics: {
       weight: weightLog ? weightLog.weight : null,
       targetWeight
+    },
+    sleep: {
+      logged: !!sleepLog,
+      durationMinutes: sleepLog?.durationMinutes || 0,
+      cyclesCount: sleepLog?.cyclesCount || 0,
+      quality: sleepLog?.quality || 0,
+      recoveryScore: sleepLog?.recoveryScore || 0,
+      bedtime: sleepLog?.bedtime || null,
+      wakeTime: sleepLog?.wakeTime || null,
+      deepSleepMinutes: sleepLog?.deepSleepMinutes || 0,
+      remSleepMinutes: sleepLog?.remSleepMinutes || 0
     },
     strength: {
       workoutCompleted: !!workoutLog,

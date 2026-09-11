@@ -1,7 +1,14 @@
 import Exercise from '../models/Exercise';
 
-export const getExercises = async (userId: string, muscle?: string) => {
-  const filter: any = muscle ? { targetMuscle: String(muscle), userId } : { userId };
+export const getExercises = async (userId?: string, muscle?: string) => {
+  const userQuery = userId 
+    ? { $or: [{ userId: null }, { userId: { $exists: false } }, { userId }] }
+    : { $or: [{ userId: null }, { userId: { $exists: false } }] };
+
+  const filter: any = muscle 
+    ? { $and: [{ targetMuscle: String(muscle) }, userQuery] } 
+    : userQuery;
+
   return await Exercise.find(filter).sort({ name: 1 });
 };
 
@@ -12,7 +19,10 @@ export const createExercise = async (data: any) => {
     targetMuscle: data.targetMuscle,
     equipment: data.equipment || 'dumbbell',
     secondaryMuscles: data.secondaryMuscles || [],
-    instructions: data.instructions
+    instructions: data.instructions,
+    gifUrl: data.gifUrl,
+    imageUrl: data.imageUrl,
+    difficulty: data.difficulty || 'intermediate'
   });
   return await exercise.save();
 };
