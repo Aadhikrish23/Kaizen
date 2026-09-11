@@ -56,6 +56,19 @@ export const useRemoveExerciseFromPlanDay = () => {
   });
 };
 
+export const useDeletePlan = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiClient.delete<UserWorkoutPlan>('/planner'),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
+      queryClient.invalidateQueries({ queryKey: ['splitSchedule'] });
+      queryClient.invalidateQueries({ queryKey: ['workoutLogs'] });
+      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+    },
+  });
+};
+
 export const useAdaptPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({

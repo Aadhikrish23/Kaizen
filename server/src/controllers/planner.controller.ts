@@ -104,4 +104,17 @@ export const removeExerciseFromDay = asyncHandler(async (req: Request, res: Resp
   res.json(response);
 });
 
+export const deletePlan = asyncHandler(async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.user.id;
+  const data = await plannerService.deleteUserPlan(userId);
+
+  const response: SuccessResponse<typeof data> = {
+    success: true,
+    data,
+  };
+  res.json(response);
+});
+
+
 

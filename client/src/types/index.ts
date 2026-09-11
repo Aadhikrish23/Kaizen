@@ -283,6 +283,8 @@ export interface PlannerPreferences {
 export interface UserWorkoutPlan {
   _id?: string;
   userId?: string;
+  programName?: string;
+  isCustomPlan?: boolean;
   preferences: PlannerPreferences;
   schedule: PlannedDay[];
   dailyAdaptations: DailyAdaptation[];

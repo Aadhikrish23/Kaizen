@@ -45,6 +45,8 @@ export interface IPlannerPreferences {
 
 export interface IUserWorkoutPlan extends Document {
   userId: mongoose.Types.ObjectId;
+  programName?: string;
+  isCustomPlan?: boolean;
   preferences: IPlannerPreferences;
   schedule: IPlannedDay[];
   dailyAdaptations: IDailyAdaptation[];
@@ -128,6 +130,8 @@ const PlannerPreferencesSchema = new Schema(
 const UserWorkoutPlanSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
+    programName: { type: String, default: 'Custom Split' },
+    isCustomPlan: { type: Boolean, default: false },
     preferences: { type: PlannerPreferencesSchema, required: true },
     schedule: [PlannedDaySchema],
     dailyAdaptations: [DailyAdaptationSchema],

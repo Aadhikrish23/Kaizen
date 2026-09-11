@@ -15,6 +15,7 @@ import * as plannerController from '../controllers/planner.controller';
 const router = Router();
 
 router.get('/', protect, plannerController.getPlan);
+router.delete('/', protect, plannerController.deletePlan);
 router.post('/configure', protect, validateRequest(configurePlanSchema), plannerController.configurePlan);
 router.put('/custom', protect, validateRequest(saveCustomPlanSchema), plannerController.saveCustomPlan);
 router.post('/exercise', protect, validateRequest(addExerciseToDaySchema), plannerController.addExerciseToDay);

@@ -11,7 +11,8 @@ import {
   Plus,
   Trash2,
   ArrowRightLeft,
-  Check
+  Check,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -22,6 +23,7 @@ import {
   useConfigurePlan,
   useActivatePlannedDay,
   useRemoveExerciseFromPlanDay,
+  useDeletePlan,
 } from '../../services/plannerService';
 import { useInventory } from '../../services/inventoryService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -52,7 +54,11 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
   // Modals state
   const [showConfigurator, setShowConfigurator] = useState(false);
   const [isCustomBuilderOpen, setIsCustomBuilderOpen] = useState(false);
+  const [builderMode, setBuilderMode] = useState<'create' | 'edit'>('create');
+  const [confirmDeletePlan, setConfirmDeletePlan] = useState(false);
   const [isAddExerciseOpen, setIsAddExerciseOpen] = useState(false);
+
+  const { mutateAsync: deletePlanMutation, isPending: isDeletingPlan } = useDeletePlan();
 
   // Preference tuning state
   const [daysPerWeek, setDaysPerWeek] = useState<number>(3);
@@ -175,16 +181,48 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
     }
   };
 
+  const handleDeleteOrResetPlan = async () => {
+    if (!confirmDeletePlan) {
+      setConfirmDeletePlan(true);
+      setTimeout(() => setConfirmDeletePlan(false), 4000);
+      return;
+    }
+    try {
+      await deletePlanMutation();
+      setConfirmDeletePlan(false);
+      setActionNotice('Workout plan reset to default inventory schedule.');
+      setTimeout(() => setActionNotice(null), 3000);
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to reset plan');
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
       {/* Clean, Human Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-kaizen-border">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <Dumbbell className="w-5 h-5 text-kaizen-primary" />
-            <h1 className="text-xl font-bold tracking-tight text-white">Workout Planner</h1>
+            <h1 className="text-xl font-bold tracking-tight text-white">
+              Workout Planner
+            </h1>
+            {plan?.programName && (
+              <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
+                {plan.programName}
+              </span>
+            )}
+            {plan?.isCustomPlan ? (
+              <Badge variant="emerald" size="sm">
+                Custom Plan
+              </Badge>
+            ) : (
+              <Badge variant="neutral" size="sm">
+                Preset Routine
+              </Badge>
+            )}
             <Badge variant="neutral" size="sm">
-              {plan?.preferences?.daysPerWeek || 3} Days / Week
+              {plan?.preferences?.daysPerWeek || schedule.filter(d => !d.isRestDay).length || 3} Days / Week
             </Badge>
           </div>
           <p className="text-xs text-kaizen-text-secondary mt-1">
@@ -204,15 +242,68 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             {isExportingPdf ? 'Exporting...' : 'Export PDF'}
           </Button>
 
+          {plan && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setBuilderMode('edit');
+                setIsCustomBuilderOpen(true);
+              }}
+              className="gap-1.5 text-xs text-kaizen-text border-kaizen-border hover:text-white"
+              title="Edit this routine in custom plan builder"
+            >
+              <Pencil className="w-3.5 h-3.5 text-emerald-400" />
+              Edit Routine
+            </Button>
+          )}
+
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => setIsCustomBuilderOpen(true)}
+            onClick={() => {
+              setBuilderMode('create');
+              setIsCustomBuilderOpen(true);
+            }}
             className="gap-1.5 text-xs border-emerald-500/30 text-emerald-400 hover:border-emerald-500"
           >
             <Plus className="w-3.5 h-3.5" />
             Create Custom Plan
           </Button>
+
+          {plan?.isCustomPlan && (
+            confirmDeletePlan ? (
+              <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-md">
+                <span className="text-xs text-rose-400">Reset custom plan?</span>
+                <button
+                  type="button"
+                  onClick={handleDeleteOrResetPlan}
+                  disabled={isDeletingPlan}
+                  className="px-2 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold"
+                >
+                  {isDeletingPlan ? 'Resetting...' : 'Confirm Reset'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDeletePlan(false)}
+                  className="text-xs text-kaizen-text-muted hover:text-white ml-1"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setConfirmDeletePlan(true)}
+                className="gap-1.5 text-xs border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500"
+                title="Reset custom routine to default inventory plan"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Reset Routine
+              </Button>
+            )
+          )}
 
           <Button
             variant="secondary"
@@ -572,6 +663,8 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
       <CustomPlanBuilderModal
         isOpen={isCustomBuilderOpen}
         onClose={() => setIsCustomBuilderOpen(false)}
+        initialPlan={plan}
+        mode={builderMode}
       />
 
       <ExerciseVideoModal

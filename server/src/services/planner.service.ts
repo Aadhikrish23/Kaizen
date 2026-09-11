@@ -868,6 +868,8 @@ export const saveCustomPlan = async (
   if (!plan) {
     plan = new UserWorkoutPlan({
       userId,
+      programName: data.programName || 'Custom Split',
+      isCustomPlan: true,
       preferences: {
         daysPerWeek: data.daysPerWeek || data.schedule.filter(d => !d.isRestDay).length || 3,
         sessionDurationMinutes: 45,
@@ -884,6 +886,8 @@ export const saveCustomPlan = async (
       adherenceRate: 100,
     });
   } else {
+    plan.programName = data.programName || plan.programName || 'Custom Split';
+    plan.isCustomPlan = true;
     plan.schedule = data.schedule;
     if (data.daysPerWeek) {
       plan.preferences.daysPerWeek = data.daysPerWeek;
@@ -955,5 +959,11 @@ export const removeExerciseFromDay = async (
 
   return await plan.save();
 };
+
+export const deleteUserPlan = async (userId: string | mongoose.Types.ObjectId): Promise<IUserWorkoutPlan> => {
+  await UserWorkoutPlan.findOneAndDelete({ userId });
+  return await configurePlan(userId, DEFAULT_PREFERENCES);
+};
+
 
 

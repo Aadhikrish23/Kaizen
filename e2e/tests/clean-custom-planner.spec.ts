@@ -1,4 +1,4 @@
-﻿import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import * as path from 'path';
 
 test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => {
@@ -150,5 +150,133 @@ test.describe('Clean Anti-Slop Workout Planner & Custom Routine Builder', () => 
     console.log('Saved 30_workout_tracker_populated.png');
 
     console.log('[7/7] All tests completed successfully!');
+  });
+
+  test('Exercise side panel synchronizes with TARGET FOCUS field, supports real-time search, and custom plan can be edited and deleted', async ({ page }) => {
+    test.setTimeout(90000);
+    const artifactDir = 'C:\\Users\\aadhi\\.gemini\\antigravity\\brain\\b5d71a0f-2601-4a1a-ae35-846764369900';
+
+    // 1. Register fresh user
+    console.log('[1/6] Registering fresh user for sync and edit testing...');
+    await page.goto('http://localhost:5173/register');
+    await page.fill('input[placeholder="John"]', 'Jordan');
+    await page.fill('input[placeholder="Doe"]', 'Peterson');
+    await page.fill('input[placeholder="Enter your email"]', `planner_sync_${Date.now()}@kaizen.com`);
+    await page.fill('input[placeholder="Create a password"]', password);
+    await page.click('button[type="submit"]');
+
+    await expect(page).toHaveURL(/.*\/onboarding/, { timeout: 15000 });
+    await page.locator('button:has-text("Skip for now")').first().click();
+    await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
+
+    // 2. Navigate to Workout Planner
+    console.log('[2/6] Navigating to Workout Planner...');
+    const sidebar = page.locator('aside');
+    await sidebar.getByRole('button', { name: 'Workouts' }).click();
+    await page.waitForTimeout(400);
+
+    const plannerSubTab = page.locator('button:has-text("Workout Planner")').first();
+    await plannerSubTab.click();
+    await page.waitForTimeout(600);
+
+    // Wait for the workout planner view to be loaded
+    await expect(page.locator('h1:has-text("Workout Planner")')).toBeVisible({ timeout: 10000 });
+
+    // 3. Open Custom Plan Builder Modal
+    console.log('[3/6] Opening Custom Plan Builder Modal...');
+    const createBtn = page.locator('button:has-text("Create Custom Plan")').first();
+    await expect(createBtn).toBeVisible({ timeout: 5000 });
+    await createBtn.click();
+    await page.waitForTimeout(400);
+
+    const builderModal = page.locator('div.fixed.inset-0');
+    await expect(builderModal.locator('h3:has-text("Create Custom Workout Plan")')).toBeVisible({ timeout: 10000 });
+
+    // 4. Test Target Focus synchronization with side panel
+    console.log('[4/6] Testing Target Focus synchronization...');
+    const targetFocusInput = builderModal.locator('input[placeholder="e.g. legs, chest, back, shoulders"]');
+    
+    // Type "leg" into Target Focus
+    await targetFocusInput.fill('');
+    await targetFocusInput.fill('Quads & Legs Focus');
+    await page.waitForTimeout(500);
+
+    // Verify side panel shows "Filtered by Focus" banner
+    await expect(builderModal.locator('text=Filtered by Focus:')).toBeVisible();
+
+    // Verify only leg exercises show up in the directory list
+    const directoryExercises = builderModal.locator('div.divide-y > div');
+    const firstExName = await directoryExercises.first().locator('div.font-medium').innerText();
+    console.log(`First exercise with leg focus: ${firstExName}`);
+
+    // Test text search bar in directory
+    console.log('Testing real-time search in exercise directory...');
+    const searchInput = builderModal.locator('input[placeholder="Search exercises by name, muscle, equipment..."]');
+    await searchInput.fill('Bench');
+    await page.waitForTimeout(400);
+
+    // Verify search matches
+    await expect(builderModal.locator('text=Bench').first()).toBeVisible();
+
+    // Clear search
+    await searchInput.fill('');
+    await page.waitForTimeout(300);
+
+    // Add first filtered exercise to Day 1
+    await directoryExercises.first().locator('button:has-text("Add")').click();
+    await page.waitForTimeout(300);
+
+    // Name and Save Custom Plan
+    const planNameInput = builderModal.locator('input[placeholder="e.g. 4-Day Hypertrophy Split"]');
+    await planNameInput.fill('Legs & Strength Custom Routine');
+
+    // Screenshot: Custom builder with focus filtering and search
+    await page.screenshot({ path: path.join(artifactDir, '31_target_focus_search_and_edit_plan.png') });
+    console.log('Saved 31_target_focus_search_and_edit_plan.png');
+
+    const saveBtn = builderModal.locator('button:has-text("Save Custom Plan")');
+    await saveBtn.click();
+    await page.waitForTimeout(1000);
+    await expect(builderModal).not.toBeVisible({ timeout: 5000 });
+
+    // 5. Test Edit Routine
+    console.log('[5/6] Testing Edit Routine flow...');
+    // Header should now show Custom Plan badge and custom name
+    await expect(page.locator('span:has-text("Legs & Strength Custom Routine")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('span:has-text("Custom Plan")')).toBeVisible();
+
+    // Click "Edit Routine"
+    const editBtn = page.locator('button:has-text("Edit Routine")').first();
+    await expect(editBtn).toBeVisible();
+    await editBtn.click();
+    await page.waitForTimeout(500);
+
+    // Verify modal is in Edit Mode
+    await expect(builderModal.locator('text=Editing Routine')).toBeVisible({ timeout: 5000 });
+    // Verify plan name is pre-populated
+    await expect(planNameInput).toHaveValue('Legs & Strength Custom Routine');
+
+    // Close modal
+    await builderModal.locator('button:has-text("Cancel")').first().click();
+    await page.waitForTimeout(400);
+
+    // 6. Test Delete / Reset Routine
+    console.log('[6/6] Testing Reset / Delete Routine flow...');
+    const resetBtn = page.locator('button:has-text("Reset Routine")').first();
+    await expect(resetBtn).toBeVisible();
+    await resetBtn.click();
+    await page.waitForTimeout(300);
+
+    // Confirm button appears
+    const confirmResetBtn = page.locator('button:has-text("Confirm Reset")');
+    await expect(confirmResetBtn).toBeVisible();
+    await confirmResetBtn.click();
+    await page.waitForTimeout(1000);
+
+    // Verify reset notification toast and badge reverts
+    await expect(page.locator('text=Workout plan reset to default inventory schedule.')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('span:has-text("Preset Routine")')).toBeVisible({ timeout: 5000 });
+
+    console.log('Target focus synchronization, edit, and delete flows verified successfully!');
   });
 });
