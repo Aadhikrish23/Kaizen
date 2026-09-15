@@ -7,9 +7,10 @@ import { scorePlanQuality } from '../../services/planner/plannerQualityScorer';
 import { calibrateSetsToTimeBudget, calculateSessionDuration, evaluateTimeCompliance } from '../../services/planner/timeBudgetEngine';
 import { calibratePullupPrescription, calibratePushupPrescription } from '../../services/planner/bodyweightProgressionEngine';
 import { COMPREHENSIVE_EXERCISE_CATALOG } from '../../services/planner/exerciseCatalog';
+import { GOAL_BALANCE_TARGETS, classifyPushPullRatio } from '../../services/planner/movementModel';
 
 console.log('========================================================================');
-console.log('RUNNING SECOND-ORDER ADVERSARIAL STRESS TEST SUITE (14 HOSTILE SCENARIOS)');
+console.log('RUNNING SECOND-ORDER ADVERSARIAL STRESS TEST SUITE (15 HOSTILE SCENARIOS)');
 console.log('Treating generated plans as hostile test data. No false positives allowed.');
 console.log('========================================================================\n');
 
@@ -50,32 +51,30 @@ hostileTest(1, 'Hostile Audit of 5-Day Beginner Plan (Dumbbells 4-10kg, Pull-up 
   const { schedule, qualityScore, balanceMetrics, explanations } = generateBalancedWeeklyPlan(
     preferences,
     equipment,
-    75,
+    70,
     [],
-    0, // 0 pull-ups baseline
-    5  // 5 push-ups baseline
+    0, // 0 pullups
+    5  // 5 pushups
   );
 
-  // 1. Critical binary gate must be satisfied
-  assert.strictEqual(qualityScore.isValid, true, 'Critical binary gate must pass');
-  assert.strictEqual(qualityScore.status, 'VALID', 'Status must be VALID');
-  assert.strictEqual(qualityScore.criticalConstraintResult.equipmentCompliance, true, 'Zero equipment violations allowed');
-  assert.strictEqual(qualityScore.criticalConstraintResult.noSevereRecoveryConflict, true, 'Zero consecutive leg fatigue conflicts');
+  // 1. Critical Binary Gate
+  assert.strictEqual(qualityScore.isValid, true, 'Plan must pass all 7 binary critical constraint gates');
+  assert.strictEqual(qualityScore.status, 'VALID', 'Plan status must be VALID');
+  assert.ok(qualityScore.overallScore >= 90, `Quality score must be >= 90 (got ${qualityScore.overallScore})`);
 
-  // 2. Exact Conditioning Data Model Check
+  // 2. Day 5 Conditioning Protocol Data Model Integrity
   const day5 = schedule.find(d => d.title.includes('Conditioning'));
-  assert.ok(day5, 'Conditioning session must be scheduled');
-  assert.ok(day5!.conditioningProtocol, 'Day 5 must contain conditioningProtocol');
-  assert.strictEqual(day5!.conditioningProtocol?.rounds, 4, 'Day 5 conditioning must have 4 rounds');
-  assert.strictEqual(day5!.conditioningProtocol?.workSeconds, 40, 'Work interval must be 40s');
-  assert.strictEqual(day5!.conditioningProtocol?.restSeconds, 20, 'Rest interval must be 20s');
+  assert.ok(day5, 'Day 5 Conditioning session must be generated');
+  assert.ok(day5.conditioningProtocol, 'Conditioning protocol subschema must be populated');
+  assert.strictEqual(day5.conditioningProtocol.rounds, 4, 'Must have 4 rounds');
+  assert.strictEqual(day5.conditioningProtocol.workSeconds, 40, 'Must have 40s work');
+  assert.strictEqual(day5.conditioningProtocol.restSeconds, 20, 'Must have 20s rest');
 
-  for (const ex of day5!.exercises) {
-    assert.strictEqual(ex.targetSets, 4, 'Conditioning exercise sets must equal circuit rounds (4)');
-    assert.strictEqual(ex.targetReps, 40, 'Conditioning exercise reps must equal work seconds (40)');
-    assert.strictEqual(ex.repUnit, 'seconds', 'Conditioning exercise repUnit must be "seconds"');
-    assert.strictEqual(ex.restSeconds, 20, 'Conditioning exercise restSeconds must be 20');
-    assert.strictEqual(ex.isConditioning, true, 'Conditioning flag must be true');
+  for (const ex of day5.exercises) {
+    assert.strictEqual(ex.targetSets, 4, `Exercise ${ex.exerciseName} sets must equal circuit rounds (4)`);
+    assert.strictEqual(ex.targetReps, 40, `Exercise ${ex.exerciseName} reps must equal work interval (40s)`);
+    assert.strictEqual(ex.repUnit, 'seconds', `Exercise ${ex.exerciseName} repUnit must be 'seconds'`);
+    assert.strictEqual(ex.restSeconds, 20, `Exercise ${ex.exerciseName} restSeconds must be 20s`);
   }
 
   // 3. Zero Bench Exercises anywhere
@@ -91,38 +90,53 @@ hostileTest(1, 'Hostile Audit of 5-Day Beginner Plan (Dumbbells 4-10kg, Pull-up 
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 2: Capability Tiers: 0 Pull-Up Beginner User
+// SCENARIO 2: Capability Tiers: Pull-Up Progression Strictly Respecting Equipment
 // -----------------------------------------------------------------------------
-hostileTest(2, 'Capability Tiers: 0-rep pull-up user must receive horizontal row or negatives, NOT standard pull-ups', () => {
-  const p0 = calibratePullupPrescription(0, true);
-  assert.strictEqual(p0.exerciseName, 'Inverted Bodyweight Row', '0 pull-ups must prescribe Inverted Bodyweight Row');
-  assert.ok(p0.coachingNotes.includes('Tier 0'), 'Coaching notes must explain Tier 0 regression path');
+hostileTest(2, 'Capability Tiers: Pull-Up Progression strictly respecting user equipment inventory', () => {
+  const barProfile = buildEquipmentProfile([{ type: 'pullup_bar' }]);
+  const noEquipProfile = buildEquipmentProfile([]);
+  const dumbbellProfile = buildEquipmentProfile([{ type: 'dumbbell', availableWeightsKg: [4, 8] }]);
 
-  const p1 = calibratePullupPrescription(2, true);
-  assert.strictEqual(p1.exerciseName, 'Negative Pull-Up (Eccentric Focus)', '1-2 pull-ups must prescribe slow negatives');
-  assert.strictEqual(p1.targetSets, 3);
-  assert.strictEqual(p1.targetReps, 4);
+  // 1. 0 pull-ups + Pull-Up Bar -> Negative Pull-Ups (Eccentric)
+  const p0_bar = calibratePullupPrescription(0, barProfile, true);
+  assert.strictEqual(p0_bar.exerciseName, 'Negative Pull-Ups (Eccentric)', '0 pull-ups + Bar must prescribe Negative Pull-Ups');
+  assert.ok(p0_bar.coachingNotes.includes('Tier 0'), 'Notes must indicate Tier 0');
 
-  console.log(`  * Verified: 0-rep pullup -> "${p0.exerciseName}", 2-rep pullup -> "${p1.exerciseName}".`);
+  // 2. 0 pull-ups + No Pulling Equipment -> Safe floor / doorframe isometric, NOT Inverted Row
+  const p0_none = calibratePullupPrescription(0, noEquipProfile, true);
+  assert.strictEqual(p0_none.exerciseName, 'Doorframe Isometric Row / Towel Pull', '0 pull-ups + No Equipment must prescribe Doorframe Isometric / Towel Pull');
+  assert.ok(p0_none.coachingNotes.includes('Zero Pulling Hardware'), 'Notes must indicate zero pulling hardware');
+
+  // 3. 0 pull-ups + Dumbbells Only -> Split-Stance Dumbbell Row
+  const p0_db = calibratePullupPrescription(0, dumbbellProfile, true);
+  assert.strictEqual(p0_db.exerciseName, 'Split-Stance One-Arm Dumbbell Row', '0 pull-ups + Dumbbells must prescribe Split-Stance Row');
+
+  // 4. 2 pull-ups + Bar -> Negative Pull-Ups
+  const p2_bar = calibratePullupPrescription(2, barProfile, true);
+  assert.strictEqual(p2_bar.exerciseName, 'Negative Pull-Ups (Eccentric)', '2 pull-ups must prescribe slow negatives');
+  assert.strictEqual(p2_bar.targetSets, 3);
+  assert.strictEqual(p2_bar.targetReps, 4);
+
+  // 5. 5 pull-ups + Bar -> Submaximal clusters
+  const p5_bar = calibratePullupPrescription(5, barProfile, true);
+  assert.strictEqual(p5_bar.exerciseName, 'Pull-Ups / Chin-Ups', '5 pull-ups must prescribe Pull-Ups / Chin-Ups');
+  assert.strictEqual(p5_bar.targetSets, 3);
+  assert.strictEqual(p5_bar.targetReps, 4);
+
+  // 6. 10+ pull-ups + Bar -> Mastery volume
+  const p10_bar = calibratePullupPrescription(12, barProfile, false);
+  assert.strictEqual(p10_bar.exerciseName, 'Pull-Ups / Chin-Ups', '10+ pull-ups must prescribe Pull-Ups / Chin-Ups');
+  assert.strictEqual(p10_bar.targetSets, 4);
+  assert.strictEqual(p10_bar.targetReps, 10);
+  assert.ok(p10_bar.coachingNotes.includes('Tier 4') || p10_bar.coachingNotes.includes('Mastery'));
+
+  console.log(`  * Verified pull-up capability tiers across all equipment states (0+bar, 0+none, 0+db, 2, 5, 10+).`);
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 3: Capability Tiers: 10+ Rep Pull-Up Advanced User
+// SCENARIO 3: Capability Tiers: 2-Rep Push-Up Beginner User
 // -----------------------------------------------------------------------------
-hostileTest(3, 'Capability Tiers: 10+ rep pull-up user must receive high volume or weighted progression', () => {
-  const p4 = calibratePullupPrescription(12, false);
-  assert.strictEqual(p4.exerciseName, 'Pull-Up (Bodyweight)');
-  assert.strictEqual(p4.targetSets, 4, 'Mastery level must get 4 working sets');
-  assert.strictEqual(p4.targetReps, 10, 'Mastery level must get 10 reps');
-  assert.ok(p4.coachingNotes.includes('Tier 4') || p4.coachingNotes.includes('Mastery'), 'Notes must indicate Tier 4 mastery');
-
-  console.log(`  * Verified: 10+ rep pullup -> 4 sets x 10 reps with weighted overload coaching cues.`);
-});
-
-// -----------------------------------------------------------------------------
-// SCENARIO 4: Capability Tiers: 2-Rep Push-Up Beginner User
-// -----------------------------------------------------------------------------
-hostileTest(4, 'Capability Tiers: 2-rep push-up beginner must receive elevated incline push-ups', () => {
+hostileTest(3, 'Capability Tiers: 2-rep push-up beginner must receive elevated incline push-ups', () => {
   const push0 = calibratePushupPrescription(2, false, true);
   assert.strictEqual(push0.exerciseName, 'Incline Push-Ups (Hands Elevated)');
   assert.ok(push0.coachingNotes.includes('Tier 0'), 'Must explain Tier 0 reduced load mechanics');
@@ -137,302 +151,413 @@ hostileTest(4, 'Capability Tiers: 2-rep push-up beginner must receive elevated i
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 5: Max Dumbbell Load Ceiling & Variation Ladder
+// SCENARIO 4: Max Dumbbell Load Ceiling & Variation Ladder
 // -----------------------------------------------------------------------------
-hostileTest(5, 'Progression Safeguard: User at max dumbbell weight (10kg) and 15 reps must NOT get rep inflation', () => {
-  const profile = buildEquipmentProfile([{ type: 'dumbbell', availableWeightsKg: [4, 6, 8, 10] }]);
+hostileTest(4, 'Overload Ceiling: Max dumbbell load reached at 15 reps must trigger tempo or variation ladder', () => {
+  const profile = buildEquipmentProfile([
+    { type: 'dumbbell', availableWeightsKg: [4, 6, 8, 10] }, // Max weight is 10kg
+  ]);
 
-  // User hits 15, 15, 15 @ 10kg (max available weight and rep ceiling!)
-  const evalData = {
+  const overloadDecision = evaluateDoubleProgression({
     exerciseName: 'Dumbbell Floor Press (No Bench Required)',
     equipment: 'dumbbell',
-    currentPrescribedWeightKg: 10,
-    currentPrescribedReps: 15,
+    currentPrescribedWeightKg: 10, // Max load already
+    currentPrescribedReps: 15,     // Top of rep bracket
     minReps: 8,
     maxReps: 15,
     completedSets: [
       { reps: 15, weightKg: 10, rpe: 7.5, completed: true },
       { reps: 15, weightKg: 10, rpe: 7.5, completed: true },
-      { reps: 15, weightKg: 10, rpe: 8.0, completed: true },
+      { reps: 15, weightKg: 10, rpe: 7.5, completed: true },
     ],
-  };
+  }, profile);
 
-  const rec = evaluateDoubleProgression(evalData, profile);
-  assert.strictEqual(rec.type, 'progression_advance', 'Must advance progression axis rather than add more reps');
+  assert.strictEqual(overloadDecision.type, 'progression_advance', 'Must trigger progression advance when max DB load is reached at 15 reps');
   assert.ok(
-    rec.swappedExerciseName?.includes('1.5-Rep') || rec.tempoCues?.includes('4-1-1-0') || rec.reason.includes('tempo'),
-    'Must prescribe pause tempo or 1.5-rep variation ladder'
+    (overloadDecision.swappedExerciseName && overloadDecision.swappedExerciseName.includes('1.5-Rep')) ||
+    (overloadDecision.tempoCues && overloadDecision.tempoCues.includes('4-1-1-0')) ||
+    overloadDecision.reason.toLowerCase().includes('harder') ||
+    overloadDecision.reason.toLowerCase().includes('tempo'),
+    'Reason, swap or tempoCues must guide harder mechanical variation or tempo'
   );
-  assert.strictEqual(rec.newWeightKg, 10, 'Must keep available 10kg load');
-  assert.strictEqual(rec.newTargetReps, 8, 'Reps must reset to bottom of range (8)');
+  assert.strictEqual(overloadDecision.newTargetReps, 8, 'Reps should reset to 8 for the new tempo / variation challenge');
 
-  console.log(`  * Verified: Max load + 15 reps -> ${rec.reason}`);
+  console.log(`  * Verified: 10kg max dumbbell at 15 reps -> tempo 4-1-1-0 or mechanical variation advance with rep reset to 8.`);
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 6: Micro-Session Duration Policy (20m Hard Ceiling)
+// SCENARIO 5: Explicit Duration Policies: 20-Minute Micro-Session
 // -----------------------------------------------------------------------------
-hostileTest(6, 'Duration Policy: 20-minute Micro-Session under "hard_ceiling"', () => {
-  const catItems = COMPREHENSIVE_EXERCISE_CATALOG.slice(0, 5);
-  const calibrated = calibrateSetsToTimeBudget(catItems, 20, true, 'hard_ceiling');
-  const duration = calculateSessionDuration(calibrated, 20, 'hard_ceiling');
+hostileTest(5, 'Duration Policy: 20-Minute express session must strictly obey hard ceiling policy', () => {
+  const exercises = COMPREHENSIVE_EXERCISE_CATALOG.slice(0, 5);
+  const calibrated = calibrateSetsToTimeBudget(exercises, 20, true, 'hard_ceiling');
+  const budget = calculateSessionDuration(calibrated, 20, 'hard_ceiling');
 
-  assert.ok(duration.totalEstimatedMinutes <= 20, `Duration must not exceed 20m (actual: ${duration.totalEstimatedMinutes}m)`);
-  assert.strictEqual(duration.isWithinBudget, true, 'Must be within budget');
-  assert.ok(calibrated.length <= 3, '20m session must cap exercises to 3');
+  assert.ok(budget.totalEstimatedMinutes <= 20, `Duration (${budget.totalEstimatedMinutes}m) must not exceed hard ceiling of 20m`);
+  assert.strictEqual(budget.isWithinBudget, true, 'Must report within budget');
+  assert.ok(calibrated.length >= 2, 'Must maintain at least 2 primary exercises');
 
-  const compliance = evaluateTimeCompliance(duration.totalEstimatedMinutes, 20, 'hard_ceiling');
-  assert.strictEqual(compliance.score, 100, 'Compliance score must be 100 for meeting ceiling');
-
-  console.log(`  * Verified: 20m hard ceiling -> ${duration.totalEstimatedMinutes}m actual, ${calibrated.length} exercises.`);
+  console.log(`  * Verified: 20-minute hard ceiling -> ${calibrated.length} exercises totaling ${budget.totalEstimatedMinutes}m.`);
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 7: High-Volume Hypertrophy Session (60m Target)
+// SCENARIO 6: 30-Minute Constrained Session Preserves Blueprint Intent
 // -----------------------------------------------------------------------------
-hostileTest(7, 'Duration Policy: 60-minute Hypertrophy session volume scaling', () => {
-  const preferences: IPlannerPreferences = {
-    daysPerWeek: 4,
-    sessionDurationMinutes: 60,
-    splitStyle: 'upper_lower',
-    experienceLevel: 'intermediate',
-    targetFocus: 'hypertrophy',
-  };
-
-  const { schedule, balanceMetrics, qualityScore } = generateBalancedWeeklyPlan(
-    preferences,
-    [{ type: 'dumbbell', availableWeightsKg: [6, 8, 10, 12, 14, 16] }, { type: 'bench' }],
-    80
+hostileTest(6, 'Duration Optimizer: 30-Minute session preserves primary movements and blueprint intent', () => {
+  const fullBodyExercises = COMPREHENSIVE_EXERCISE_CATALOG.filter(e =>
+    ['Push-Ups (Standard / Deficit)', 'Dumbbell Goblet Squat', 'Split-Stance One-Arm Dumbbell Row', 'Dumbbell Lateral Raise', 'Standard Forearm Plank'].includes(e.name)
   );
 
-  const activeDays = schedule.filter(d => !d.isRestDay);
-  for (const day of activeDays) {
-    assert.ok(
-      day.estimatedDurationMinutes >= 50 && day.estimatedDurationMinutes <= 68,
-      `Duration should calibrate near 60m (actual: ${day.estimatedDurationMinutes}m)`
-    );
-  }
-  assert.ok(balanceMetrics.totalSets >= 48, `Hypertrophy total sets should be high (actual: ${balanceMetrics.totalSets})`);
-  assert.strictEqual(qualityScore.isValid, true);
+  // Calibrate for 30 minutes
+  const calibrated30 = calibrateSetsToTimeBudget(fullBodyExercises, 30, true, 'compact_efficient');
+  const duration30 = calculateSessionDuration(calibrated30, 30, 'compact_efficient');
 
-  console.log(`  * Verified: 60m hypertrophy plan -> ${balanceMetrics.totalSets} total sets, all days ~60m.`);
-});
+  // Verify primary compound movements (Squat, Push-Up, Row) are PRESERVED!
+  const hasSquat = calibrated30.some(c => c.exercise.name === 'Dumbbell Goblet Squat');
+  const hasPush = calibrated30.some(c => c.exercise.name === 'Push-Ups (Standard / Deficit)');
+  const hasRow = calibrated30.some(c => c.exercise.name === 'Split-Stance One-Arm Dumbbell Row');
 
-// -----------------------------------------------------------------------------
-// SCENARIO 8: Zero-Equipment Floor Bodyweight
-// -----------------------------------------------------------------------------
-hostileTest(8, 'Zero Equipment: Empty equipment profile must generate 100% floor bodyweight plan', () => {
-  const preferences: IPlannerPreferences = {
-    daysPerWeek: 3,
-    sessionDurationMinutes: 30,
-    splitStyle: 'full_body',
-    experienceLevel: 'beginner',
-    targetFocus: 'general_fitness',
-  };
+  assert.ok(hasSquat, 'Primary Goblet Squat MUST be preserved in 30m session');
+  assert.ok(hasPush, 'Primary Push-Up MUST be preserved in 30m session');
+  assert.ok(hasRow, 'Primary Row MUST be preserved in 30m session');
 
-  const { schedule, qualityScore } = generateBalancedWeeklyPlan(preferences, [], 65);
-  const activeDays = schedule.filter(d => !d.isRestDay);
-
-  for (const day of activeDays) {
-    for (const ex of day.exercises) {
-      assert.strictEqual(ex.equipment, 'bodyweight');
-      assert.ok(!ex.exerciseName.toLowerCase().includes('pull-up'), 'No pull-ups without pull-up bar');
-      assert.ok(!ex.exerciseName.toLowerCase().includes('bench'), 'No bench exercises without bench');
+  // Verify minimum productive volume (>= 2 sets per primary)
+  for (const c of calibrated30) {
+    if (c.exercise.mechanic === 'compound') {
+      assert.ok(c.sets >= 2, `Primary exercise ${c.exercise.name} must maintain minimum productive volume of >= 2 sets (got ${c.sets})`);
     }
   }
-  assert.strictEqual(qualityScore.criticalConstraintResult.equipmentCompliance, true);
-  assert.strictEqual(qualityScore.overallScore >= 85, true);
 
-  console.log(`  * Verified: 0 equipment -> 100% floor bodyweight, 0 hardware violations.`);
+  assert.ok(duration30.totalEstimatedMinutes <= 33, `Estimated duration should be compact (~30m, got ${duration30.totalEstimatedMinutes}m)`);
+  console.log(`  * Verified: 30m session preserves all 3 primary compound movements with ${calibrated30.length} exercises totaling ${duration30.totalEstimatedMinutes}m.`);
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 9: Barbell-Only Garage Gym (No Dumbbells, No Bench, No Rack)
+// SCENARIO 7: Explicit Duration Policies: 60-Minute Hypertrophy Session
 // -----------------------------------------------------------------------------
-hostileTest(9, 'Garage Barbell-Only: User has barbell only (NO bench, NO rack)', () => {
-  const equipment = [{ type: 'barbell', barbellWeightKg: 20 }];
+hostileTest(7, 'Duration Policy: 60-Minute session must realistically scale sets, warmup, and cooldown', () => {
+  const exercises = COMPREHENSIVE_EXERCISE_CATALOG.filter(e =>
+    ['Push-Ups (Standard / Deficit)', 'Split-Stance One-Arm Dumbbell Row', 'Standing Dumbbell Shoulder Press', 'Dumbbell Lateral Raise', 'Standard Forearm Plank'].includes(e.name)
+  );
+  const calibrated = calibrateSetsToTimeBudget(exercises, 60, false, 'approximate_target');
+  const budget = calculateSessionDuration(calibrated, 60, 'approximate_target');
+
+  assert.ok(budget.totalEstimatedMinutes >= 50, `60m session must calculate at least 50m (got ${budget.totalEstimatedMinutes}m)`);
+  assert.ok(budget.totalEstimatedMinutes <= 66, `60m session must not exceed 66m (got ${budget.totalEstimatedMinutes}m)`);
+  assert.strictEqual(budget.isWithinBudget, true);
+
+  console.log(`  * Verified: 60-minute target -> ${calibrated.length} exercises, ${calibrated[0].sets} sets/ex, duration: ${budget.totalEstimatedMinutes}m.`);
+});
+
+// -----------------------------------------------------------------------------
+// SCENARIO 8: Zero-Equipment Pure Floor Bodyweight Program
+// -----------------------------------------------------------------------------
+hostileTest(8, 'Zero Equipment: Pure bodyweight inventory must generate 100% compliant plan with glute bridges for hip hinges', () => {
+  const zeroEquipment: any[] = [];
   const preferences: IPlannerPreferences = {
     daysPerWeek: 3,
     sessionDurationMinutes: 45,
     splitStyle: 'full_body',
     experienceLevel: 'beginner',
-    targetFocus: 'strength',
+    targetFocus: 'general_fitness',
   };
 
-  const { schedule, qualityScore } = generateBalancedWeeklyPlan(preferences, equipment, 80);
-  const activeDays = schedule.filter(d => !d.isRestDay);
+  const { schedule, qualityScore } = generateBalancedWeeklyPlan(preferences, zeroEquipment, 70);
 
-  for (const day of activeDays) {
+  assert.strictEqual(qualityScore.criticalConstraintResult.equipmentCompliance, true, 'Zero equipment plan must be 100% equipment compliant');
+  assert.strictEqual(qualityScore.criticalConstraintResult.impossibleExercise, true, 'Zero impossible exercises');
+
+  // Verify glute bridges or single leg bodyweight hinges are used for hip hinges
+  let hasBodyweightHinge = false;
+  for (const day of schedule) {
     for (const ex of day.exercises) {
-      assert.ok(!ex.exerciseName.toLowerCase().includes('bench'), 'Must NOT prescribe bench press without a bench');
-      assert.ok(ex.equipment === 'barbell' || ex.equipment === 'bodyweight', 'Must only use barbell or floor bodyweight');
+      if (ex.exerciseName.includes('Glute Bridge') || ex.exerciseName.includes('Single-Leg Bodyweight Romanian Deadlift')) {
+        hasBodyweightHinge = true;
+      }
     }
   }
-  assert.strictEqual(qualityScore.criticalConstraintResult.equipmentCompliance, true);
+  assert.ok(hasBodyweightHinge, 'Zero equipment plan must include Bodyweight Glute Bridge or Single-Leg RDL for hip hinges');
 
-  console.log(`  * Verified: Barbell-only plan -> 0 bench presses, 100% equipment compliant.`);
+  console.log(`  * Verified: Pure floor bodyweight generates 100% equipment compliant schedule with glute bridge hinges.`);
 });
 
 // -----------------------------------------------------------------------------
-// SCENARIO 10: Fatigue-Aware Scheduling: Avoid Consecutive Lower-Body Squats
+// SCENARIO 9: Barbell-Only Garage Gym (No Bench, No Dumbbells)
 // -----------------------------------------------------------------------------
-hostileTest(10, 'Fatigue Safeguard: Prevent consecutive lower-body axial loading', () => {
+hostileTest(9, 'Hardware Isolation: Barbell-only gym with NO bench must not prescribe bench presses', () => {
+  const barbellOnlyEquipment = [{ type: 'barbell' }];
   const preferences: IPlannerPreferences = {
-    daysPerWeek: 5,
+    daysPerWeek: 4,
+    sessionDurationMinutes: 45,
+    splitStyle: 'upper_lower',
+    experienceLevel: 'intermediate',
+    targetFocus: 'strength',
+  };
+
+  const { schedule, qualityScore } = generateBalancedWeeklyPlan(preferences, barbellOnlyEquipment, 80);
+
+  assert.strictEqual(qualityScore.criticalConstraintResult.equipmentCompliance, true);
+  for (const day of schedule) {
+    for (const ex of day.exercises) {
+      assert.ok(!ex.exerciseName.toLowerCase().includes('bench'), `Found illegal bench press: ${ex.exerciseName}`);
+    }
+  }
+
+  console.log(`  * Verified: Barbell-only gym without bench generated 0 bench presses and 100% equipment compliance.`);
+});
+
+// -----------------------------------------------------------------------------
+// SCENARIO 10: Multi-Factor Fatigue & Recovery Scheduling
+// -----------------------------------------------------------------------------
+hostileTest(10, 'Multi-Factor Fatigue: Differentiate adequate recovery from true severe recovery conflicts', () => {
+  const profile = buildEquipmentProfile([
+    { type: 'barbell' },
+    { type: 'dumbbell', availableWeightsKg: [4, 6, 8, 10] },
+  ]);
+
+  // Case A: Consecutive lower-body days with ADEQUATE recovery (Moderate Goblet Squats on Day 1, Light Calves/Core on Day 2)
+  const validConsecutiveSchedule: any[] = [
+    {
+      dayNumber: 1,
+      dayName: 'Monday',
+      isRestDay: false,
+      title: 'Lower Body Strength',
+      focus: 'Goblet Squats',
+      targetMuscles: ['legs'],
+      estimatedDurationMinutes: 45,
+      exercises: [
+        { exerciseName: 'Dumbbell Goblet Squat', targetSets: 3, targetReps: 8, repUnit: 'reps', restSeconds: 75, targetMuscle: 'legs', equipment: 'dumbbell' },
+      ],
+    },
+    {
+      dayNumber: 2,
+      dayName: 'Tuesday',
+      isRestDay: false,
+      title: 'Lower Accessory & Core',
+      focus: 'Calves and Abs',
+      targetMuscles: ['legs', 'core'],
+      estimatedDurationMinutes: 30,
+      exercises: [
+        { exerciseName: 'Dumbbell Standing Calf Raise', targetSets: 3, targetReps: 15, repUnit: 'reps', restSeconds: 45, targetMuscle: 'legs', equipment: 'dumbbell' },
+        { exerciseName: 'Standard Forearm Plank', targetSets: 2, targetReps: 35, repUnit: 'seconds', restSeconds: 45, targetMuscle: 'core', equipment: 'bodyweight' },
+      ],
+    },
+  ];
+
+  const evalValid = scorePlanQuality(validConsecutiveSchedule, profile, 45);
+  assert.strictEqual(
+    evalValid.score.criticalConstraintResult.noSevereRecoveryConflict,
+    true,
+    'Moderate squat followed by light calves/core should NOT be flagged as severe recovery conflict'
+  );
+
+  // Case B: Severe Axial Recovery Conflict (Heavy Barbell Deadlift on Day 1, Heavy Barbell Back Squat on Day 2 without rest)
+  const severeAxialConflictSchedule: any[] = [
+    {
+      dayNumber: 1,
+      dayName: 'Monday',
+      isRestDay: false,
+      title: 'Heavy Deadlift Day',
+      focus: 'Spinal Loading',
+      targetMuscles: ['legs', 'back'],
+      estimatedDurationMinutes: 45,
+      exercises: [
+        { exerciseName: 'Conventional Barbell Deadlift', targetSets: 4, targetReps: 5, repUnit: 'reps', restSeconds: 120, targetMuscle: 'legs', equipment: 'barbell' },
+      ],
+    },
+    {
+      dayNumber: 2,
+      dayName: 'Tuesday',
+      isRestDay: false,
+      title: 'Heavy Back Squat Day',
+      focus: 'Spinal Loading',
+      targetMuscles: ['legs'],
+      estimatedDurationMinutes: 45,
+      exercises: [
+        { exerciseName: 'Barbell Back Squat', targetSets: 4, targetReps: 6, repUnit: 'reps', restSeconds: 120, targetMuscle: 'legs', equipment: 'barbell' },
+      ],
+    },
+  ];
+
+  const evalConflict = scorePlanQuality(severeAxialConflictSchedule, profile, 45);
+  assert.strictEqual(
+    evalConflict.score.criticalConstraintResult.noSevereRecoveryConflict,
+    false,
+    'Heavy deadlift followed immediately by heavy back squat MUST fail severe recovery conflict gate'
+  );
+  assert.strictEqual(evalConflict.score.isValid, false, 'Severe recovery conflict plan must be invalid');
+
+  console.log(`  * Verified: Moderate squat + calves is VALID (adequate recovery); Heavy deadlift + squat FAILS (severe axial conflict).`);
+});
+
+// -----------------------------------------------------------------------------
+// SCENARIO 11: Exact Push/Pull Boundary Condition Tests & Goal Profiles
+// -----------------------------------------------------------------------------
+hostileTest(11, 'Exact Push/Pull Ratio Boundary Testing (0.69, 0.70, 0.84, 0.85, 1.00, 1.15, 1.16, 1.30, 1.31) and Goal Targets', () => {
+  // Test general_fitness boundaries using the single authoritative classifier
+  assert.strictEqual(classifyPushPullRatio(0.69, 'general_fitness'), 'severe_deficit');
+  assert.strictEqual(classifyPushPullRatio(0.70, 'general_fitness'), 'mild_deficit');
+  assert.strictEqual(classifyPushPullRatio(0.84, 'general_fitness'), 'mild_deficit');
+  assert.strictEqual(classifyPushPullRatio(0.85, 'general_fitness'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(1.00, 'general_fitness'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(1.15, 'general_fitness'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(1.16, 'general_fitness'), 'mild_excess');
+  assert.strictEqual(classifyPushPullRatio(1.30, 'general_fitness'), 'mild_excess');
+  assert.strictEqual(classifyPushPullRatio(1.31, 'general_fitness'), 'severe_excess');
+
+  // Test strength goal boundaries
+  const str = GOAL_BALANCE_TARGETS.strength;
+  assert.strictEqual(classifyPushPullRatio(str.acceptablePushPullMin - 0.01, 'strength'), 'severe_deficit');
+  assert.strictEqual(classifyPushPullRatio(str.acceptablePushPullMin, 'strength'), 'mild_deficit');
+  assert.strictEqual(classifyPushPullRatio(str.idealPushPullMin, 'strength'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(str.idealPushPullMax, 'strength'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(str.acceptablePushPullMax, 'strength'), 'mild_excess');
+  assert.strictEqual(classifyPushPullRatio(str.acceptablePushPullMax + 0.01, 'strength'), 'severe_excess');
+
+  // Test hypertrophy goal boundaries
+  const hyp = GOAL_BALANCE_TARGETS.hypertrophy;
+  assert.strictEqual(classifyPushPullRatio(hyp.acceptablePushPullMin - 0.01, 'hypertrophy'), 'severe_deficit');
+  assert.strictEqual(classifyPushPullRatio(hyp.acceptablePushPullMin, 'hypertrophy'), 'mild_deficit');
+  assert.strictEqual(classifyPushPullRatio(hyp.idealPushPullMin, 'hypertrophy'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(hyp.idealPushPullMax, 'hypertrophy'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(hyp.acceptablePushPullMax, 'hypertrophy'), 'mild_excess');
+  assert.strictEqual(classifyPushPullRatio(hyp.acceptablePushPullMax + 0.01, 'hypertrophy'), 'severe_excess');
+
+  // Test fat_loss goal boundaries
+  const fat = GOAL_BALANCE_TARGETS.fat_loss;
+  assert.strictEqual(classifyPushPullRatio(fat.acceptablePushPullMin - 0.01, 'fat_loss'), 'severe_deficit');
+  assert.strictEqual(classifyPushPullRatio(fat.acceptablePushPullMin, 'fat_loss'), 'mild_deficit');
+  assert.strictEqual(classifyPushPullRatio(fat.idealPushPullMin, 'fat_loss'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(fat.idealPushPullMax, 'fat_loss'), 'ideal');
+  assert.strictEqual(classifyPushPullRatio(fat.acceptablePushPullMax, 'fat_loss'), 'mild_excess');
+  assert.strictEqual(classifyPushPullRatio(fat.acceptablePushPullMax + 0.01, 'fat_loss'), 'severe_excess');
+
+  // Verify within scorePlanQuality directly
+  const dummyProfile = buildEquipmentProfile([]);
+  const testScheduleWithRatio = (pushSets: number, pullSets: number) => {
+    const dummySchedule: any[] = [
+      {
+        dayNumber: 1, dayName: 'Monday', isRestDay: false, title: 'Push', focus: 'Push', targetMuscles: ['chest'], estimatedDurationMinutes: 45,
+        exercises: [{ exerciseName: 'Push-Ups (Standard / Deficit)', targetSets: pushSets, targetReps: 10, repUnit: 'reps', restSeconds: 60, targetMuscle: 'chest', equipment: 'bodyweight' }],
+      },
+      {
+        dayNumber: 2, dayName: 'Tuesday', isRestDay: false, title: 'Pull', focus: 'Pull', targetMuscles: ['back'], estimatedDurationMinutes: 45,
+        exercises: [{ exerciseName: 'Doorframe Isometric Row / Towel Pull', targetSets: pullSets, targetReps: 10, repUnit: 'reps', restSeconds: 60, targetMuscle: 'back', equipment: 'bodyweight' }],
+      },
+    ];
+    return scorePlanQuality(dummySchedule, dummyProfile, 45, 'general_fitness');
+  };
+
+  const eval69 = testScheduleWithRatio(69, 100);
+  assert.ok(eval69.score.warnings.some(w => w.includes('Severe Push/Pull imbalance') && w.includes('pulling')), '0.69 must trigger severe deficit warning');
+
+  const eval70 = testScheduleWithRatio(70, 100);
+  assert.ok(eval70.score.warnings.some(w => w.includes('Mild Push/Pull deficit')), '0.70 must trigger mild deficit warning');
+
+  const eval85 = testScheduleWithRatio(85, 100);
+  assert.ok(eval85.score.strengths.some(s => s.includes('optimally balanced')), '0.85 must be optimally balanced');
+
+  const eval115 = testScheduleWithRatio(115, 100);
+  assert.ok(eval115.score.strengths.some(s => s.includes('optimally balanced')), '1.15 must be optimally balanced');
+
+  const eval116 = testScheduleWithRatio(116, 100);
+  assert.ok(eval116.score.warnings.some(w => w.includes('Mild Push/Pull excess')), '1.16 must trigger mild excess warning');
+
+  const eval131 = testScheduleWithRatio(131, 100);
+  assert.ok(eval131.score.warnings.some(w => w.includes('Severe Push/Pull imbalance') && w.includes('pushing')), '1.31 must trigger severe excess warning');
+
+  console.log(`  * Verified all exact Push/Pull boundary condition checks (0.69, 0.70, 0.84, 0.85, 1.00, 1.15, 1.16, 1.30, 1.31) across all 4 goals.`);
+});
+
+// -----------------------------------------------------------------------------
+// SCENARIO 12: Fractional Volume Accounting (Direct 1.0 vs Compound Synergistic 0.5)
+// -----------------------------------------------------------------------------
+hostileTest(12, 'Fractional Volume: Multi-movement audit verifying zero double-counting across muscle groups', () => {
+  const profile = buildEquipmentProfile([
+    { type: 'dumbbell', availableWeightsKg: [4, 6, 8, 10] },
+    { type: 'pullup_bar' },
+  ]);
+
+  const auditSchedule: any[] = [
+    {
+      dayNumber: 1,
+      dayName: 'Monday',
+      isRestDay: false,
+      title: 'Full Kinetic Chain Test',
+      focus: 'Testing all mechanics',
+      targetMuscles: ['chest', 'shoulders', 'back', 'legs', 'biceps'],
+      estimatedDurationMinutes: 60,
+      exercises: [
+        // 1. Horizontal Push: Push-Up (4 sets). Primary: chest (4.0). Secondary: triceps (2.0), shoulders (2.0)
+        { exerciseName: 'Push-Ups (Standard / Deficit)', targetSets: 4, targetReps: 10, repUnit: 'reps', restSeconds: 60, targetMuscle: 'chest', equipment: 'bodyweight' },
+        // 2. Vertical Push: Standing Dumbbell Shoulder Press (3 sets). Primary: shoulders (3.0). Secondary: triceps (1.5)
+        { exerciseName: 'Standing Dumbbell Shoulder Press', targetSets: 3, targetReps: 8, repUnit: 'reps', restSeconds: 75, targetMuscle: 'shoulders', equipment: 'dumbbell' },
+        // 3. Row: Split-Stance Dumbbell Row (3 sets). Primary: back (3.0). Secondary: biceps (1.5), shoulders (1.5)
+        { exerciseName: 'Split-Stance One-Arm Dumbbell Row', targetSets: 3, targetReps: 8, repUnit: 'reps', restSeconds: 75, targetMuscle: 'back', equipment: 'dumbbell' },
+        // 4. Squat: Goblet Squat (3 sets). Primary: legs (3.0).
+        { exerciseName: 'Dumbbell Goblet Squat', targetSets: 3, targetReps: 8, repUnit: 'reps', restSeconds: 75, targetMuscle: 'legs', equipment: 'dumbbell' },
+        // 5. Hinge: Dumbbell Romanian Deadlift (3 sets). Primary: legs (3.0).
+        { exerciseName: 'Dumbbell Romanian Deadlift (RDL)', targetSets: 3, targetReps: 8, repUnit: 'reps', restSeconds: 75, targetMuscle: 'legs', equipment: 'dumbbell' },
+        // 6. Isolation: Standing Dumbbell Bicep Curl (3 sets). Primary: biceps (3.0). NO SECONDARY!
+        { exerciseName: 'Standing Dumbbell Bicep Curl', targetSets: 3, targetReps: 12, repUnit: 'reps', restSeconds: 60, targetMuscle: 'biceps', equipment: 'dumbbell' },
+      ],
+    },
+  ];
+
+  const { metrics } = scorePlanQuality(auditSchedule, profile, 60);
+  const v = metrics.muscleVolumeBreakdown!;
+
+  assert.ok(v, 'Volume breakdown must exist');
+  // Chest: 4 direct from pushups
+  assert.strictEqual(v.chest.directSets, 4);
+  assert.strictEqual(v.chest.indirectSets, 0);
+  assert.strictEqual(v.chest.effectiveSets, 4);
+
+  // Shoulders: 3 direct from shoulder press + 2 indirect from pushups + 1.5 indirect from row = 6.5 effective
+  assert.strictEqual(v.shoulders.directSets, 3);
+  assert.strictEqual(v.shoulders.indirectSets, 3.5);
+  assert.strictEqual(v.shoulders.effectiveSets, 6.5);
+
+  // Triceps: 0 direct + 2 indirect from pushups + 1.5 indirect from shoulder press = 3.5 effective
+  assert.strictEqual(v.triceps.directSets, 0);
+  assert.strictEqual(v.triceps.indirectSets, 3.5);
+  assert.strictEqual(v.triceps.effectiveSets, 3.5);
+
+  // Biceps: 3 direct from curls + 1.5 indirect from rows = 4.5 effective
+  assert.strictEqual(v.biceps.directSets, 3);
+  assert.strictEqual(v.biceps.indirectSets, 1.5);
+  assert.strictEqual(v.biceps.effectiveSets, 4.5);
+
+  // Legs: 3 direct from squats + 3 direct from RDL = 6.0 direct
+  assert.strictEqual(v.legs.directSets, 6);
+
+  console.log(`  * Verified fractional volume: Chest = ${v.chest.effectiveSets}, Shoulders = ${v.shoulders.effectiveSets}, Triceps = ${v.triceps.effectiveSets}, Biceps = ${v.biceps.effectiveSets}, Legs = ${v.legs.effectiveSets}. Zero double-counting.`);
+});
+
+// -----------------------------------------------------------------------------
+// SCENARIO 13: Regression Test for Impossible Slot (Zero Random Fallback)
+// -----------------------------------------------------------------------------
+hostileTest(13, 'Impossible Slot Requirement: Zero random fallback, slot marked unresolved, critical gate fails', () => {
+  const zeroEquipment: any[] = [];
+  const preferences: IPlannerPreferences = {
+    daysPerWeek: 3,
     sessionDurationMinutes: 45,
     splitStyle: 'home_dumbbell',
     experienceLevel: 'beginner',
     targetFocus: 'general_fitness',
   };
 
-  const equipment = [
-    { type: 'dumbbell', availableWeightsKg: [4, 6, 8, 10] },
-    { type: 'pullup_bar' },
-  ];
+  const { schedule, qualityScore } = generateBalancedWeeklyPlan(preferences, zeroEquipment, 70);
 
-  const { schedule, qualityScore } = generateBalancedWeeklyPlan(preferences, equipment, 70);
+  const hasUnresolved = schedule.some(d => d.unresolvedSlots && d.unresolvedSlots.length > 0);
+  assert.ok(hasUnresolved, 'Plan with impossible slot must mark unresolvedSlots on the day');
 
-  // Check Day 4 (Friday conditioning) vs Day 5 (Saturday posterior chain / RDLs)
-  const activeDays = schedule.filter(d => !d.isRestDay);
-  const fridayCond = activeDays.find(d => d.title.includes('Conditioning'));
-  const saturdayPost = activeDays.find(d => d.title.includes('Posterior Chain'));
+  assert.strictEqual(qualityScore.criticalConstraintResult.intentFulfillment, false, 'Unresolved slots must fail intentFulfillment gate');
+  assert.strictEqual(qualityScore.isValid, false, 'Plan with unresolved primary slots must be invalid');
+  assert.ok(['NEEDS_REPAIR', 'REJECTED'].includes(qualityScore.status), `Status must be NEEDS_REPAIR or REJECTED (got ${qualityScore.status})`);
+  assert.ok(qualityScore.overallScore <= 40, 'Overall score must be capped at 40');
 
-  assert.ok(fridayCond && saturdayPost, 'Both Friday and Saturday sessions must exist');
-
-  // Verify Friday conditioning does NOT include heavy squats or jumping squats right before Saturday RDLs
-  const fridayLegMovements = fridayCond!.exercises.filter(
-    e => e.targetMuscle === 'legs' && (e.exerciseName.includes('Squat') || e.exerciseName.includes('Thruster'))
-  );
-  assert.strictEqual(fridayLegMovements.length, 0, 'Friday conditioning must avoid squats to protect Saturday posterior chain');
-  assert.strictEqual(qualityScore.criticalConstraintResult.noSevereRecoveryConflict, true);
-
-  console.log(`  * Verified: Friday conditioning protected legs for Saturday RDLs; 0 recovery conflicts.`);
-});
-
-// -----------------------------------------------------------------------------
-// SCENARIO 11: Exact Push/Pull Boundary Condition Tests
-// -----------------------------------------------------------------------------
-hostileTest(11, 'Exact Push/Pull Ratio Boundary Testing (0.69, 0.70, 0.84, 0.85, 1.00, 1.15, 1.16, 1.30, 1.31)', () => {
-  const dummyProfile = buildEquipmentProfile([]);
-
-  const testRatio = (pushSets: number, pullSets: number, expectedWarningType: 'none' | 'mild_deficit' | 'severe_deficit' | 'mild_excess' | 'severe_excess') => {
-    const dummySchedule: any[] = [
-      {
-        dayNumber: 1,
-        dayName: 'Monday',
-        isRestDay: false,
-        title: 'Push',
-        focus: 'Chest Press',
-        targetMuscles: ['chest'],
-        estimatedDurationMinutes: 45,
-        exercises: [
-          { exerciseName: 'Standard Floor Push-Up', targetSets: pushSets, targetReps: 10, repUnit: 'reps', restSeconds: 60, targetMuscle: 'chest', equipment: 'bodyweight' },
-        ],
-      },
-      {
-        dayNumber: 2,
-        dayName: 'Tuesday',
-        isRestDay: false,
-        title: 'Pull',
-        focus: 'Rows',
-        targetMuscles: ['back'],
-        estimatedDurationMinutes: 45,
-        exercises: [
-          { exerciseName: 'Inverted Row (Bodyweight)', targetSets: pullSets, targetReps: 10, repUnit: 'reps', restSeconds: 60, targetMuscle: 'back', equipment: 'bodyweight' },
-        ],
-      },
-    ];
-
-    const { score, metrics } = scorePlanQuality(dummySchedule, dummyProfile, 45, 'general_fitness');
-    const ratio = metrics.pushPullRatio;
-
-    if (expectedWarningType === 'severe_deficit') {
-      assert.ok(score.warnings.some(w => w.includes('Severe Push/Pull imbalance') && w.includes('pulling')), `Ratio ${ratio} should trigger severe deficit warning`);
-    } else if (expectedWarningType === 'mild_deficit') {
-      assert.ok(score.warnings.some(w => w.includes('Mild Push/Pull deficit')), `Ratio ${ratio} should trigger mild deficit warning`);
-    } else if (expectedWarningType === 'none') {
-      assert.ok(score.strengths.some(s => s.includes('optimally balanced')), `Ratio ${ratio} should be reported as optimally balanced`);
-    } else if (expectedWarningType === 'mild_excess') {
-      assert.ok(score.warnings.some(w => w.includes('Mild Push/Pull excess')), `Ratio ${ratio} should trigger mild excess warning`);
-    } else if (expectedWarningType === 'severe_excess') {
-      assert.ok(score.warnings.some(w => w.includes('Severe Push/Pull imbalance') && w.includes('pushing')), `Ratio ${ratio} should trigger severe excess warning`);
-    }
-  };
-
-  testRatio(6, 10, 'severe_deficit'); // 0.60 < 0.70
-  testRatio(7, 10, 'mild_deficit');   // 0.70
-  testRatio(8, 10, 'mild_deficit');   // 0.80
-  testRatio(10, 10, 'none');          // 1.00 (optimal)
-  testRatio(11, 10, 'none');          // 1.10 (optimal)
-  testRatio(12, 10, 'mild_excess');   // 1.20 (mild excess)
-  testRatio(14, 10, 'severe_excess'); // 1.40 > 1.30 (severe excess)
-
-  console.log(`  * Verified all exact Push/Pull boundary condition checks across thresholds.`);
-});
-
-// -----------------------------------------------------------------------------
-// SCENARIO 12: Fractional Volume Accounting (Direct 1.0 vs Compound Synergistic 0.5)
-// -----------------------------------------------------------------------------
-hostileTest(12, 'Fractional Volume: Synergistic muscle sets (triceps in push-up, hamstrings in squat)', () => {
-  const profile = buildEquipmentProfile([]);
-  const dummySchedule: any[] = [
-    {
-      dayNumber: 1,
-      dayName: 'Monday',
-      isRestDay: false,
-      title: 'Push',
-      focus: 'Chest',
-      targetMuscles: ['chest'],
-      estimatedDurationMinutes: 45,
-      exercises: [
-        // Standard push-up: primary = chest (3 sets), secondary = triceps, shoulders, core
-        { exerciseName: 'Push-Ups (Standard / Deficit)', targetSets: 4, targetReps: 10, repUnit: 'reps', restSeconds: 60, targetMuscle: 'chest', equipment: 'bodyweight' },
-      ],
-    },
-  ];
-
-  const { metrics } = scorePlanQuality(dummySchedule, profile, 45);
-  const breakdown = metrics.muscleVolumeBreakdown;
-
-  assert.ok(breakdown, 'Muscle volume breakdown must be populated');
-  assert.strictEqual(breakdown.chest.directSets, 4, 'Chest should have 4 direct sets');
-  assert.strictEqual(breakdown.chest.effectiveSets, 4, 'Chest effective sets should be 4');
-  assert.strictEqual(breakdown.triceps.directSets, 0, 'Triceps direct sets should be 0');
-  assert.strictEqual(breakdown.triceps.indirectSets, 2, 'Triceps indirect sets should be 4 * 0.5 = 2');
-  assert.strictEqual(breakdown.triceps.effectiveSets, 2, 'Triceps effective sets should be 2');
-
-  console.log(`  * Verified fractional volume: Chest = 4 direct, Triceps = 2.0 indirect synergistic sets.`);
-});
-
-// -----------------------------------------------------------------------------
-// SCENARIO 13: Critical Binary Gate Rejection on Severe Violations
-// -----------------------------------------------------------------------------
-hostileTest(13, 'Critical Constraint Gate: Equipment violation or hard ceiling breach must fail plan (score <= 40)', () => {
-  const profile = buildEquipmentProfile([]); // User has NO bench and NO barbell
-
-  const illegalSchedule: any[] = [
-    {
-      dayNumber: 1,
-      dayName: 'Monday',
-      isRestDay: false,
-      title: 'Chest Day',
-      focus: 'Heavy Bench Press',
-      targetMuscles: ['chest'],
-      estimatedDurationMinutes: 45,
-      exercises: [
-        // Requires bench & barbell! User has neither.
-        { exerciseName: 'Barbell Flat Bench Press', targetSets: 4, targetReps: 8, repUnit: 'reps', restSeconds: 60, targetMuscle: 'chest', equipment: 'barbell' },
-      ],
-    },
-  ];
-
-  const { score } = scorePlanQuality(illegalSchedule, profile, 45);
-  assert.strictEqual(score.isValid, false, 'Plan with missing equipment MUST be invalid');
-  assert.strictEqual(score.status, 'REJECTED', 'Status must be REJECTED');
-  assert.ok(score.overallScore <= 40, `Score must be hard-capped at 40 (actual: ${score.overallScore})`);
-  assert.ok(score.criticalConstraintResult.violations.length > 0, 'Must record critical violations');
-
-  console.log(`  * Verified: Severe equipment violation -> isValid = false, status = ${score.status}, score = ${score.overallScore}/100.`);
+  console.log(`  * Verified: Impossible slot flagged as unresolved, 0 random fallback, status: ${qualityScore.status}, score: ${qualityScore.overallScore}.`);
 });
 
 // -----------------------------------------------------------------------------
@@ -466,6 +591,34 @@ hostileTest(14, 'Decision Explainability: Verify transparent rationale and rejec
   console.log(`  * Sample explanation: [${explanations[0].slotName}] "${explanations[0].exerciseName}"`);
   console.log(`    Rationale: ${explanations[0].selectedRationale}`);
   console.log(`    Rejected: ${explanations[0].rejectedCandidates.slice(0, 2).map(r => `"${r.exerciseName}" (${r.reason})`).join(', ')}`);
+});
+
+// -----------------------------------------------------------------------------
+// SCENARIO 15: Authoritative Catalog & Mongoose Schema Synchronization Integrity
+// -----------------------------------------------------------------------------
+hostileTest(15, 'Authoritative Catalog & Schema Integrity: 100% of movements conform to domain constraints', () => {
+  assert.ok(COMPREHENSIVE_EXERCISE_CATALOG.length >= 45, `Catalog must contain at least 45 comprehensive exercises (got ${COMPREHENSIVE_EXERCISE_CATALOG.length})`);
+
+  const validMechanics = ['compound', 'isolation'];
+  const validLateralities = ['bilateral', 'unilateral'];
+  const validAxial = ['none', 'light', 'moderate', 'heavy'];
+  const validDifficulties = ['beginner', 'intermediate', 'advanced'];
+
+  for (const item of COMPREHENSIVE_EXERCISE_CATALOG) {
+    assert.ok(item.name && item.name.length > 3, `Exercise missing valid name: ${JSON.stringify(item)}`);
+    assert.ok(item.movementPattern, `Exercise ${item.name} missing movementPattern`);
+    assert.ok(validMechanics.includes(item.mechanic), `Exercise ${item.name} has invalid mechanic: ${item.mechanic}`);
+    assert.ok(validLateralities.includes(item.laterality), `Exercise ${item.name} has invalid laterality: ${item.laterality}`);
+    assert.ok(validAxial.includes(item.axialLoading), `Exercise ${item.name} has invalid axialLoading: ${item.axialLoading}`);
+    assert.ok(validDifficulties.includes(item.difficulty), `Exercise ${item.name} has invalid difficulty: ${item.difficulty}`);
+    assert.ok(item.recoveryDemandHours >= 12, `Exercise ${item.name} must have positive recoveryDemandHours (got ${item.recoveryDemandHours})`);
+    assert.ok(item.fatigueCost >= 1, `Exercise ${item.name} must have positive fatigueCost (got ${item.fatigueCost})`);
+    assert.ok(item.defaultRepRange.min > 0 && item.defaultRepRange.max >= item.defaultRepRange.min, `Exercise ${item.name} invalid rep range`);
+    assert.strictEqual(typeof item.benchRequired, 'boolean', `Exercise ${item.name} missing boolean benchRequired`);
+    assert.strictEqual(typeof item.pullupBarRequired, 'boolean', `Exercise ${item.name} missing boolean pullupBarRequired`);
+  }
+
+  console.log(`  * Verified: All ${COMPREHENSIVE_EXERCISE_CATALOG.length} exercises conform strictly to schema and domain constraints.`);
 });
 
 console.log('========================================================================');

@@ -101,13 +101,20 @@ export const generateBalancedWeeklyPlan = (
   const allExplanations: ExerciseDecisionExplanation[] = [];
   let blueprintIndex = 0;
 
-  // Fatigue tracking across days
-  let lastWorkoutDayHadHeavyLegs = false;
+  // Multi-factor fatigue tracking across elapsed calendar days
+  let residualAxialHours = 0;
+  const residualMuscleRecoveryHours: Record<string, number> = {};
 
   for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
     const dayName = preferences.preferredDays && preferences.preferredDays[dayIdx]
       ? preferences.preferredDays[dayIdx]
       : DAY_NAMES[dayIdx];
+
+    // Each calendar step simulates 24 hours of elapsed recovery
+    residualAxialHours = Math.max(0, residualAxialHours - 24);
+    for (const m of Object.keys(residualMuscleRecoveryHours)) {
+      residualMuscleRecoveryHours[m] = Math.max(0, residualMuscleRecoveryHours[m] - 24);
+    }
 
     const isWorkoutDay = workoutIndices.includes(dayIdx);
 
@@ -122,7 +129,6 @@ export const generateBalancedWeeklyPlan = (
         estimatedDurationMinutes: 0,
         exercises: [],
       });
-      lastWorkoutDayHadHeavyLegs = false;
       continue;
     }
 
@@ -132,6 +138,7 @@ export const generateBalancedWeeklyPlan = (
 
     const sessionSelectedItems: ExerciseCatalogItem[] = [];
     const recentExercises = weeklyScheduledExercises.slice(-8);
+    const unresolvedSlotsInSession: string[] = [];
 
     // Check if subsequent day (tomorrow) is a heavy lower body / posterior chain day
     const nextDayIdx = dayIdx + 1;
@@ -149,8 +156,8 @@ export const generateBalancedWeeklyPlan = (
       let candidates = exercisePool.filter(ex => allowedPatterns.includes(ex.movementPattern));
 
       // FATIGUE / RECOVERY SAFEGUARD:
-      // If yesterday had heavy legs OR tomorrow has heavy legs/deadlifts, do not prescribe squats or leg fatigue in this slot
-      if (lastWorkoutDayHadHeavyLegs || tomorrowHasHeavyLegs) {
+      // If residual axial fatigue is high OR tomorrow has heavy deadlifts, protect spinal recovery in conditioning
+      if (tomorrowHasHeavyLegs || residualAxialHours >= 12) {
         if (blueprint.isConditioningSession) {
           // Keep conditioning to upper body and core, non-leg movements
           const nonLegCandidates = candidates.filter(
@@ -162,10 +169,49 @@ export const generateBalancedWeeklyPlan = (
         }
       }
 
-      const availableCandidates = candidates.length > 0 ? candidates : exercisePool;
+      // If no candidate matches, attempt valid biomechanical substitutions:
+      if (candidates.length === 0) {
+        let potentialPatterns: string[] = [];
+        if (slot.substitutions && slot.substitutions.length > 0) {
+          potentialPatterns = slot.substitutions.flatMap((s: any) => {
+            const p = typeof s === 'string' ? s : s.pattern;
+            return Array.isArray(p) ? p : [p];
+          });
+        }
+        if (potentialPatterns.length === 0) {
+          if (allowedPatterns.includes('vertical_pull')) potentialPatterns.push('horizontal_pull');
+          if (allowedPatterns.includes('vertical_push')) potentialPatterns.push('horizontal_push');
+          if (allowedPatterns.includes('squat')) potentialPatterns.push('lunge_single_leg');
+          if (allowedPatterns.includes('hinge')) potentialPatterns.push('squat');
+          if (allowedPatterns.includes('shoulder_abduction')) potentialPatterns.push('rear_delt');
+          if (allowedPatterns.includes('elbow_flexion')) potentialPatterns.push('horizontal_pull');
+          if (allowedPatterns.includes('elbow_extension')) potentialPatterns.push('horizontal_push');
+          if (allowedPatterns.includes('lunge_single_leg')) potentialPatterns.push('squat');
+        }
+
+        if (potentialPatterns.length > 0) {
+          const substituteCandidates = exercisePool.filter(ex => potentialPatterns.includes(ex.movementPattern));
+          if (substituteCandidates.length > 0) {
+            candidates = substituteCandidates;
+          }
+        }
+      }
+
+      // If STILL empty, do NOT fallback to the entire exercisePool!
+      // Mark slot as unresolved so the critical gate can detect unfulfilled intent.
+      if (candidates.length === 0) {
+        unresolvedSlotsInSession.push(slot.name);
+        allExplanations.push({
+          exerciseName: 'UNRESOLVED_SLOT',
+          slotName: slot.name,
+          selectedRationale: `Unresolved movement slot: Blueprint required [${allowedPatterns.join(', ')}], but no physically compatible exercise exists in user inventory.`,
+          rejectedCandidates: [],
+        });
+        continue;
+      }
 
       // Score each candidate
-      const scoredCandidates = availableCandidates.map(candidate => ({
+      const scoredCandidates = candidates.map(candidate => ({
         candidate,
         score: scoreExerciseCandidate({
           candidate,
@@ -186,25 +232,33 @@ export const generateBalancedWeeklyPlan = (
         sessionSelectedItems.push(best.candidate);
         weeklyScheduledExercises.push(best.candidate);
 
-        // Generate explainability log
+        // Generate explainability log with full decision factors
         const explanation = explainExerciseDecision(
           best.candidate,
           slot,
-          availableCandidates,
+          candidates,
           profile,
           sessionSelectedItems,
           recentExercises,
-          lastWorkoutDayHadHeavyLegs
+          residualAxialHours >= 12,
+          targetFocus,
+          preferences.experienceLevel as ExperienceLevel
         );
         allExplanations.push(explanation);
       }
     }
 
-    // Determine if today had heavy legs
-    const todayHasHeavyLegs = sessionSelectedItems.some(
-      ex => ['squat', 'hinge'].includes(ex.movementPattern) || (ex.targetMuscle === 'legs' && ex.axialLoading === 'heavy')
-    );
-    lastWorkoutDayHadHeavyLegs = todayHasHeavyLegs;
+    // Update multi-factor residual fatigue
+    for (const ex of sessionSelectedItems) {
+      const primaryM = ex.targetMuscle.toLowerCase();
+      const baseDemand = ex.recoveryDemandHours || 24;
+      if (ex.axialLoading === 'heavy') {
+        residualAxialHours = Math.max(residualAxialHours, baseDemand);
+      } else if (ex.axialLoading === 'moderate') {
+        residualAxialHours = Math.max(residualAxialHours, Math.round(baseDemand * 0.5));
+      }
+      residualMuscleRecoveryHours[primaryM] = Math.max(residualMuscleRecoveryHours[primaryM] || 0, baseDemand);
+    }
 
     let plannedExercises: IPlannedExercise[] = [];
     let sessionEstimatedMinutes = preferences.sessionDurationMinutes || 45;
@@ -215,7 +269,7 @@ export const generateBalancedWeeklyPlan = (
     if (blueprint.isConditioningSession) {
       const condPlan = buildConditioningStructure(sessionSelectedItems, sessionEstimatedMinutes);
       sessionEstimatedMinutes = condPlan.estimatedMinutes;
-      sessionFocus = `${blueprint.focus} • ${condPlan.sessionNotes}`;
+      sessionFocus = `${blueprint.focus} â€¢ ${condPlan.sessionNotes}`;
       conditioningProtocolData = condPlan.protocol;
 
       plannedExercises = sessionSelectedItems.map((ex, idx) => {
@@ -273,9 +327,9 @@ export const generateBalancedWeeklyPlan = (
         let notes = `${preferences.experienceLevel.toUpperCase()} prescription calibrated for ${targetFocus.replace('_', ' ')}.`;
         let formTips = ex.formTips;
 
-        // Capability-based pull-up calibration
+        // Capability-based pull-up calibration with equipment profile
         if (ex.name.toLowerCase().includes('pull-up') || ex.name.toLowerCase().includes('chin-up')) {
-          const calibratedPullup = calibratePullupPrescription(userBaselinePullups, isBeginner);
+          const calibratedPullup = calibratePullupPrescription(userBaselinePullups, profile, isBeginner);
           exerciseName = calibratedPullup.exerciseName;
           targetSets = calibratedPullup.targetSets;
           targetReps = calibratedPullup.targetReps;
@@ -331,6 +385,7 @@ export const generateBalancedWeeklyPlan = (
       estimatedDurationMinutes: sessionEstimatedMinutes,
       exercises: plannedExercises,
       conditioningProtocol: conditioningProtocolData,
+      unresolvedSlots: unresolvedSlotsInSession.length > 0 ? unresolvedSlotsInSession : undefined,
     });
   }
 

@@ -107,7 +107,7 @@ export const getSessionBlueprintsForSplit = (splitStyle: SplitStyle): SessionBlu
             { name: 'Vertical Pull', pattern: 'vertical_pull', mechanic: 'compound' },
             { name: 'Vertical Push', pattern: 'vertical_push', mechanic: 'compound' },
             { name: 'Unilateral Leg', pattern: 'lunge_single_leg', mechanic: 'compound' },
-            { name: 'Elbow Flexion', pattern: 'elbow_flexion', mechanic: 'isolation' },
+            { name: 'Elbow Flexion', pattern: ['elbow_flexion', 'rear_delt', 'anti_extension'] },
           ],
         },
         {
@@ -120,8 +120,8 @@ export const getSessionBlueprintsForSplit = (splitStyle: SplitStyle): SessionBlu
             { name: 'Bilateral Squat', pattern: 'squat', mechanic: 'compound' },
             { name: 'Horizontal Push', pattern: 'horizontal_push', mechanic: 'compound' },
             { name: 'Horizontal Pull', pattern: 'horizontal_pull', mechanic: 'compound' },
-            { name: 'Lateral Delts', pattern: 'shoulder_abduction', mechanic: 'isolation' },
-            { name: 'Elbow Extension', pattern: 'elbow_extension', mechanic: 'isolation' },
+            { name: 'Lateral Delts / Shoulders', pattern: ['shoulder_abduction', 'rear_delt', 'vertical_push'] },
+            { name: 'Arm & Core Finisher', pattern: ['elbow_extension', 'anti_extension', 'controlled_rotation'] },
           ],
         },
       ];
@@ -214,7 +214,7 @@ export const getSessionBlueprintsForSplit = (splitStyle: SplitStyle): SessionBlu
             { name: 'Horizontal Pull', pattern: 'horizontal_pull', mechanic: 'compound' },
             { name: 'Scapular / Rear Delts', pattern: 'rear_delt', mechanic: 'isolation' },
             { name: 'Direct Biceps', pattern: 'elbow_flexion', mechanic: 'isolation' },
-            { name: 'Lat Accessory', pattern: 'vertical_pull', mechanic: 'compound' },
+            { name: 'Core Stabilization', pattern: ['anti_rotation', 'anti_extension'] },
           ],
         },
         {

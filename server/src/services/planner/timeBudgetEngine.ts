@@ -78,7 +78,17 @@ export const calculateSessionDuration = (
 };
 
 /**
- * Adjust volume or sets to ensure session strictly respects duration target and policy
+ * Adjust volume, sets, and rest to ensure session strictly respects duration target and policy
+ * while strictly preserving:
+ * 1. Session intent
+ * 2. Primary compound movements (never dropped)
+ * 3. Minimum productive volume (>= 2 sets per primary movement)
+ * 4. Recovery requirements
+ *
+ * Duration reduction hierarchy:
+ * Step 1: Optimize rest on accessory/isolation/core movements
+ * Step 2: Reduce accessory sets (3 -> 2)
+ * Step 3: Trim optional/accessory exercises only as a last resort, preserving all primaries
  */
 export const calibrateSetsToTimeBudget = (
   exercises: ExerciseCatalogItem[],
@@ -86,31 +96,33 @@ export const calibrateSetsToTimeBudget = (
   isBeginner: boolean = true,
   policy: DurationPolicy = 'approximate_target'
 ): PlannedExerciseWithSets[] => {
+  if (exercises.length === 0) return [];
+
+  // Separate primary compound movements (which fulfill blueprint intent) from accessories
+  // An exercise is primary if it is a compound lift or the first 2-3 movements
+  const isPrimary = (ex: ExerciseCatalogItem, index: number) => {
+    return ex.mechanic === 'compound' || index < 2;
+  };
+
   // Base set allocations
   let defaultSetsPerExercise = 3;
-  let maxExercisesToKeep = exercises.length;
-
   if (targetDurationMinutes <= 25 || policy === 'compact_efficient') {
     defaultSetsPerExercise = 2;
-    maxExercisesToKeep = Math.min(exercises.length, 3); // 3 focused exercises for 20m express
   } else if (targetDurationMinutes <= 35) {
     defaultSetsPerExercise = 2;
-    maxExercisesToKeep = Math.min(exercises.length, 4);
   } else if (targetDurationMinutes >= 60) {
     defaultSetsPerExercise = 4;
   }
 
-  const activeExercises = exercises.slice(0, maxExercisesToKeep);
-
-  let planned: PlannedExerciseWithSets[] = activeExercises.map((ex, idx) => {
-    let sets = defaultSetsPerExercise;
+  // Build initial planned list with all exercises
+  let planned: PlannedExerciseWithSets[] = exercises.map((ex, idx) => {
+    const primary = isPrimary(ex, idx);
+    let sets = primary ? Math.max(2, defaultSetsPerExercise) : (targetDurationMinutes <= 35 ? 2 : defaultSetsPerExercise);
     if (idx === 0 && targetDurationMinutes >= 45) {
       sets = Math.min(defaultSetsPerExercise + 1, 4); // Anchor compound lift gets an extra set
-    } else if (idx >= 3 && targetDurationMinutes < 50) {
-      sets = Math.max(2, defaultSetsPerExercise);
     }
 
-    // Reps & Rest calibrated to mechanic and beginner status
+    // Reps calibrated to mechanic and beginner status
     let reps = ex.defaultRepRange.min;
     if (ex.mechanic === 'compound') {
       reps = isBeginner ? ex.defaultRepRange.min : Math.round((ex.defaultRepRange.min + ex.defaultRepRange.max) / 2);
@@ -118,15 +130,16 @@ export const calibrateSetsToTimeBudget = (
       reps = ex.defaultRepRange.max;
     }
 
+    // Rest calibrated to target duration and mechanic
     let rest = ex.defaultRestSeconds;
-    if (isBeginner && ex.mechanic === 'compound') {
-      rest = Math.max(rest, 75); // Adequate recovery for beginners
-    }
-    if (targetDurationMinutes >= 55 && ex.mechanic === 'compound') {
-      rest = Math.max(rest, 90); // Adequate recovery on compound lifts for long sessions
-    }
-    if (targetDurationMinutes <= 25) {
-      rest = Math.min(rest, 45); // Shorter rest for express workouts
+    if (primary) {
+      if (isBeginner) rest = Math.max(rest, 75);
+      if (targetDurationMinutes >= 55) rest = Math.max(rest, 90);
+      if (targetDurationMinutes <= 30) rest = Math.min(rest, 60);
+    } else {
+      // Accessory/isolation/core rest optimization
+      if (targetDurationMinutes <= 35) rest = Math.min(rest, 45);
+      if (targetDurationMinutes <= 25) rest = Math.min(rest, 30);
     }
 
     return {
@@ -139,28 +152,61 @@ export const calibrateSetsToTimeBudget = (
     };
   });
 
-  // If hard_ceiling is requested, dynamically trim accessory sets if calculation exceeds budget
-  if (policy === 'hard_ceiling') {
-    let budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
-    let attempts = 0;
-    while (budget.totalEstimatedMinutes > targetDurationMinutes && attempts < 10) {
-      attempts++;
-      // Find an exercise with sets > 2 to reduce, starting from the back
-      let reduced = false;
+  // Calculate current duration
+  let budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
+
+  // If time exceeds budget (e.g. hard_ceiling or short target duration), iteratively optimize:
+  if (budget.totalEstimatedMinutes > targetDurationMinutes || (policy === 'compact_efficient' && budget.totalEstimatedMinutes > 30)) {
+    // Step 1: Optimize rest on accessories
+    for (const p of planned) {
+      if (p.exercise.mechanic === 'isolation' || p.isTimeBased) {
+        p.restSeconds = Math.min(p.restSeconds, 45);
+      }
+    }
+    budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
+
+    // Step 2: Reduce accessory sets to minimum productive volume (2 sets)
+    if (budget.totalEstimatedMinutes > targetDurationMinutes) {
       for (let i = planned.length - 1; i >= 0; i--) {
-        if (planned[i].sets > 2) {
-          planned[i].sets -= 1;
-          reduced = true;
+        if (!isPrimary(planned[i].exercise, i) && planned[i].sets > 2) {
+          planned[i].sets = 2;
+        }
+      }
+      budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
+    }
+
+    // Step 3: If still exceeding hard ceiling or compact target, drop accessories from the END,
+    // NEVER dropping primary compound exercises!
+    let attempts = 0;
+    while (
+      attempts < 5 &&
+      ((policy === 'hard_ceiling' && budget.totalEstimatedMinutes > targetDurationMinutes) ||
+       (policy === 'compact_efficient' && budget.totalEstimatedMinutes > 30) ||
+       (targetDurationMinutes <= 25 && planned.length > 3))
+    ) {
+      attempts++;
+      // Find the last non-primary accessory exercise to drop
+      let droppedIndex = -1;
+      for (let i = planned.length - 1; i >= 0; i--) {
+        if (!isPrimary(planned[i].exercise, i)) {
+          droppedIndex = i;
           break;
         }
       }
-      if (!reduced && planned.length > 3) {
-        // Drop the last optional accessory exercise
-        planned.pop();
-        reduced = true;
+
+      if (droppedIndex !== -1 && planned.length > 2) {
+        planned.splice(droppedIndex, 1);
+        budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
+      } else {
+        // If only primary exercises remain, reduce their sets to 2 (minimum productive volume)
+        for (const p of planned) {
+          if (p.sets > 2) {
+            p.sets = 2;
+          }
+        }
+        budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
+        break;
       }
-      if (!reduced) break; // Cannot reduce further
-      budget = calculateSessionDuration(planned, targetDurationMinutes, policy);
     }
   }
 

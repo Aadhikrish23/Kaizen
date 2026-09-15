@@ -110,6 +110,8 @@ export interface MovementSlotRequirement {
   pattern: MovementPattern | MovementPattern[];
   targetMuscles?: MuscleGroup[];
   mechanic?: 'compound' | 'isolation';
+  role?: 'primary' | 'accessory' | 'core' | 'finisher';
+  substitutions?: MovementPattern[];
   lateralityPreference?: 'bilateral' | 'unilateral' | 'any';
   minDifficulty?: ExperienceLevel;
   maxDifficulty?: ExperienceLevel;
@@ -153,6 +155,92 @@ export interface GoalBalanceTargets {
   idealSquatHingeMin: number;
   idealSquatHingeMax: number;
   minWeeklyMajorMuscleSets: number;
+}
+
+/**
+ * Authoritative Goal-Specific Balance Targets (Single Source of Truth)
+ */
+export const GOAL_BALANCE_TARGETS: Record<TargetFocus, GoalBalanceTargets> = {
+  strength: {
+    idealPushPullMin: 0.90,
+    idealPushPullMax: 1.10,
+    acceptablePushPullMin: 0.75,
+    acceptablePushPullMax: 1.25,
+    idealSquatHingeMin: 0.75,
+    idealSquatHingeMax: 1.40,
+    minWeeklyMajorMuscleSets: 8,
+  },
+  hypertrophy: {
+    idealPushPullMin: 0.80,
+    idealPushPullMax: 1.25, // Favors back/lat volume
+    acceptablePushPullMin: 0.70,
+    acceptablePushPullMax: 1.35,
+    idealSquatHingeMin: 0.60,
+    idealSquatHingeMax: 1.60,
+    minWeeklyMajorMuscleSets: 10,
+  },
+  general_fitness: {
+    idealPushPullMin: 0.85,
+    idealPushPullMax: 1.15,
+    acceptablePushPullMin: 0.70,
+    acceptablePushPullMax: 1.30,
+    idealSquatHingeMin: 0.60,
+    idealSquatHingeMax: 1.80,
+    minWeeklyMajorMuscleSets: 6,
+  },
+  fat_loss: {
+    idealPushPullMin: 0.80,
+    idealPushPullMax: 1.20,
+    acceptablePushPullMin: 0.65,
+    acceptablePushPullMax: 1.35,
+    idealSquatHingeMin: 0.60,
+    idealSquatHingeMax: 1.80,
+    minWeeklyMajorMuscleSets: 6,
+  },
+};
+
+export type PushPullClassification =
+  | 'ideal'
+  | 'mild_deficit'
+  | 'mild_excess'
+  | 'severe_deficit'
+  | 'severe_excess';
+
+export const classifyPushPullRatio = (
+  ratio: number,
+  targetFocus: TargetFocus = 'general_fitness'
+): PushPullClassification => {
+  const targets = GOAL_BALANCE_TARGETS[targetFocus] || GOAL_BALANCE_TARGETS.general_fitness;
+  if (ratio < targets.acceptablePushPullMin) return 'severe_deficit';
+  if (ratio < targets.idealPushPullMin) return 'mild_deficit';
+  if (ratio > targets.acceptablePushPullMax) return 'severe_excess';
+  if (ratio > targets.idealPushPullMax) return 'mild_excess';
+  return 'ideal';
+};
+
+export const classifySquatHingeRatio = (
+  ratio: number,
+  targetFocus: TargetFocus = 'general_fitness'
+): 'ideal' | 'imbalanced' => {
+  const targets = GOAL_BALANCE_TARGETS[targetFocus] || GOAL_BALANCE_TARGETS.general_fitness;
+  if (ratio < targets.idealSquatHingeMin || ratio > targets.idealSquatHingeMax) return 'imbalanced';
+  return 'ideal';
+};
+
+export interface MuscleFatigueProfile {
+  muscle: string;
+  residualRecoveryHours: number;
+  exhaustionScore: number; // 0 to 10
+}
+
+export interface DailyFatigueProfile {
+  dayIndex: number;
+  dayName: string;
+  hoursSinceLastSession: number;
+  residualAxialFatigueHours: number;
+  muscleFatigue: Record<string, MuscleFatigueProfile>;
+  accumulatedFatigueCost: number;
+  hadHeavyAxialLoad: boolean;
 }
 
 export interface ExerciseDecisionExplanation {

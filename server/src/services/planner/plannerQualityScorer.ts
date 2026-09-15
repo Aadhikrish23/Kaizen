@@ -3,6 +3,9 @@ import {
   WeeklyBalanceMetrics,
   CriticalConstraintResult,
   GoalBalanceTargets,
+  GOAL_BALANCE_TARGETS,
+  classifyPushPullRatio,
+  classifySquatHingeRatio,
   MuscleVolumeBreakdown,
   DurationPolicy,
   TargetFocus,
@@ -12,47 +15,7 @@ import { UserEquipmentProfile } from './inventoryEvaluator';
 import { COMPREHENSIVE_EXERCISE_CATALOG } from './exerciseCatalog';
 import { evaluateTimeCompliance } from './timeBudgetEngine';
 
-/**
- * Goal-specific balance target profiles
- */
-export const GOAL_BALANCE_TARGETS: Record<TargetFocus, GoalBalanceTargets> = {
-  strength: {
-    idealPushPullMin: 0.90,
-    idealPushPullMax: 1.10,
-    acceptablePushPullMin: 0.75,
-    acceptablePushPullMax: 1.25,
-    idealSquatHingeMin: 0.75,
-    idealSquatHingeMax: 1.40,
-    minWeeklyMajorMuscleSets: 8,
-  },
-  hypertrophy: {
-    idealPushPullMin: 0.80,
-    idealPushPullMax: 1.25, // Favors back/lat volume
-    acceptablePushPullMin: 0.70,
-    acceptablePushPullMax: 1.35,
-    idealSquatHingeMin: 0.60,
-    idealSquatHingeMax: 1.60,
-    minWeeklyMajorMuscleSets: 10,
-  },
-  general_fitness: {
-    idealPushPullMin: 0.85,
-    idealPushPullMax: 1.15,
-    acceptablePushPullMin: 0.70,
-    acceptablePushPullMax: 1.30,
-    idealSquatHingeMin: 0.60,
-    idealSquatHingeMax: 1.80,
-    minWeeklyMajorMuscleSets: 6,
-  },
-  fat_loss: {
-    idealPushPullMin: 0.80,
-    idealPushPullMax: 1.20,
-    acceptablePushPullMin: 0.65,
-    acceptablePushPullMax: 1.35,
-    idealSquatHingeMin: 0.60,
-    idealSquatHingeMax: 1.80,
-    minWeeklyMajorMuscleSets: 6,
-  },
-};
+export { GOAL_BALANCE_TARGETS };
 
 /**
  * Score the holistic quality of a generated 7-day workout plan with hard critical gates
@@ -93,19 +56,33 @@ export const scorePlanQuality = (
   let timeComplianceTotalScore = 0;
   let activeDaysCount = 0;
 
-  let lastDayPatterns: string[] = [];
-  let lastDayHadHeavyLegs = false;
+  // Multi-factor fatigue tracking across elapsed calendar days
+  let residualAxialHours = 0;
+  const residualMuscleRecoveryHours: Record<string, number> = {};
 
   const goalTargets = GOAL_BALANCE_TARGETS[targetFocus] || GOAL_BALANCE_TARGETS.general_fitness;
 
   for (const day of schedule) {
+    // Each calendar step simulates 24 hours of elapsed recovery
+    residualAxialHours = Math.max(0, residualAxialHours - 24);
+    for (const m of Object.keys(residualMuscleRecoveryHours)) {
+      residualMuscleRecoveryHours[m] = Math.max(0, residualMuscleRecoveryHours[m] - 24);
+    }
+    const residualAxialAtStartOfDay = residualAxialHours;
+    const residualMuscleAtStartOfDay = { ...residualMuscleRecoveryHours };
+
     if (day.isRestDay || day.exercises.length === 0) {
-      lastDayPatterns = [];
-      lastDayHadHeavyLegs = false;
       continue;
     }
 
     activeDaysCount++;
+
+    // Check for unresolved movement slots (fails intent fulfillment)
+    if (day.unresolvedSlots && day.unresolvedSlots.length > 0) {
+      criticalViolations.push(
+        `Unresolved movement slot on ${day.dayName}: Blueprint required [${day.unresolvedSlots.join(', ')}], but no physically compatible exercise exists in user inventory.`
+      );
+    }
 
     // Evaluate time compliance for this session
     const timeEval = evaluateTimeCompliance(
@@ -130,7 +107,6 @@ export const scorePlanQuality = (
 
     const currentDayPatterns: string[] = [];
     const intraDaySubtypes = new Set<string>();
-    let currentDayHasHeavyLegs = false;
 
     for (const ex of day.exercises) {
       const sets = ex.targetSets || 3;
@@ -164,17 +140,21 @@ export const scorePlanQuality = (
       const primaryMuscle = (catItem?.targetMuscle || ex.targetMuscle).toLowerCase();
       muscleSetCounts[primaryMuscle] = (muscleSetCounts[primaryMuscle] || 0) + sets;
 
-      // Fractional Volume Accounting
+      // Fractional Volume Accounting (1.0 direct / 0.5 synergistic compound approximation)
+      // Note: Synergistic volume is documented as an approximation of secondary motor unit recruitment.
       if (!muscleVolumeBreakdown[primaryMuscle]) {
         muscleVolumeBreakdown[primaryMuscle] = { directSets: 0, indirectSets: 0, effectiveSets: 0 };
       }
       muscleVolumeBreakdown[primaryMuscle].directSets += sets;
       muscleVolumeBreakdown[primaryMuscle].effectiveSets += sets;
 
-      // Secondary muscle synergistic credit
+      // Secondary muscle synergistic credit (only compound movements, deduplicated, excluding primary)
       if (catItem && catItem.mechanic === 'compound' && catItem.secondaryMuscles) {
-        for (const sec of catItem.secondaryMuscles) {
-          const secMuscle = sec.toLowerCase();
+        const uniqueSecondary = Array.from(
+          new Set(catItem.secondaryMuscles.map(s => s.toLowerCase()))
+        ).filter(s => s !== primaryMuscle);
+
+        for (const secMuscle of uniqueSecondary) {
           if (!muscleVolumeBreakdown[secMuscle]) {
             muscleVolumeBreakdown[secMuscle] = { directSets: 0, indirectSets: 0, effectiveSets: 0 };
           }
@@ -186,13 +166,37 @@ export const scorePlanQuality = (
 
       currentDayPatterns.push(pattern);
 
-      // Check for heavy leg fatigue
-      if (['squat', 'hinge'].includes(pattern) || (catItem && catItem.axialLoading === 'heavy')) {
-        currentDayHasHeavyLegs = true;
-      }
-
-      // Check intra-day redundancy
+      // Multi-Factor Fatigue & Recovery Tracking
       if (catItem) {
+        const baseDemand = catItem.recoveryDemandHours || 24;
+        const setsFactor = sets / 3;
+        const calculatedDemand = Math.round(baseDemand * setsFactor);
+
+        // 1. Severe Axial Conflict: Heavy axial exercise scheduled while spine has > 24h residual axial demand (less than 48h recovery)
+        if (catItem.axialLoading === 'heavy' && residualAxialAtStartOfDay > 24) {
+          consecutiveFatigueViolations++;
+          criticalViolations.push(
+            `Severe recovery conflict on ${day.dayName}: Heavy axial lift "${ex.exerciseName}" scheduled with ${residualAxialAtStartOfDay}h residual spinal fatigue remaining from prior session.`
+          );
+        }
+
+        // 2. Severe Muscle Conflict: Heavy compound lift (fatigueCost >= 6) on same major muscle with >= 24h residual demand
+        if (catItem.mechanic === 'compound' && (catItem.fatigueCost || 0) >= 6 && (residualMuscleAtStartOfDay[primaryMuscle] || 0) >= 24) {
+          consecutiveFatigueViolations++;
+          criticalViolations.push(
+            `Severe recovery conflict on ${day.dayName}: Heavy compound lift "${ex.exerciseName}" scheduled on ${primaryMuscle} with ${residualMuscleAtStartOfDay[primaryMuscle]}h residual recovery demand remaining.`
+          );
+        }
+
+        // Update fatigue state
+        if (catItem.axialLoading === 'heavy') {
+          residualAxialHours = Math.max(residualAxialHours, calculatedDemand);
+        } else if (catItem.axialLoading === 'moderate') {
+          residualAxialHours = Math.max(residualAxialHours, Math.round(calculatedDemand * 0.5));
+        }
+        residualMuscleRecoveryHours[primaryMuscle] = Math.max(residualMuscleRecoveryHours[primaryMuscle] || 0, calculatedDemand);
+
+        // Check intra-day redundancy
         if (intraDaySubtypes.has(subtype)) {
           redundancyViolationCount++;
           warnings.push(`Intra-session redundancy on ${day.dayName}: duplicate movement subtype "${subtype}".`);
@@ -271,35 +275,26 @@ export const scorePlanQuality = (
         coreSets += sets;
       }
     }
-
-    // Check consecutive heavy leg loading conflict
-    if (lastDayHadHeavyLegs && currentDayHasHeavyLegs) {
-      consecutiveFatigueViolations++;
-      criticalViolations.push(
-        `Severe recovery conflict: Consecutive heavy lower-body / axial loading days scheduled (${day.dayName}) without recovery.`
-      );
-    }
-
-    lastDayPatterns = currentDayPatterns;
-    lastDayHadHeavyLegs = currentDayHasHeavyLegs;
   }
 
   // Calculate Ratios with exact rounding
   const pushPullRatio = pullSets > 0 ? Math.round((pushSets / pullSets) * 100) / 100 : 1.0;
   const squatHingeRatio = hingeSets > 0 ? Math.round((squatSets / hingeSets) * 100) / 100 : 1.0;
 
-  // 1. Movement Balance Score (0 - 100)
+  // 1. Movement Balance Score (0 - 100) using authoritative classifier
   let movementBalanceScore = 100;
-  if (pushPullRatio < goalTargets.acceptablePushPullMin) {
+  const pushPullClassification = classifyPushPullRatio(pushPullRatio, targetFocus);
+
+  if (pushPullClassification === 'severe_deficit') {
     movementBalanceScore -= 30;
     warnings.push(`Severe Push/Pull imbalance: ratio is ${pushPullRatio} (minimum acceptable: ${goalTargets.acceptablePushPullMin}). Excessive pulling.`);
-  } else if (pushPullRatio < goalTargets.idealPushPullMin) {
+  } else if (pushPullClassification === 'mild_deficit') {
     movementBalanceScore -= 15;
     warnings.push(`Mild Push/Pull deficit: ratio is ${pushPullRatio} (ideal: ${goalTargets.idealPushPullMin} - ${goalTargets.idealPushPullMax}).`);
-  } else if (pushPullRatio > goalTargets.acceptablePushPullMax) {
+  } else if (pushPullClassification === 'severe_excess') {
     movementBalanceScore -= 30;
     warnings.push(`Severe Push/Pull imbalance: ratio is ${pushPullRatio} (maximum acceptable: ${goalTargets.acceptablePushPullMax}). Excessive pushing.`);
-  } else if (pushPullRatio > goalTargets.idealPushPullMax) {
+  } else if (pushPullClassification === 'mild_excess') {
     movementBalanceScore -= 15;
     warnings.push(`Mild Push/Pull excess: ratio is ${pushPullRatio} (ideal: ${goalTargets.idealPushPullMin} - ${goalTargets.idealPushPullMax}).`);
   } else {
@@ -375,11 +370,12 @@ export const scorePlanQuality = (
     : 100;
 
   // Evaluate Critical Constraints
+  const hasUnresolvedSlots = criticalViolations.some(v => v.includes('Unresolved movement slot'));
   const criticalConstraintResult: CriticalConstraintResult = {
     isValid: criticalViolations.length === 0,
     equipmentCompliance: equipmentViolationCount === 0,
     impossibleExercise: impossibleExerciseCount === 0,
-    intentFulfillment: true, // evaluated per session blueprint
+    intentFulfillment: !hasUnresolvedSlots,
     prescriptionValidity: prescriptionViolationCount === 0,
     durationCompliance: durationViolations === 0,
     noSevereRecoveryConflict: consecutiveFatigueViolations === 0,

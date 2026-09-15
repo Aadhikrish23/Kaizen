@@ -38,6 +38,7 @@ export interface IPlannedDay {
   estimatedDurationMinutes: number;
   exercises: IPlannedExercise[];
   conditioningProtocol?: IConditioningProtocolData;
+  unresolvedSlots?: string[];
 }
 
 export interface IDailyAdaptation {
@@ -117,6 +118,7 @@ const PlannedDaySchema = new Schema(
     estimatedDurationMinutes: { type: Number, default: 45 },
     exercises: [PlannedExerciseSchema],
     conditioningProtocol: { type: ConditioningProtocolSchema, required: false },
+    unresolvedSlots: [{ type: String }],
   },
   { _id: false }
 );

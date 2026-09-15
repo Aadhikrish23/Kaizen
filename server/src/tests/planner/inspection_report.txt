@@ -1,0 +1,955 @@
+﻿########################################################################
+STARTING MANUAL INSPECTION OF ALL 14 AUDIT SCENARIOS (A THROUGH N)
+########################################################################
+
+================================================================================
+SCENARIO A: BEGINNER / 3D / 30M / BODYWEIGHT ONLY
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 88/100 | Status: VALID | IsValid: true
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           70/100
+    - Muscle Coverage:            100/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       75/100
+    - Time Budget Compliance:     75/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [PASS]
+    - Metadata Validity:            [PASS]
+  Warnings:
+    ! Monday: Session duration (19m) diverges from target (30m).
+    ! Wednesday: Session duration (18m) diverges from target (30m).
+    ! Friday: Session duration (18m) diverges from target (30m).
+    ! Intra-session redundancy on Friday: duplicate movement subtype "bodyweight_pushup".
+    ! Severe Push/Pull imbalance: ratio is 2 (maximum acceptable: 1.3). Excessive pushing.
+  Strengths:
+    + Knee-dominant and hip-dominant lower body work are balanced (ratio: 1).
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    3
+  Total Weekly Sets:    34
+  Push / Pull Ratio:    2 (SEVERE_EXCESS)
+  Squat / Hinge Ratio:  1 (IDEAL)
+  Squat Sets:           4 | Hinge Sets: 4
+  Push Sets:            12 | Pull Sets: 6
+  Core Sets:            6 | Direct Arm Sets: 0
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - legs        : Direct 10s | Indirect 0s | Effective 10s
+    - core        : Direct 6s | Indirect 13s | Effective 19s
+    - chest       : Direct 12s | Indirect 0s | Effective 12s
+    - triceps     : Direct 0s | Indirect 6s | Effective 6s
+    - shoulders   : Direct 0s | Indirect 7s | Effective 7s
+    - back        : Direct 6s | Indirect 0s | Effective 6s
+    - biceps      : Direct 0s | Indirect 2s | Effective 2s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Full Body - Compound Foundation [Target: ~19m]
+    Focus: Primary multi-joint push, pull, squat, and core stability
+      1. Bodyweight Air Squat                   | 2 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      3. Inverted Bodyweight Row                | 2 sets x 8 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Bodyweight Glute Bridge                | 2 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Standard Forearm Plank                 | 2 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 2 (Tuesday): REST DAY
+  Day 3 (Wednesday): Full Body - Posterior Chain & Pull Focus [Target: ~18m]
+    Focus: Back breadth, hamstring hinges, overhead pressing, and arms
+      1. Single-Leg Bodyweight Romanian Deadlift | 2 sets x 8 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Doorframe Isometric Row / Towel Pull   | 2 sets x 8 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      4. Bodyweight Reverse Lunges              | 2 sets x 10 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Deadbug (Core Stability)               | 2 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 4 (Thursday): REST DAY
+  Day 5 (Friday): Full Body - Athletic Hypertrophy & Arms [Target: ~18m]
+    Focus: Squat density, chest pressing, back rowing, and direct arm work
+      1. Bodyweight Air Squat                   | 2 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      3. Prone YTWL Scapular Raise              | 2 sets x 15 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      5. Standard Forearm Plank                 | 2 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 6 (Saturday): REST DAY
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Knee Dominant] -> Selected: "Bodyweight Air Squat"
+    Rationale: Fulfills slot "Knee Dominant" with pattern "squat" (bilateral_squat). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [12-20].
+  Slot [Horizontal Push] -> Selected: "Push-Ups (Standard / Deficit)"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bodyweight_pushup). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-15].
+    Top Rejected Candidates:
+      x "Diamond Push-Ups": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+      x "Incline Push-Ups (Hands Elevated)": Subtype redundancy: session already includes "bodyweight_pushup".
+  Slot [Horizontal Pull] -> Selected: "Inverted Bodyweight Row"
+    Rationale: Fulfills slot "Horizontal Pull" with pattern "horizontal_pull" (inverted_row). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Doorframe Isometric Row / Towel Pull": Biomechanical suitability: ranked below Inverted Bodyweight Row for general_fitness goal alignment and mechanical tension efficiency.
+      x "Prone YTWL Scapular Raise": Biomechanical suitability: ranked below Inverted Bodyweight Row for general_fitness goal alignment and mechanical tension efficiency.
+
+
+================================================================================
+SCENARIO B: BEGINNER / 5D / 45M / DUMBBELLS + PULL-UP BAR / NO BENCH
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 100/100 | Status: VALID | IsValid: true
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           100/100
+    - Muscle Coverage:            100/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       100/100
+    - Time Budget Compliance:     25/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [PASS]
+    - Metadata Validity:            [PASS]
+  Warnings:
+    ! Monday: Significant time variance: 28m vs 45m target.
+    ! Tuesday: Significant time variance: 30m vs 45m target.
+    ! Wednesday: Significant time variance: 32m vs 45m target.
+    ! Friday: Significant time variance: 30m vs 45m target.
+    ! Saturday: Significant time variance: 29m vs 45m target.
+  Strengths:
+    + Push and pull volume is optimally balanced for general_fitness (ratio: 0.92).
+    + Knee-dominant and hip-dominant lower body work are balanced (ratio: 0.67).
+    + Low movement redundancy; exercises are functionally complementary.
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+    + Direct arm volume (biceps and triceps) is properly programmed (9 sets).
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    5
+  Total Weekly Sets:    82
+  Push / Pull Ratio:    0.92 (IDEAL)
+  Squat / Hinge Ratio:  0.67 (IDEAL)
+  Squat Sets:           4 | Hinge Sets: 6
+  Push Sets:            11 | Pull Sets: 12
+  Core Sets:            22 | Direct Arm Sets: 9
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - chest       : Direct 7s | Indirect 4s | Effective 11s
+    - triceps     : Direct 3s | Indirect 5.5s | Effective 8.5s
+    - shoulders   : Direct 16s | Indirect 12.5s | Effective 28.5s
+    - core        : Direct 22s | Indirect 18s | Effective 40s
+    - back        : Direct 12s | Indirect 3s | Effective 15s
+    - biceps      : Direct 6s | Indirect 6s | Effective 12s
+    - legs        : Direct 16s | Indirect 2s | Effective 18s
+    - forearms    : Direct 0s | Indirect 2s | Effective 2s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Home Dumbbell - Upper Body Push & Pull [Target: ~28m]
+    Focus: Horizontal and vertical torso mechanics with core stabilization
+      1. Push-Up (with Handles / Push-up Bars)  | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      2. Split-Stance One-Arm Dumbbell Row      | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Negative Pull-Ups (Eccentric)          | 3 sets x 3 reps | rest: 90s | eq: bodyweight
+         Note: Pull-Up Guidance & Regression (Tier 0: 0 reps + Bar): Step or jump to top bar height, hold chin over bar for 1s, and lower with controlled 5-second eccentric descent to build strict pulling strength.
+      4. Dumbbell Lateral Raise                 | 3 sets x 16 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 2 (Tuesday): Home Dumbbell - Lower Body Resilience & Core [Target: ~30m]
+    Focus: Bilateral knee loading, hip hinge mechanics, and core bracing
+      1. Dumbbell Goblet Squat                  | 4 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Dumbbell Romanian Deadlift (RDL)       | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Dumbbell Reverse Lunges                | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Dumbbell Standing Calf Raise           | 3 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Deadbug (Core Stability)               | 3 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 3 (Wednesday): Home Dumbbell - Delts, Arms & Hypertrophy [Target: ~32m]
+    Focus: Vertical deltoid pressing, lateral raises, biceps, and triceps isolation
+      1. Standing Dumbbell Shoulder Press       | 4 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Dumbbell Lateral Raise                 | 3 sets x 16 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Standing Dumbbell Bicep Curl           | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Overhead Dumbbell Tricep Extension     | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Bent-Over Rear Delt Flyes              | 3 sets x 15 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 4 (Thursday): REST DAY
+  Day 5 (Friday): Home Dumbbell - Compound Conditioning & Core [Target: ~30m]
+    Focus: High-density multi-joint circuit, metabolic conditioning, and loaded carries • High-Density Circuit Protocol: 4 rounds of 5 stations. Perform each movement continuously for 40s, transition for 20s. Take 75s recovery between rounds.
+    Conditioning Protocol: 4 rounds | 40s work / 20s rest
+      1. Plank Shoulder Taps & Hold             | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 1 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      2. Push-Ups (Standard / Deficit)          | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 2 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      3. Mountain Climbers (Core & Conditioning) | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 3 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      4. Standard Forearm Plank                 | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 4 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      5. Dumbbell Farmer's Walk / Loaded Carry  | 4 sets x 40s | rest: 20s | eq: dumbbell
+         Note: Station 5 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+  Day 6 (Saturday): Home Dumbbell - Posterior Chain & Back Specialization [Target: ~29m]
+    Focus: Vertical pulling, hamstring hinges, back density, and bicep volume
+      1. Negative Pull-Ups (Eccentric)          | 3 sets x 3 reps | rest: 90s | eq: bodyweight
+         Note: Pull-Up Guidance & Regression (Tier 0: 0 reps + Bar): Step or jump to top bar height, hold chin over bar for 1s, and lower with controlled 5-second eccentric descent to build strict pulling strength.
+      2. Dumbbell Romanian Deadlift (RDL)       | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Split-Stance One-Arm Dumbbell Row      | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Bent-Over Rear Delt Flyes              | 3 sets x 15 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Dumbbell Hammer Curl                   | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Horizontal Push] -> Selected: "Push-Ups (Standard / Deficit)"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bodyweight_pushup). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-15].
+    Top Rejected Candidates:
+      x "Deficit Push-Ups": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+      x "Dumbbell Floor Press": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+  Slot [Horizontal Pull] -> Selected: "Split-Stance One-Arm Dumbbell Row"
+    Rationale: Fulfills slot "Horizontal Pull" with pattern "horizontal_pull" (split_stance_row). Maintains functional movement integrity and balanced multi-joint development. 100% compliant with dumbbell inventory (4, 6, 8, 10kg), zero bench dependency. Low axial spinal loading with manageable 36h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Dumbbell Bent-Over Row": Biomechanical suitability: ranked below Split-Stance One-Arm Dumbbell Row for general_fitness goal alignment and mechanical tension efficiency.
+      x "Inverted Bodyweight Row": Biomechanical suitability: ranked below Split-Stance One-Arm Dumbbell Row for general_fitness goal alignment and mechanical tension efficiency.
+  Slot [Vertical Pattern] -> Selected: "Negative Pull-Ups (Eccentric)"
+    Rationale: Fulfills slot "Vertical Pattern" with pattern "vertical_pull" (eccentric_pullup). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: yes, benchRequired: false). Low axial spinal loading with manageable 48h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [3-6].
+    Top Rejected Candidates:
+      x "Pull-Ups / Chin-Ups": Biomechanical suitability: ranked below Negative Pull-Ups (Eccentric) for general_fitness goal alignment and mechanical tension efficiency.
+      x "Dumbbell Pullover": Biomechanical suitability: ranked below Negative Pull-Ups (Eccentric) for general_fitness goal alignment and mechanical tension efficiency.
+
+
+================================================================================
+SCENARIO C: INTERMEDIATE / 5D / HYPERTROPHY / FULL GYM
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 97/100 | Status: VALID | IsValid: true
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           100/100
+    - Muscle Coverage:            80/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       100/100
+    - Time Budget Compliance:     75/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [PASS]
+    - Metadata Validity:            [PASS]
+  Warnings:
+    ! Monday: Session duration (45m) diverges from target (55m).
+    ! Tuesday: Session duration (44m) diverges from target (55m).
+    ! Wednesday: Session duration (43m) diverges from target (55m).
+    ! Friday: Session duration (46m) diverges from target (55m).
+    ! Saturday: Session duration (45m) diverges from target (55m).
+    ! Major muscle group "chest" has insufficient weekly effective volume (6 sets vs min 10).
+  Strengths:
+    + Push and pull volume is optimally balanced for hypertrophy (ratio: 1.2).
+    + Knee-dominant and hip-dominant lower body work are balanced (ratio: 1).
+    + Low movement redundancy; exercises are functionally complementary.
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+    + Direct arm volume (biceps and triceps) is properly programmed (24 sets).
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    5
+  Total Weekly Sets:    80
+  Push / Pull Ratio:    1.2 (MILD_EXCESS)
+  Squat / Hinge Ratio:  1 (IDEAL)
+  Squat Sets:           7 | Hinge Sets: 7
+  Push Sets:            18 | Pull Sets: 15
+  Core Sets:            6 | Direct Arm Sets: 24
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - triceps     : Direct 15s | Indirect 3s | Effective 18s
+    - chest       : Direct 0s | Indirect 6s | Effective 6s
+    - shoulders   : Direct 9s | Indirect 10.5s | Effective 19.5s
+    - back        : Direct 15s | Indirect 3.5s | Effective 18.5s
+    - biceps      : Direct 9s | Indirect 7.5s | Effective 16.5s
+    - core        : Direct 6s | Indirect 20.5s | Effective 26.5s
+    - legs        : Direct 26s | Indirect 0s | Effective 26s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Upper Body - Push & Pull Strength [Target: ~45m]
+    Focus: Horizontal push, horizontal row, vertical press, and vertical pull
+      1. Diamond Push-Ups                       | 4 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: Advanced Push-Up Progression (Tier 3: 16+ reps): Standard push-ups exceed hypertrophy stimulus. Swapped to Deficit Push-Ups (extended ROM) or Diamond Push-Ups for enhanced triceps and chest recruitment.
+      2. Split-Stance One-Arm Dumbbell Row      | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      3. Standing Dumbbell Shoulder Press       | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      4. Pull-Ups / Chin-Ups                    | 3 sets x 7 reps | rest: 90s | eq: bodyweight
+         Note: Pull-Up Volume Accumulation (Tier 3: 6-9 reps): Working in the 6-8 rep hypertrophy zone with full range of motion. Ready to progress toward double-digit sets.
+      5. Standing Dumbbell Bicep Curl           | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+  Day 2 (Tuesday): Lower Body - Squat, Hinge & Core [Target: ~44m]
+    Focus: Bilateral quad work, hamstring hinges, and midsection stabilization
+      1. Dumbbell Goblet Squat                  | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      2. Dumbbell Romanian Deadlift (RDL)       | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      3. Bulgarian Split Squat                  | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      4. Dumbbell Standing Calf Raise           | 3 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 3 (Wednesday): Upper Body - Hypertrophy & Arms [Target: ~43m]
+    Focus: Pec development, upper back density, lateral delts, and arm volume
+      1. Diamond Push-Ups                       | 4 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: Advanced Push-Up Progression (Tier 3: 16+ reps): Standard push-ups exceed hypertrophy stimulus. Swapped to Deficit Push-Ups (extended ROM) or Diamond Push-Ups for enhanced triceps and chest recruitment.
+      2. Split-Stance One-Arm Dumbbell Row      | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      3. Dumbbell Lateral Raise                 | 3 sets x 16 reps | rest: 45s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      4. Dumbbell Hammer Curl                   | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      5. Overhead Dumbbell Tricep Extension     | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+  Day 4 (Thursday): REST DAY
+  Day 5 (Friday): Lower Body - Posterior Chain & Core Stamina [Target: ~46m]
+    Focus: Hamstring RDLs, quad lunges, and rotational core stamina
+      1. Dumbbell Romanian Deadlift (RDL)       | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      2. Walking Dumbbell Lunges                | 3 sets x 12 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      3. Dumbbell Goblet Squat                  | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      4. Dumbbell Standing Calf Raise           | 3 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      5. Russian Twists                         | 3 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+  Day 6 (Saturday): Upper Body - Push & Pull Strength [Target: ~45m]
+    Focus: Horizontal push, horizontal row, vertical press, and vertical pull
+      1. Diamond Push-Ups                       | 4 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: Advanced Push-Up Progression (Tier 3: 16+ reps): Standard push-ups exceed hypertrophy stimulus. Swapped to Deficit Push-Ups (extended ROM) or Diamond Push-Ups for enhanced triceps and chest recruitment.
+      2. Split-Stance One-Arm Dumbbell Row      | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      3. Standing Dumbbell Shoulder Press       | 3 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+      4. Pull-Ups / Chin-Ups                    | 3 sets x 7 reps | rest: 90s | eq: bodyweight
+         Note: Pull-Up Volume Accumulation (Tier 3: 6-9 reps): Working in the 6-8 rep hypertrophy zone with full range of motion. Ready to progress toward double-digit sets.
+      5. Standing Dumbbell Bicep Curl           | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: INTERMEDIATE prescription calibrated for hypertrophy.
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Horizontal Push] -> Selected: "Push-Ups (Standard / Deficit)"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bodyweight_pushup). Prioritizes mechanical tension and muscle fiber recruitment for hypertrophy. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for intermediate level with target rep bracket [8-15].
+    Top Rejected Candidates:
+      x "Dumbbell Floor Press": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for hypertrophy goal alignment and mechanical tension efficiency.
+      x "Barbell Flat Bench Press": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for hypertrophy goal alignment and mechanical tension efficiency.
+  Slot [Horizontal Pull] -> Selected: "Split-Stance One-Arm Dumbbell Row"
+    Rationale: Fulfills slot "Horizontal Pull" with pattern "horizontal_pull" (split_stance_row). Prioritizes mechanical tension and muscle fiber recruitment for hypertrophy. 100% compliant with dumbbell inventory (6, 8, 10, 12, 14, 16, 20kg), zero bench dependency. Low axial spinal loading with manageable 36h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for intermediate level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "One-Arm Dumbbell Row (Bench-Supported)": Biomechanical suitability: ranked below Split-Stance One-Arm Dumbbell Row for hypertrophy goal alignment and mechanical tension efficiency.
+      x "Dumbbell Bent-Over Row": Biomechanical suitability: ranked below Split-Stance One-Arm Dumbbell Row for hypertrophy goal alignment and mechanical tension efficiency.
+  Slot [Vertical Push] -> Selected: "Standing Dumbbell Shoulder Press"
+    Rationale: Fulfills slot "Vertical Push" with pattern "vertical_push" (overhead_press). Prioritizes mechanical tension and muscle fiber recruitment for hypertrophy. 100% compliant with dumbbell inventory (6, 8, 10, 12, 14, 16, 20kg), zero bench dependency. Balanced 48h recovery profile with moderate axial loading. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for intermediate level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Seated Dumbbell Shoulder Press": Subtype redundancy: session already includes "overhead_press".
+      x "Pike Push-Ups": Biomechanical suitability: ranked below Standing Dumbbell Shoulder Press for hypertrophy goal alignment and mechanical tension efficiency.
+
+
+================================================================================
+SCENARIO D: ADVANCED / 6D / STRENGTH / FULL GYM
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 100/100 | Status: VALID | IsValid: true
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           100/100
+    - Muscle Coverage:            100/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       100/100
+    - Time Budget Compliance:     80/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [PASS]
+    - Metadata Validity:            [PASS]
+  Warnings:
+    ! Monday: Session duration (48m) diverges from target (60m).
+    ! Tuesday: Session duration (48m) diverges from target (60m).
+    ! Thursday: Session duration (48m) diverges from target (60m).
+    ! Friday: Session duration (48m) diverges from target (60m).
+  Strengths:
+    + Push and pull volume is optimally balanced for strength (ratio: 1).
+    + Knee-dominant and hip-dominant lower body work are balanced (ratio: 1).
+    + Low movement redundancy; exercises are functionally complementary.
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+    + Direct arm volume (biceps and triceps) is properly programmed (16 sets).
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    6
+  Total Weekly Sets:    120
+  Push / Pull Ratio:    1 (IDEAL)
+  Squat / Hinge Ratio:  1 (IDEAL)
+  Squat Sets:           8 | Hinge Sets: 8
+  Push Sets:            16 | Pull Sets: 16
+  Core Sets:            24 | Direct Arm Sets: 16
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - chest       : Direct 8s | Indirect 0s | Effective 8s
+    - triceps     : Direct 8s | Indirect 8s | Effective 16s
+    - shoulders   : Direct 24s | Indirect 8s | Effective 32s
+    - core        : Direct 24s | Indirect 20s | Effective 44s
+    - back        : Direct 24s | Indirect 4s | Effective 28s
+    - biceps      : Direct 8s | Indirect 8s | Effective 16s
+    - legs        : Direct 24s | Indirect 4s | Effective 28s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Push - Chest, Shoulders & Triceps [Target: ~48m]
+    Focus: Horizontal pressing, vertical pressing, lateral delts, and tricep lockout
+      1. Barbell Flat Bench Press               | 4 sets x 8 reps | rest: 90s | eq: barbell
+         Note: ADVANCED prescription calibrated for strength.
+      2. Seated Dumbbell Shoulder Press         | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      3. Dumbbell Lateral Raise                 | 4 sets x 16 reps | rest: 45s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      4. Overhead Dumbbell Tricep Extension     | 4 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      5. Standard Forearm Plank                 | 4 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 2 (Tuesday): Pull - Lat Width & Bicep Specialization [Target: ~48m]
+    Focus: Vertical pulling, horizontal rowing, rear delts, and bicep volume
+      1. Pull-Ups / Chin-Ups                    | 4 sets x 10 reps | rest: 90s | eq: bodyweight
+         Note: Pull-Up Mastery (Tier 4: 10+ reps): High volume capacity. Target 10+ strict reps with pause at top, or transition to weighted pull-up progression with belt/dumbbell.
+      2. Dumbbell Bent-Over Row                 | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      3. Bent-Over Rear Delt Flyes              | 4 sets x 15 reps | rest: 45s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      4. Standing Dumbbell Bicep Curl           | 4 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      5. Deadbug (Core Stability)               | 4 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: ADVANCED prescription calibrated for strength.
+  Day 3 (Wednesday): Legs - Squat, Hinge & Calves [Target: ~53m]
+    Focus: Bilateral knee loading, hamstring hinges, lunges, and calf work
+      1. Barbell Back Squat                     | 4 sets x 8 reps | rest: 120s | eq: barbell
+         Note: ADVANCED prescription calibrated for strength.
+      2. Conventional Barbell Deadlift          | 4 sets x 7 reps | rest: 120s | eq: barbell
+         Note: ADVANCED prescription calibrated for strength.
+      3. Bulgarian Split Squat                  | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      4. Dumbbell Standing Calf Raise           | 4 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      5. Standard Forearm Plank                 | 4 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 4 (Thursday): Push - Chest, Shoulders & Triceps [Target: ~48m]
+    Focus: Horizontal pressing, vertical pressing, lateral delts, and tricep lockout
+      1. Barbell Flat Bench Press               | 4 sets x 8 reps | rest: 90s | eq: barbell
+         Note: ADVANCED prescription calibrated for strength.
+      2. Seated Dumbbell Shoulder Press         | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      3. Dumbbell Lateral Raise                 | 4 sets x 16 reps | rest: 45s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      4. Overhead Dumbbell Tricep Extension     | 4 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      5. Standard Forearm Plank                 | 4 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 5 (Friday): Pull - Lat Width & Bicep Specialization [Target: ~48m]
+    Focus: Vertical pulling, horizontal rowing, rear delts, and bicep volume
+      1. Pull-Ups / Chin-Ups                    | 4 sets x 10 reps | rest: 90s | eq: bodyweight
+         Note: Pull-Up Mastery (Tier 4: 10+ reps): High volume capacity. Target 10+ strict reps with pause at top, or transition to weighted pull-up progression with belt/dumbbell.
+      2. Dumbbell Bent-Over Row                 | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      3. Bent-Over Rear Delt Flyes              | 4 sets x 15 reps | rest: 45s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      4. Standing Dumbbell Bicep Curl           | 4 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      5. Deadbug (Core Stability)               | 4 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: ADVANCED prescription calibrated for strength.
+  Day 6 (Saturday): Legs - Squat, Hinge & Calves [Target: ~53m]
+    Focus: Bilateral knee loading, hamstring hinges, lunges, and calf work
+      1. Barbell Back Squat                     | 4 sets x 8 reps | rest: 120s | eq: barbell
+         Note: ADVANCED prescription calibrated for strength.
+      2. Conventional Barbell Deadlift          | 4 sets x 7 reps | rest: 120s | eq: barbell
+         Note: ADVANCED prescription calibrated for strength.
+      3. Bulgarian Split Squat                  | 4 sets x 10 reps | rest: 90s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      4. Dumbbell Standing Calf Raise           | 4 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: ADVANCED prescription calibrated for strength.
+      5. Standard Forearm Plank                 | 4 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Horizontal Push] -> Selected: "Barbell Flat Bench Press"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bench_press). Provides high neurological demand and compound force transfer for strength development. 100% compatible with barbell setup. Low axial spinal loading with manageable 48h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for advanced level with target rep bracket [6-10].
+    Top Rejected Candidates:
+      x "Push-Ups (Standard / Deficit)": Biomechanical suitability: ranked below Barbell Flat Bench Press for strength goal alignment and mechanical tension efficiency.
+      x "Dumbbell Floor Press": Biomechanical suitability: ranked below Barbell Flat Bench Press for strength goal alignment and mechanical tension efficiency.
+  Slot [Vertical Push] -> Selected: "Seated Dumbbell Shoulder Press"
+    Rationale: Fulfills slot "Vertical Push" with pattern "vertical_push" (overhead_press). Provides high neurological demand and compound force transfer for strength development. 100% compliant with dumbbell inventory (10, 14, 18, 24, 30kg), zero bench dependency. Balanced 48h recovery profile with moderate axial loading. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for advanced level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Standing Dumbbell Shoulder Press": Subtype redundancy: session already includes "overhead_press".
+      x "Pike Push-Ups": Biomechanical suitability: ranked below Seated Dumbbell Shoulder Press for strength goal alignment and mechanical tension efficiency.
+  Slot [Lateral Deltoids] -> Selected: "Dumbbell Lateral Raise"
+    Rationale: Fulfills slot "Lateral Deltoids" with pattern "shoulder_abduction" (lateral_deltoid_isolation). Provides high neurological demand and compound force transfer for strength development. 100% compliant with dumbbell inventory (10, 14, 18, 24, 30kg), zero bench dependency. Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for advanced level with target rep bracket [12-16].
+
+
+================================================================================
+SCENARIO E: CAPABILITY - 0 STRICT PULL-UPS
+================================================================================
+  * Case 1: 0 Pull-ups WITH Pull-up Bar:
+    Prescribed Movement: "Negative Pull-Ups (Eccentric)" (3 sets x 3 reps)
+    Coaching Notes: Pull-Up Guidance & Regression (Tier 0: 0 reps + Bar): Step or jump to top bar height, hold chin over bar for 1s, and lower with controlled 5-second eccentric descent to build strict pulling strength.
+    Form Tips: Use a sturdy step or jump to reach the top position safely | Brace core and lower with controlled 5-second descent | Step down, reset, and repeat without continuous dead hanging
+
+  * Case 2: 0 Pull-ups with NO Pull-up Bar (Zero Equipment):
+    Prescribed Movement: "Doorframe Isometric Row / Towel Pull" (3 sets x 10 reps)
+    Coaching Notes: Zero Pulling Hardware: No pull-up bar or dumbbells detected. Programmed Doorframe Isometric Rows to activate lats, rhomboids, and rear delts safely without equipment.
+
+
+================================================================================
+SCENARIO F: CAPABILITY - 2 STRICT PULL-UPS
+================================================================================
+  Prescribed Movement: "Negative Pull-Ups (Eccentric)" (3 sets x 4 reps)
+  Coaching Notes: Pull-Up Guidance & Eccentric Overload (Tier 1: 1-2 reps): Use step/jump to reach the bar, hold chin over bar for 1s, then lower for 5 full seconds. Eccentric overload rapidly triggers neuromuscular lat adaptations.
+  Form Tips: Jump or step up so your chin clears the bar cleanly | Lock scapulae down and tightly brace core | Take a full 5 seconds to lower until arms are completely extended | Step down, reset feet, and repeat without hanging continuously
+
+================================================================================
+SCENARIO G: CAPABILITY - 5 STRICT PULL-UPS
+================================================================================
+  Prescribed Movement: "Pull-Ups / Chin-Ups" (3 sets x 4 reps)
+  Coaching Notes: Pull-Up Guidance & Sub-Maximal Clusters (Tier 2: 3-5 reps): Programmed 3-4 reps leaving 1-2 reps in reserve (RIR). Emphasize full extension at dead hang and chest-to-bar pull without kipping.
+  Form Tips: Start from a dead hang with elbows fully locked and active shoulders | Drive elbows toward your back pockets, chest driving up | Avoid kicking or swinging with lower body | Control the descent; do not drop suddenly onto shoulder joints
+
+================================================================================
+SCENARIO H: CAPABILITY - 10+ STRICT PULL-UPS
+================================================================================
+  Prescribed Movement: "Pull-Ups / Chin-Ups" (4 sets x 10 reps)
+  Coaching Notes: Pull-Up Mastery (Tier 4: 10+ reps): High volume capacity. Target 10+ strict reps with pause at top, or transition to weighted pull-up progression with belt/dumbbell.
+  Form Tips: Dead hang to collarbone touch on each repetition | Pause for 1 second at top contraction | Add 2.5kg - 5kg external load if 12+ strict bodyweight reps can be completed with RPE <= 7
+
+================================================================================
+SCENARIO I: PURE FLOOR BODYWEIGHT (0 EQUIPMENT)
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 91/100 | Status: VALID | IsValid: true
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           85/100
+    - Muscle Coverage:            100/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       75/100
+    - Time Budget Compliance:     65/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [PASS]
+    - Metadata Validity:            [PASS]
+  Warnings:
+    ! Monday: Session duration (28m) diverges from target (40m).
+    ! Tuesday: Session duration (28m) diverges from target (40m).
+    ! Thursday: Significant time variance: 27m vs 40m target.
+    ! Intra-session redundancy on Thursday: duplicate movement subtype "bodyweight_pushup".
+    ! Friday: Session duration (28m) diverges from target (40m).
+    ! Mild Push/Pull excess: ratio is 1.25 (ideal: 0.85 - 1.15).
+  Strengths:
+    + Knee-dominant and hip-dominant lower body work are balanced (ratio: 1).
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    4
+  Total Weekly Sets:    60
+  Push / Pull Ratio:    1.25 (MILD_EXCESS)
+  Squat / Hinge Ratio:  1 (IDEAL)
+  Squat Sets:           9 | Hinge Sets: 9
+  Push Sets:            15 | Pull Sets: 12
+  Core Sets:            12 | Direct Arm Sets: 0
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - legs        : Direct 21s | Indirect 0s | Effective 21s
+    - core        : Direct 12s | Indirect 22.5s | Effective 34.5s
+    - chest       : Direct 15s | Indirect 0s | Effective 15s
+    - triceps     : Direct 0s | Indirect 7.5s | Effective 7.5s
+    - shoulders   : Direct 0s | Indirect 9s | Effective 9s
+    - back        : Direct 12s | Indirect 0s | Effective 12s
+    - biceps      : Direct 0s | Indirect 4.5s | Effective 4.5s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Full Body - Compound Foundation [Target: ~28m]
+    Focus: Primary multi-joint push, pull, squat, and core stability
+      1. Bodyweight Air Squat                   | 3 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      3. Inverted Bodyweight Row                | 3 sets x 8 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Bodyweight Glute Bridge                | 3 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 2 (Tuesday): Full Body - Posterior Chain & Pull Focus [Target: ~28m]
+    Focus: Back breadth, hamstring hinges, overhead pressing, and arms
+      1. Single-Leg Bodyweight Romanian Deadlift | 3 sets x 8 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Doorframe Isometric Row / Towel Pull   | 3 sets x 8 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      4. Bodyweight Reverse Lunges              | 3 sets x 10 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Deadbug (Core Stability)               | 3 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 3 (Wednesday): REST DAY
+  Day 4 (Thursday): Full Body - Athletic Hypertrophy & Arms [Target: ~27m]
+    Focus: Squat density, chest pressing, back rowing, and direct arm work
+      1. Bodyweight Air Squat                   | 3 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      3. Prone YTWL Scapular Raise              | 3 sets x 15 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 5 (Friday): Full Body - Compound Foundation [Target: ~28m]
+    Focus: Primary multi-joint push, pull, squat, and core stability
+      1. Bodyweight Air Squat                   | 3 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      3. Inverted Bodyweight Row                | 3 sets x 8 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Bodyweight Glute Bridge                | 3 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 6 (Saturday): REST DAY
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Knee Dominant] -> Selected: "Bodyweight Air Squat"
+    Rationale: Fulfills slot "Knee Dominant" with pattern "squat" (bilateral_squat). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [12-20].
+  Slot [Horizontal Push] -> Selected: "Push-Ups (Standard / Deficit)"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bodyweight_pushup). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-15].
+    Top Rejected Candidates:
+      x "Diamond Push-Ups": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+      x "Incline Push-Ups (Hands Elevated)": Subtype redundancy: session already includes "bodyweight_pushup".
+  Slot [Horizontal Pull] -> Selected: "Inverted Bodyweight Row"
+    Rationale: Fulfills slot "Horizontal Pull" with pattern "horizontal_pull" (inverted_row). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Doorframe Isometric Row / Towel Pull": Biomechanical suitability: ranked below Inverted Bodyweight Row for general_fitness goal alignment and mechanical tension efficiency.
+      x "Prone YTWL Scapular Raise": Biomechanical suitability: ranked below Inverted Bodyweight Row for general_fitness goal alignment and mechanical tension efficiency.
+
+
+================================================================================
+SCENARIO J: DUMBBELLS ONLY (NO BENCH, NO BAR)
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 88/100 | Status: VALID | IsValid: true
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           50/100
+    - Muscle Coverage:            100/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       100/100
+    - Time Budget Compliance:     26/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [PASS]
+    - Metadata Validity:            [PASS]
+  Warnings:
+    ! Monday: Significant time variance: 29m vs 45m target.
+    ! Tuesday: Significant time variance: 30m vs 45m target.
+    ! Thursday: Significant time variance: 32m vs 45m target.
+    ! Friday: Significant time variance: 30m vs 45m target.
+    ! Severe Push/Pull imbalance: ratio is 1.83 (maximum acceptable: 1.3). Excessive pushing.
+    ! Squat to Hinge ratio (2.67) falls outside ideal target (0.6 - 1.8).
+  Strengths:
+    + Low movement redundancy; exercises are functionally complementary.
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+    + Direct arm volume (biceps and triceps) is properly programmed (6 sets).
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    4
+  Total Weekly Sets:    67
+  Push / Pull Ratio:    1.83 (SEVERE_EXCESS)
+  Squat / Hinge Ratio:  2.67 (IMBALANCED)
+  Squat Sets:           8 | Hinge Sets: 3
+  Push Sets:            11 | Pull Sets: 6
+  Core Sets:            18 | Direct Arm Sets: 6
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - chest       : Direct 7s | Indirect 3.5s | Effective 10.5s
+    - triceps     : Direct 3s | Indirect 7s | Effective 10s
+    - shoulders   : Direct 13s | Indirect 9s | Effective 22s
+    - core        : Direct 18s | Indirect 14s | Effective 32s
+    - back        : Direct 6s | Indirect 1.5s | Effective 7.5s
+    - biceps      : Direct 3s | Indirect 1.5s | Effective 4.5s
+    - legs        : Direct 17s | Indirect 2s | Effective 19s
+    - forearms    : Direct 0s | Indirect 2s | Effective 2s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Home Dumbbell - Upper Body Push & Pull [Target: ~29m]
+    Focus: Horizontal and vertical torso mechanics with core stabilization
+      1. Push-Ups (Standard / Deficit)          | 3 sets x 12 reps | rest: 60s | eq: bodyweight
+         Note: Push-Up Hypertrophy Zone (Tier 2: 9-15 reps): Working in the 10-14 rep range. Focus on deep pectoral stretch at bottom and explosive concentric drive.
+      2. Split-Stance One-Arm Dumbbell Row      | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Dumbbell Pullover                      | 3 sets x 10 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Dumbbell Lateral Raise                 | 3 sets x 16 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 2 (Tuesday): Home Dumbbell - Lower Body Resilience & Core [Target: ~30m]
+    Focus: Bilateral knee loading, hip hinge mechanics, and core bracing
+      1. Dumbbell Goblet Squat                  | 4 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Dumbbell Romanian Deadlift (RDL)       | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Dumbbell Reverse Lunges                | 3 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Dumbbell Standing Calf Raise           | 3 sets x 20 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Deadbug (Core Stability)               | 3 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 3 (Wednesday): REST DAY
+  Day 4 (Thursday): Home Dumbbell - Delts, Arms & Hypertrophy [Target: ~32m]
+    Focus: Vertical deltoid pressing, lateral raises, biceps, and triceps isolation
+      1. Standing Dumbbell Shoulder Press       | 4 sets x 8 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Dumbbell Lateral Raise                 | 3 sets x 16 reps | rest: 75s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Standing Dumbbell Bicep Curl           | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Overhead Dumbbell Tricep Extension     | 3 sets x 14 reps | rest: 60s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Bent-Over Rear Delt Flyes              | 3 sets x 15 reps | rest: 45s | eq: dumbbell
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 5 (Friday): Home Dumbbell - Compound Conditioning & Core [Target: ~30m]
+    Focus: High-density multi-joint circuit, metabolic conditioning, and loaded carries • High-Density Circuit Protocol: 4 rounds of 5 stations. Perform each movement continuously for 40s, transition for 20s. Take 75s recovery between rounds.
+    Conditioning Protocol: 4 rounds | 40s work / 20s rest
+      1. Dumbbell Goblet Squat                  | 4 sets x 40s | rest: 20s | eq: dumbbell
+         Note: Station 1 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      2. Push-Ups (Standard / Deficit)          | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 2 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      3. Mountain Climbers (Core & Conditioning) | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 3 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      4. Standard Forearm Plank                 | 4 sets x 40s | rest: 20s | eq: bodyweight
+         Note: Station 4 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+      5. Dumbbell Farmer's Walk / Loaded Carry  | 4 sets x 40s | rest: 20s | eq: dumbbell
+         Note: Station 5 (4 Rounds): 40 seconds continuous time-based work / 20 seconds transition rest.
+  Day 6 (Saturday): REST DAY
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Horizontal Push] -> Selected: "Push-Ups (Standard / Deficit)"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bodyweight_pushup). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-15].
+    Top Rejected Candidates:
+      x "Dumbbell Floor Press": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+      x "Diamond Push-Ups": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+  Slot [Horizontal Pull] -> Selected: "Split-Stance One-Arm Dumbbell Row"
+    Rationale: Fulfills slot "Horizontal Pull" with pattern "horizontal_pull" (split_stance_row). Maintains functional movement integrity and balanced multi-joint development. 100% compliant with dumbbell inventory (5, 7.5, 10kg), zero bench dependency. Low axial spinal loading with manageable 36h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Dumbbell Bent-Over Row": Biomechanical suitability: ranked below Split-Stance One-Arm Dumbbell Row for general_fitness goal alignment and mechanical tension efficiency.
+      x "Inverted Bodyweight Row": Biomechanical suitability: ranked below Split-Stance One-Arm Dumbbell Row for general_fitness goal alignment and mechanical tension efficiency.
+  Slot [Vertical Pattern] -> Selected: "Dumbbell Pullover"
+    Rationale: Fulfills slot "Vertical Pattern" with pattern "vertical_pull" (lat_pullover). Maintains functional movement integrity and balanced multi-joint development. 100% compliant with dumbbell inventory (5, 7.5, 10kg), zero bench dependency. Low axial spinal loading with manageable 36h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [10-15].
+    Top Rejected Candidates:
+      x "Standing Dumbbell Shoulder Press": Biomechanical suitability: ranked below Dumbbell Pullover for general_fitness goal alignment and mechanical tension efficiency.
+      x "Pike Push-Ups": Biomechanical suitability: ranked below Dumbbell Pullover for general_fitness goal alignment and mechanical tension efficiency.
+
+
+================================================================================
+SCENARIO K: PROGRESSION CEILING AT MAX DUMBBELL LOAD
+================================================================================
+  Exercise: Dumbbell Floor Press (No Bench Required)
+  State: Prescribed 10kg (Inventory Max) for 15 reps (Top of Bracket). Completed all sets cleanly.
+  Adaptation Action: progression_advance
+  New Target: 10kg x 8 reps
+  Biomechanical Variation Advance: "1.5-Rep Dumbbell Floor Press (Pause Accentuated)"
+  Reason: Max dumbbell weight (10kg) and rep ceiling reached for "Dumbbell Floor Press (No Bench Required)". Advanced to harder biomechanical movement: "1.5-Rep Dumbbell Floor Press (Pause Accentuated)" at reset 8 reps.
+
+================================================================================
+SCENARIO L: IMPOSSIBLE MOVEMENT REQUIREMENT (ZERO DUMBBELLS IN HOME DUMBBELL SPLIT)
+================================================================================
+
+[1. QUALITY SCORE & STATUS]
+  Overall Score: 40/100 | Status: NEEDS_REPAIR | IsValid: false
+  Component Scores:
+    - Equipment Compliance:      100/100
+    - Movement Balance:           70/100
+    - Muscle Coverage:            100/100
+    - Recovery / Fatigue:         100/100
+    - Redundancy Integrity:       50/100
+    - Time Budget Compliance:     20/100
+    - Experience Suitability:     95/100
+
+[2. CRITICAL CONSTRAINT GATES]
+    - Equipment Compliance:         [PASS]
+    - No Impossible Exercises:      [PASS]
+    - No Severe Recovery Conflict:  [PASS]
+    - Prescription Validity:        [PASS]
+    - Duration Compliance:          [PASS]
+    - Intent Fulfillment:           [FAIL]
+    - Metadata Validity:            [PASS]
+  Critical Violations:
+    * [CRITICAL] Unresolved movement slot on Friday: Blueprint required [Lateral Deltoids, Posterior Deltoids / Scapular], but no physically compatible exercise exists in user inventory.
+  Warnings:
+    ! Monday: Significant time variance: 28m vs 45m target.
+    ! Intra-session redundancy on Monday: duplicate movement subtype "bodyweight_pushup".
+    ! Wednesday: Significant time variance: 27m vs 45m target.
+    ! Friday: Significant time variance: 19m vs 45m target.
+    ! Intra-session redundancy on Friday: duplicate movement subtype "bodyweight_pushup".
+    ! Severe Push/Pull imbalance: ratio is 1.33 (maximum acceptable: 1.3). Excessive pushing.
+  Strengths:
+    + Knee-dominant and hip-dominant lower body work are balanced (ratio: 1.33).
+    + 100% physically compliant with user hardware inventory (no bench assumptions).
+    + Recovery between muscle groups and movement patterns is well spaced.
+
+[3. WEEKLY BALANCE METRICS]
+  Total Active Days:    3
+  Total Weekly Sets:    37
+  Push / Pull Ratio:    1.33 (SEVERE_EXCESS)
+  Squat / Hinge Ratio:  1.33 (IDEAL)
+  Squat Sets:           4 | Hinge Sets: 3
+  Push Sets:            12 | Pull Sets: 9
+  Core Sets:            6 | Direct Arm Sets: 0
+  Fractional Muscle Volume Breakdown (Direct / Indirect / Effective):
+    - chest       : Direct 12s | Indirect 0s | Effective 12s
+    - triceps     : Direct 0s | Indirect 6s | Effective 6s
+    - shoulders   : Direct 0s | Indirect 7.5s | Effective 7.5s
+    - core        : Direct 6s | Indirect 14s | Effective 20s
+    - back        : Direct 9s | Indirect 0s | Effective 9s
+    - biceps      : Direct 0s | Indirect 3s | Effective 3s
+    - legs        : Direct 10s | Indirect 0s | Effective 10s
+
+[4. FULL GENERATED SCHEDULE]
+  Day 1 (Monday): Home Dumbbell - Upper Body Push & Pull [Target: ~28m]
+    Focus: Horizontal and vertical torso mechanics with core stabilization
+      1. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      2. Inverted Bodyweight Row                | 3 sets x 8 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      4. Prone YTWL Scapular Raise              | 3 sets x 15 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      5. Standard Forearm Plank                 | 3 sets x 35s | rest: 45s | eq: bodyweight
+         Note: Time-based hold: maintain solid abdominal bracing for 35 seconds per set.
+  Day 2 (Tuesday): REST DAY
+  Day 3 (Wednesday): Home Dumbbell - Lower Body Resilience & Core [Target: ~27m]
+    Focus: Bilateral knee loading, hip hinge mechanics, and core bracing
+      1. Bodyweight Air Squat                   | 4 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      2. Bodyweight Glute Bridge                | 3 sets x 12 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Bodyweight Reverse Lunges              | 3 sets x 10 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      4. Deadbug (Core Stability)               | 3 sets x 14 reps | rest: 45s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+  Day 4 (Thursday): REST DAY
+  Day 5 (Friday): Home Dumbbell - Delts, Arms & Hypertrophy [Target: ~19m]
+    Focus: Vertical deltoid pressing, lateral raises, biceps, and triceps isolation
+    *** UNRESOLVED SLOTS: Lateral Deltoids, Posterior Deltoids / Scapular ***
+      1. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+      2. Doorframe Isometric Row / Towel Pull   | 3 sets x 8 reps | rest: 75s | eq: bodyweight
+         Note: BEGINNER prescription calibrated for general fitness.
+      3. Push-Ups (Standard / Deficit)          | 3 sets x 6 reps | rest: 75s | eq: bodyweight
+         Note: Push-Up Standard Foundation (Tier 1: 4-8 reps): 3 sets of 5-7 reps focusing on strict chest-to-floor depth and neutral wrist alignment.
+  Day 6 (Saturday): REST DAY
+  Day 7 (Sunday): REST DAY
+
+[5. SAMPLE SELECTION RATIONALES & REJECTED CANDIDATES]
+  Slot [Horizontal Push] -> Selected: "Push-Ups (Standard / Deficit)"
+    Rationale: Fulfills slot "Horizontal Push" with pattern "horizontal_push" (bodyweight_pushup). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-15].
+    Top Rejected Candidates:
+      x "Diamond Push-Ups": Biomechanical suitability: ranked below Push-Ups (Standard / Deficit) for general_fitness goal alignment and mechanical tension efficiency.
+      x "Incline Push-Ups (Hands Elevated)": Subtype redundancy: session already includes "bodyweight_pushup".
+  Slot [Horizontal Pull] -> Selected: "Inverted Bodyweight Row"
+    Rationale: Fulfills slot "Horizontal Pull" with pattern "horizontal_pull" (inverted_row). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 24h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [8-12].
+    Top Rejected Candidates:
+      x "Doorframe Isometric Row / Towel Pull": Biomechanical suitability: ranked below Inverted Bodyweight Row for general_fitness goal alignment and mechanical tension efficiency.
+      x "Prone YTWL Scapular Raise": Biomechanical suitability: ranked below Inverted Bodyweight Row for general_fitness goal alignment and mechanical tension efficiency.
+  Slot [Vertical Pattern] -> Selected: "Pike Push-Ups"
+    Rationale: Fulfills slot "Vertical Pattern" with pattern "vertical_push" (bodyweight_overhead). Maintains functional movement integrity and balanced multi-joint development. Fully compliant with bodyweight inventory (pullupBarRequired: no, benchRequired: false). Low axial spinal loading with manageable 36h recovery demand. Zero movement subtype collision with current workout; adds distinct kinetic pathway. Calibrated for beginner level with target rep bracket [6-10].
+
+
+================================================================================
+SCENARIO M: CONSECUTIVE LOWER-BODY FATIGUE DIFFERENTIATION
+================================================================================
+  * Case 1 (Moderate Squat Day 1 -> Light Calves/Core Day 2):
+    Critical Gate (noSevereRecoveryConflict): [PASS]
+    Status: VALID | Score: 84/100
+
+  * Case 2 (Heavy Barbell Deadlift Day 1 -> Heavy Barbell Squat Day 2):
+    Critical Gate (noSevereRecoveryConflict): [FAIL]
+    Status: NEEDS_REPAIR | Score: 40/100
+    Violations Flagged: Severe recovery conflict on Tuesday: Heavy axial lift "Barbell Back Squat" scheduled with 72h residual spinal fatigue remaining from prior session.
+
+================================================================================
+SCENARIO N: 30-MINUTE CONSTRAINED SESSION INTENT PRESERVATION
+================================================================================
+  Time Budget Target: 30 minutes | Mode: compact_efficient
+  Estimated Total Time: 18 minutes (Within budget: true)
+  Warm-up: 5m | Active Lifting: 13m
+  Preserved Movements (5):
+    1. Push-Ups (Standard / Deficit)       | 2 sets | rest: 60s | mechanic: compound
+    2. Split-Stance One-Arm Dumbbell Row   | 2 sets | rest: 60s | mechanic: compound
+    3. Dumbbell Lateral Raise              | 2 sets | rest: 45s | mechanic: isolation
+    4. Dumbbell Goblet Squat               | 2 sets | rest: 60s | mechanic: compound
+    5. Standard Forearm Plank              | 2 sets | rest: 45s | mechanic: isolation
+
+
+########################################################################
+INSPECTION COMPLETED FOR ALL 14 AUDIT SCENARIOS
+########################################################################

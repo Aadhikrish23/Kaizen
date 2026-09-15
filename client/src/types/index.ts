@@ -278,6 +278,7 @@ export interface PlannedDay {
   estimatedDurationMinutes: number;
   exercises: PlannedExercise[];
   conditioningProtocol?: ConditioningProtocolData;
+  unresolvedSlots?: string[];
 }
 
 export interface DailyAdaptation {
