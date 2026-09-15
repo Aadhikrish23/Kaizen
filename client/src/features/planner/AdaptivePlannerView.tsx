@@ -299,7 +299,9 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             )}
             <Badge variant="neutral" size="sm">
               {plan?.preferences?.daysPerWeek || schedule.filter(d => !d.isRestDay).length || 3} Days / Week
+              <span className="sr-only"> ({plan?.preferences?.daysPerWeek || schedule.filter(d => !d.isRestDay).length || 3} training days/week)</span>
             </Badge>
+
           </div>
           <p className="text-xs text-kaizen-text-secondary mt-1">
             Weekly split matched to your equipment inventory. Customize days or assemble your own routines.
@@ -360,7 +362,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
           title="Plan Generator & Presets"
           subtitle="Generate a structured weekly split based on standard training science"
         >
-          <span className="sr-only">Personalized Training Preferences</span>
+          <h3 className="sr-only">Personalized Training Preferences</h3>
           <div className="space-y-4 pt-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div>
@@ -377,7 +379,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                           : 'bg-kaizen-bg border border-kaizen-border text-kaizen-muted hover:text-white'
                       }`}
                     >
-                      {num}d
+                      {num}d<span className="sr-only"> {num} days</span>
                     </button>
                   ))}
                 </div>
@@ -440,7 +442,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                   { id: 'full_body', label: 'Full Body' },
                   { id: 'upper_lower', label: 'Upper / Lower' },
                   { id: 'ppl', label: 'Push Pull Legs' },
-                  { id: 'home_dumbbell', label: 'Home Dumbbells' },
+                  { id: 'home_dumbbell', label: 'Home Dumbbell' },
                 ].map((s) => (
                   <button
                     key={s.id}
@@ -457,6 +459,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                 ))}
               </div>
             </div>
+
 
             <div className="flex justify-end pt-2 border-t border-kaizen-border/60">
               <Button
@@ -497,7 +500,8 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-white font-mono">
-                    {day.dayName.slice(0, 3).toUpperCase()}
+                    {day.dayName.slice(0, 3).toUpperCase()} <span className="text-[10px] text-kaizen-subtle font-normal">D{day.dayNumber}</span>
+                    <span className="sr-only">Day {day.dayNumber}</span>
                   </span>
                   {day.isRestDay ? (
                     <span className="text-[10px] font-mono text-kaizen-subtle">Rest</span>
@@ -765,9 +769,9 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-3 mt-1 text-xs font-mono text-kaizen-text-secondary">
+                          <div className="flex items-center gap-3 mt-1 text-xs font-mono text-kaizen-text-secondary flex-wrap">
                             <span>
-                              Target: <strong className="text-white">{ex.targetSets} sets × {ex.targetReps} reps</strong>
+                              Target: <strong className="text-white">{ex.targetSets} sets × {ex.repUnit === 'seconds' || ex.notes?.toLowerCase().includes('time-based') ? `${ex.targetReps}s` : `${ex.targetReps} reps`}</strong>
                             </span>
                             {ex.suggestedWeightKg > 0 && (
                               <>
@@ -777,7 +781,17 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                                 </span>
                               </>
                             )}
+                            <span>•</span>
+                            <span>
+                              Rest: <strong className="text-kaizen-muted">{ex.restSeconds || 60}s</strong>
+                            </span>
                           </div>
+                          {ex.notes && (ex.notes.includes('Guidance') || ex.notes.includes('Circuit')) && (
+                            <p className="text-[11px] text-emerald-400/90 font-mono mt-1">
+                              💡 {ex.notes}
+                            </p>
+                          )}
+
                         </div>
                       </div>
 

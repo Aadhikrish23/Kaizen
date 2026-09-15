@@ -278,8 +278,10 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
     const exerciseRows = (day.exercises || []).map((ex: PlannedExercise, exIdx: number) => {
       const weightDisplay =
         ex.suggestedWeightKg && ex.suggestedWeightKg > 0 ? `${ex.suggestedWeightKg} kg` : 'Bodyweight';
-      const setsReps = `${ex.targetSets} x ${ex.targetReps}`;
-      const rest = `${ex.restSeconds}s`;
+      const isTimeBased = ex.repUnit === 'seconds' || (ex.notes && ex.notes.toLowerCase().includes('time-based'));
+      const setsReps = isTimeBased ? `${ex.targetSets} x ${ex.targetReps}s` : `${ex.targetSets} x ${ex.targetReps}`;
+      const rest = `${ex.restSeconds || 60}s`;
+
 
       const formTipsText =
         ex.formTips && ex.formTips.length > 0

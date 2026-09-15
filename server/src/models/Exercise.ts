@@ -12,6 +12,22 @@ export interface IExercise extends Document {
   videoUrl?: string;
   formTips?: string[];
   difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  movementPattern?: string;
+  movementSubtype?: string;
+  mechanic?: 'compound' | 'isolation';
+  laterality?: 'bilateral' | 'unilateral';
+  axialLoading?: string;
+  stabilityDemand?: string;
+  fatigueCost?: number;
+  recoveryDemandHours?: number;
+  isTimeBased?: boolean;
+  defaultTimeSeconds?: number;
+  benchRequired?: boolean;
+  pullupBarRequired?: boolean;
+  pushupHandlesCompatible?: boolean;
+  progressionMethod?: string;
+  regressions?: string[];
+  progressions?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +52,23 @@ const ExerciseSchema: Schema = new Schema({
   imageUrl: { type: String },
   videoUrl: { type: String },
   formTips: [{ type: String }],
-  difficulty: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'intermediate' }
+  difficulty: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'intermediate' },
+  movementPattern: { type: String },
+  movementSubtype: { type: String },
+  mechanic: { type: String, enum: ['compound', 'isolation'] },
+  laterality: { type: String, enum: ['bilateral', 'unilateral'] },
+  axialLoading: { type: String },
+  stabilityDemand: { type: String },
+  fatigueCost: { type: Number, default: 2 },
+  recoveryDemandHours: { type: Number, default: 36 },
+  isTimeBased: { type: Boolean, default: false },
+  defaultTimeSeconds: { type: Number },
+  benchRequired: { type: Boolean, default: false },
+  pullupBarRequired: { type: Boolean, default: false },
+  pushupHandlesCompatible: { type: Boolean, default: false },
+  progressionMethod: { type: String },
+  regressions: [{ type: String }],
+  progressions: [{ type: String }]
 }, {
   timestamps: true
 });
@@ -44,3 +76,4 @@ const ExerciseSchema: Schema = new Schema({
 ExerciseSchema.index({ name: 1, userId: 1 });
 
 export default mongoose.model<IExercise>('Exercise', ExerciseSchema);
+

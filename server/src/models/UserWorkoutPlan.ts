@@ -12,6 +12,12 @@ export interface IPlannedExercise {
   videoUrl?: string;
   formTips?: string[];
   notes?: string;
+  movementPattern?: string;
+  repUnit?: 'reps' | 'seconds';
+  minReps?: number;
+  maxReps?: number;
+  rpeTarget?: number;
+  isConditioning?: boolean;
 }
 
 export interface IPlannedDay {
@@ -69,9 +75,16 @@ const PlannedExerciseSchema = new Schema(
     videoUrl: { type: String },
     formTips: [{ type: String }],
     notes: { type: String },
+    movementPattern: { type: String },
+    repUnit: { type: String, enum: ['reps', 'seconds'], default: 'reps' },
+    minReps: { type: Number },
+    maxReps: { type: Number },
+    rpeTarget: { type: Number },
+    isConditioning: { type: Boolean, default: false },
   },
   { _id: false }
 );
+
 
 const PlannedDaySchema = new Schema(
   {

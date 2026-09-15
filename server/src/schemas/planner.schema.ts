@@ -45,7 +45,14 @@ export const plannedExerciseSchema = z.object({
   videoUrl: z.string().optional(),
   formTips: z.array(z.string()).optional(),
   notes: z.string().optional(),
+  movementPattern: z.string().optional(),
+  repUnit: z.enum(['reps', 'seconds']).optional(),
+  minReps: z.number().optional(),
+  maxReps: z.number().optional(),
+  rpeTarget: z.number().optional(),
+  isConditioning: z.boolean().optional(),
 });
+
 
 export const plannedDaySchema = z.object({
   dayNumber: z.number().int().min(1).max(7),

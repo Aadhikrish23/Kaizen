@@ -252,6 +252,12 @@ export interface PlannedExercise {
   videoUrl?: string;
   formTips?: string[];
   notes?: string;
+  movementPattern?: string;
+  repUnit?: 'reps' | 'seconds';
+  minReps?: number;
+  maxReps?: number;
+  rpeTarget?: number;
+  isConditioning?: boolean;
 }
 
 export interface PlannedDay {
