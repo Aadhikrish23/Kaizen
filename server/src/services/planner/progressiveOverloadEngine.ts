@@ -1,4 +1,5 @@
 import { UserEquipmentProfile } from './inventoryEvaluator';
+import { COMPREHENSIVE_EXERCISE_CATALOG } from './exerciseCatalog';
 
 export interface PerformanceSetData {
   reps: number;
@@ -23,10 +24,24 @@ export interface AdaptationRecommendation {
   newTargetReps: number;
   reason: string;
   swappedExerciseName?: string;
+  tempoCues?: string;
 }
 
 /**
- * Evaluate single exercise performance under the double progression rule
+ * Progression variation ladder mappings when equipment limits are reached
+ */
+const BIOMECHANICAL_VARIATION_LADDER: Record<string, string> = {
+  'Push-Ups (Standard / Deficit)': 'Deficit Push-Ups',
+  'Standard Floor Push-Up': 'Push-Up (with Handles / Push-up Bars)',
+  'Push-Up (with Handles / Push-up Bars)': 'Deficit Push-Up (with Handles)',
+  'Dumbbell Floor Press (No Bench Required)': '1.5-Rep Dumbbell Floor Press (Pause Accentuated)',
+  'Dumbbell Goblet Squat': '1.5-Rep Dumbbell Goblet Squat (Pause at Bottom)',
+  'Dumbbell Romanian Deadlift (RDL)': 'Single-Leg Romanian Deadlift (Unilateral Balance)',
+  'Pull-Up (Bodyweight)': 'Pull-Up (3s Eccentric Negative Hold)',
+};
+
+/**
+ * Evaluate single exercise performance under the double progression rule with ceiling safeguards
  */
 export const evaluateDoubleProgression = (
   evalData: ExercisePerformanceEvaluation,
@@ -66,7 +81,7 @@ export const evaluateDoubleProgression = (
       const nextWeight = sortedWeights.find(w => w > currentPrescribedWeightKg);
 
       if (nextWeight !== undefined) {
-        // Step up load to next available dumbbell increment!
+        // Step up load to next available dumbbell increment
         return {
           type: 'weight_increase',
           newWeightKg: nextWeight,
@@ -75,21 +90,57 @@ export const evaluateDoubleProgression = (
         };
       } else {
         // Max available dumbbell reached in user's inventory!
-        // Progress via reps or tempo/volume instead of demanding an unavailable dumbbell
+        // Check if rep ceiling (15 reps) has been reached
+        if (currentPrescribedReps >= 14 || maxReps >= 15) {
+          // Check for harder biomechanical variation ladder
+          const harderVariation = BIOMECHANICAL_VARIATION_LADDER[exerciseName];
+          if (harderVariation) {
+            return {
+              type: 'progression_advance',
+              newWeightKg: currentPrescribedWeightKg,
+              newTargetReps: minReps,
+              swappedExerciseName: harderVariation,
+              reason: `Max dumbbell weight (${currentPrescribedWeightKg}kg) and rep ceiling reached for "${exerciseName}". Advanced to harder biomechanical movement: "${harderVariation}" at reset ${minReps} reps.`,
+            };
+          }
+
+          // Apply Tempo Pause Progression rather than infinite rep inflation
+          return {
+            type: 'progression_advance',
+            newWeightKg: currentPrescribedWeightKg,
+            newTargetReps: minReps,
+            tempoCues: '4-1-1-0 (4s eccentric descent, 1s isometric stretch pause)',
+            reason: `Max dumbbell weight (${currentPrescribedWeightKg}kg) and rep ceiling (15 reps) reached on "${exerciseName}". Shifted progression axis to 4-1-1-0 tempo control to maximize hypertrophy without requiring heavier dumbbells.`,
+          };
+        }
+
+        // Density / rep progression step (up to ceiling of 15)
+        const nextRepTarget = Math.min(maxReps + 2, 15);
         return {
           type: 'volume_adjustment',
           newWeightKg: currentPrescribedWeightKg,
-          newTargetReps: Math.min(maxReps + 3, 20),
-          reason: `Target rep ceiling achieved, but user has reached maximum dumbbell weight in inventory (${currentPrescribedWeightKg}kg). Applied density progression: increased rep target to ${maxReps + 3} reps and encouraged slower eccentric tempo.`,
+          newTargetReps: nextRepTarget,
+          reason: `Target rep ceiling achieved, but user has reached maximum dumbbell weight in inventory (${currentPrescribedWeightKg}kg). Applied density progression: increased rep target to ${nextRepTarget} reps with controlled tempo.`,
         };
       }
     } else if (equipment === 'bodyweight') {
-      // Bodyweight progression: increase rep target or suggest progression variation
+      // Bodyweight progression: check if ready to advance to harder variation
+      const harderVariation = BIOMECHANICAL_VARIATION_LADDER[exerciseName];
+      if (harderVariation && (currentPrescribedReps >= 14 || maxReps >= 15)) {
+        return {
+          type: 'progression_advance',
+          newWeightKg: 0,
+          newTargetReps: minReps,
+          swappedExerciseName: harderVariation,
+          reason: `Bodyweight rep ceiling achieved on "${exerciseName}". Advanced to harder movement variation: "${harderVariation}".`,
+        };
+      }
+
       return {
         type: 'progression_advance',
         newWeightKg: 0,
-        newTargetReps: maxReps + 2,
-        reason: `Bodyweight competency achieved across all sets (${maxReps}+ reps). Advanced volume target and prepared for harder movement variation.`,
+        newTargetReps: Math.min(maxReps + 2, 16),
+        reason: `Bodyweight competency achieved across all sets (${maxReps}+ reps). Advanced volume target to ${Math.min(maxReps + 2, 16)} reps.`,
       };
     } else if (equipment === 'barbell') {
       const increment = 2.5;

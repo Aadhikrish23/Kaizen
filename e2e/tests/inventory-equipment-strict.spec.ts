@@ -105,12 +105,12 @@ test.describe('Strict Inventory Equipment Matching & Exercise Swap Verification'
     await expect(page.getByRole('heading', { name: 'Adaptive Workout Planner' })).toBeVisible({ timeout: 20000 });
 
     // Open Preferences and generate Home Dumbbells split
-    const tuneBtn = page.getByRole('button', { name: 'Tune Preferences' });
+    const tuneBtn = page.locator('button:has-text("Plan Settings"), button:has-text("Tune Preferences")').first();
     await tuneBtn.click();
     await expect(page.locator('text=Personalized Training Preferences')).toBeVisible();
 
-    await page.locator('button:has-text("Home Dumbbells")').click();
-    await page.getByRole('button', { name: 'Generate Personalized Plan' }).click();
+    await page.locator('button:has-text("Home Dumbbell")').first().click();
+    await page.locator('button:has-text("Regenerate Plan"), button:has-text("Generate")').first().click();
     await page.waitForTimeout(2000);
 
     await page.screenshot({ path: path.join(screenshotsDir, '15b_strict_inventory_planner.png') });

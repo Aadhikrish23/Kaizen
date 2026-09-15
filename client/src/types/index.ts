@@ -260,6 +260,14 @@ export interface PlannedExercise {
   isConditioning?: boolean;
 }
 
+export interface ConditioningProtocolData {
+  rounds: number;
+  workSeconds: number;
+  restSeconds: number;
+  roundRestSeconds: number;
+  structureType: 'circuit' | 'interval' | 'density';
+}
+
 export interface PlannedDay {
   dayNumber: number;
   dayName: string;
@@ -269,6 +277,7 @@ export interface PlannedDay {
   targetMuscles: string[];
   estimatedDurationMinutes: number;
   exercises: PlannedExercise[];
+  conditioningProtocol?: ConditioningProtocolData;
 }
 
 export interface DailyAdaptation {

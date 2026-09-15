@@ -4,6 +4,7 @@ export const configurePlanSchema = z.object({
   body: z.object({
     daysPerWeek: z.number().int().min(2).max(6).default(3),
     sessionDurationMinutes: z.number().int().min(20).max(120).default(45),
+    durationPolicy: z.enum(['approximate_target', 'hard_ceiling', 'compact_efficient']).default('approximate_target'),
     splitStyle: z.enum(['full_body', 'upper_lower', 'ppl', 'home_dumbbell']).default('full_body'),
     experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']).default('beginner'),
     targetFocus: z.enum(['hypertrophy', 'strength', 'fat_loss', 'general_fitness']).default('general_fitness'),
@@ -54,6 +55,14 @@ export const plannedExerciseSchema = z.object({
 });
 
 
+export const conditioningProtocolSchema = z.object({
+  rounds: z.number().int().min(1),
+  workSeconds: z.number().int().min(5),
+  restSeconds: z.number().int().min(0),
+  roundRestSeconds: z.number().int().min(0),
+  structureType: z.enum(['circuit', 'interval', 'density']).default('circuit'),
+});
+
 export const plannedDaySchema = z.object({
   dayNumber: z.number().int().min(1).max(7),
   dayName: z.string().min(1),
@@ -63,6 +72,7 @@ export const plannedDaySchema = z.object({
   targetMuscles: z.array(z.string()).default([]),
   estimatedDurationMinutes: z.number().int().min(0).default(45),
   exercises: z.array(plannedExerciseSchema).default([]),
+  conditioningProtocol: conditioningProtocolSchema.optional(),
 });
 
 export const saveCustomPlanSchema = z.object({

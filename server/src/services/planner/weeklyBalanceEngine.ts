@@ -1,7 +1,8 @@
 import {
   IPlannedDay,
   IPlannedExercise,
-  IPlannerPreferences
+  IPlannerPreferences,
+  IConditioningProtocolData
 } from '../../models/UserWorkoutPlan';
 import {
   COMPREHENSIVE_EXERCISE_CATALOG
@@ -12,7 +13,9 @@ import {
   WeeklyBalanceMetrics,
   ExperienceLevel,
   TargetFocus,
-  SplitStyle
+  SplitStyle,
+  DurationPolicy,
+  ExerciseDecisionExplanation
 } from './movementModel';
 import {
   buildEquipmentProfile,
@@ -24,9 +27,11 @@ import {
   validateSessionIntentFulfillment
 } from './sessionIntentValidator';
 import { scoreExerciseCandidate } from './redundancyDetector';
-import { calibrateSetsToTimeBudget } from './timeBudgetEngine';
-import { buildConditioningStructure } from './conditioningEngine';
+import { calibrateSetsToTimeBudget, calculateSessionDuration } from './timeBudgetEngine';
+import { buildConditioningStructure, formatConditioningExercise } from './conditioningEngine';
 import { scorePlanQuality } from './plannerQualityScorer';
+import { calibratePullupPrescription, calibratePushupPrescription } from './bodyweightProgressionEngine';
+import { explainExerciseDecision } from './plannerExplainability';
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -55,6 +60,7 @@ export interface PlanGenerationResult {
   schedule: IPlannedDay[];
   qualityScore: PlanQualityScore;
   balanceMetrics: WeeklyBalanceMetrics;
+  explanations?: ExerciseDecisionExplanation[];
 }
 
 /**
@@ -64,10 +70,14 @@ export const generateBalancedWeeklyPlan = (
   preferences: IPlannerPreferences,
   userEquipmentList: any[] = [],
   userWeightKg: number = 70,
-  knownWorkingWeights: Array<{ exerciseName: string; currentWeightKg: number }> = []
+  knownWorkingWeights: Array<{ exerciseName: string; currentWeightKg: number }> = [],
+  userBaselinePullups: number = 0,
+  userBaselinePushups: number = 5
 ): PlanGenerationResult => {
   const isBeginner = preferences.experienceLevel === 'beginner';
   const profile = buildEquipmentProfile(userEquipmentList);
+  const durationPolicy: DurationPolicy = (preferences as any).durationPolicy || 'approximate_target';
+  const targetFocus: TargetFocus = preferences.targetFocus as TargetFocus || 'general_fitness';
 
   // 1. Filter database catalog down to physical hardware compatible pool
   const compatiblePool = COMPREHENSIVE_EXERCISE_CATALOG.filter(ex =>
@@ -88,7 +98,11 @@ export const generateBalancedWeeklyPlan = (
 
   const schedule: IPlannedDay[] = [];
   const weeklyScheduledExercises: ExerciseCatalogItem[] = [];
+  const allExplanations: ExerciseDecisionExplanation[] = [];
   let blueprintIndex = 0;
+
+  // Fatigue tracking across days
+  let lastWorkoutDayHadHeavyLegs = false;
 
   for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
     const dayName = preferences.preferredDays && preferences.preferredDays[dayIdx]
@@ -108,6 +122,7 @@ export const generateBalancedWeeklyPlan = (
         estimatedDurationMinutes: 0,
         exercises: [],
       });
+      lastWorkoutDayHadHeavyLegs = false;
       continue;
     }
 
@@ -116,27 +131,48 @@ export const generateBalancedWeeklyPlan = (
     blueprintIndex++;
 
     const sessionSelectedItems: ExerciseCatalogItem[] = [];
-
-    // Exercises from the immediately preceding training day (to prevent back-to-back redundancy)
     const recentExercises = weeklyScheduledExercises.slice(-8);
+
+    // Check if subsequent day (tomorrow) is a heavy lower body / posterior chain day
+    const nextDayIdx = dayIdx + 1;
+    const isTomorrowWorkoutDay = workoutIndices.includes(nextDayIdx);
+    const nextBlueprint = isTomorrowWorkoutDay ? blueprints[blueprintIndex % blueprints.length] : null;
+    const tomorrowHasHeavyLegs = nextBlueprint
+      ? (nextBlueprint.intent.includes('Lower') || nextBlueprint.intent.includes('Posterior') || nextBlueprint.primaryMuscles.includes('legs'))
+      : false;
 
     // Fill each slot defined in the blueprint
     for (const slot of blueprint.slots) {
-      // Find candidate exercises compatible with slot requirements
-      const candidates = exercisePool.filter(ex => {
-        const allowedPatterns = Array.isArray(slot.pattern) ? slot.pattern : [slot.pattern];
-        return allowedPatterns.includes(ex.movementPattern);
-      });
+      const allowedPatterns = Array.isArray(slot.pattern) ? slot.pattern : [slot.pattern];
+
+      // Filter candidates compatible with slot requirements
+      let candidates = exercisePool.filter(ex => allowedPatterns.includes(ex.movementPattern));
+
+      // FATIGUE / RECOVERY SAFEGUARD:
+      // If yesterday had heavy legs OR tomorrow has heavy legs/deadlifts, do not prescribe squats or leg fatigue in this slot
+      if (lastWorkoutDayHadHeavyLegs || tomorrowHasHeavyLegs) {
+        if (blueprint.isConditioningSession) {
+          // Keep conditioning to upper body and core, non-leg movements
+          const nonLegCandidates = candidates.filter(
+            c => c.movementPattern !== 'squat' && c.targetMuscle !== 'legs' && c.movementSubtype !== 'plyometric_squat'
+          );
+          if (nonLegCandidates.length > 0) {
+            candidates = nonLegCandidates;
+          }
+        }
+      }
+
+      const availableCandidates = candidates.length > 0 ? candidates : exercisePool;
 
       // Score each candidate
-      const scoredCandidates = (candidates.length > 0 ? candidates : exercisePool).map(candidate => ({
+      const scoredCandidates = availableCandidates.map(candidate => ({
         candidate,
         score: scoreExerciseCandidate({
           candidate,
           slot,
           selectedSessionExercises: sessionSelectedItems,
           recentSessionExercises: recentExercises,
-          targetFocus: preferences.targetFocus as TargetFocus,
+          targetFocus,
           experienceLevel: preferences.experienceLevel as ExperienceLevel,
         }),
       }));
@@ -149,83 +185,140 @@ export const generateBalancedWeeklyPlan = (
       if (best) {
         sessionSelectedItems.push(best.candidate);
         weeklyScheduledExercises.push(best.candidate);
+
+        // Generate explainability log
+        const explanation = explainExerciseDecision(
+          best.candidate,
+          slot,
+          availableCandidates,
+          profile,
+          sessionSelectedItems,
+          recentExercises,
+          lastWorkoutDayHadHeavyLegs
+        );
+        allExplanations.push(explanation);
       }
     }
 
-    // Calibrate sets, reps, and rest to the time budget (e.g. 45 min)
-    const calibratedExercises = calibrateSetsToTimeBudget(
-      sessionSelectedItems,
-      preferences.sessionDurationMinutes || 45,
-      isBeginner
+    // Determine if today had heavy legs
+    const todayHasHeavyLegs = sessionSelectedItems.some(
+      ex => ['squat', 'hinge'].includes(ex.movementPattern) || (ex.targetMuscle === 'legs' && ex.axialLoading === 'heavy')
     );
+    lastWorkoutDayHadHeavyLegs = todayHasHeavyLegs;
 
-    // Build planned exercises with proper weights and notes
-    const plannedExercises: IPlannedExercise[] = calibratedExercises.map(item => {
-      const ex = item.exercise;
-
-      // Determine starting weight
-      const loggedWw = knownWorkingWeights.find(
-        ww => ww.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
-      );
-
-      let suggestedWeight = 0;
-      if (loggedWw && loggedWw.currentWeightKg > 0) {
-        suggestedWeight = loggedWw.currentWeightKg;
-      } else if (ex.equipment === 'dumbbell') {
-        const availableWeights = profile.availableDumbbellWeightsKg;
-        if (availableWeights.length > 0) {
-          // Select safe starting dumbbell from user's inventory
-          if (['legs', 'chest', 'back'].includes(ex.targetMuscle)) {
-            suggestedWeight = isBeginner ? (availableWeights[1] || availableWeights[0]) : (availableWeights[2] || availableWeights[0]);
-          } else {
-            suggestedWeight = availableWeights[0]; // lightest available for isolation/arms/shoulders
-          }
-        } else {
-          suggestedWeight = isBeginner ? 6 : 10;
-        }
-      } else if (ex.equipment === 'barbell') {
-        suggestedWeight = isBeginner ? 20 : 30;
-      }
-
-      // Beginner adaptation for Pull-Ups / Chin-Ups
-      let targetReps = item.reps;
-      let notes = `${preferences.experienceLevel.toUpperCase()} recommendation calibrated for ${preferences.targetFocus.replace('_', ' ')}.`;
-      
-      if (ex.name.toLowerCase().includes('pull-up') || ex.name.toLowerCase().includes('chin-up')) {
-        if (isBeginner) {
-          targetReps = 5; // Safe beginner range: 4-6 reps (or negatives)
-          notes = 'Beginner Pull-Up Guidance: Perform controlled reps. If unable to complete 5 strict reps, execute slow 4-second eccentric negatives or use foot assistance.';
-        }
-      }
-
-      // Time-based exercises (like Plank)
-      if (ex.isTimeBased) {
-        targetReps = ex.defaultTimeSeconds || 35;
-        notes = `Time-based hold: maintain solid abdominal bracing for ${targetReps} seconds per set.`;
-      }
-
-      return {
-        exerciseName: ex.name,
-        targetMuscle: ex.targetMuscle,
-        equipment: ex.equipment,
-        targetSets: item.sets,
-        targetReps,
-        suggestedWeightKg: suggestedWeight,
-        restSeconds: item.restSeconds,
-        videoUrl: ex.videoUrl || 'https://www.youtube.com/embed/rT7DgCr-3pg',
-        formTips: ex.formTips,
-        notes,
-      };
-    });
-
-    // Check if session is conditioning
+    let plannedExercises: IPlannedExercise[] = [];
     let sessionEstimatedMinutes = preferences.sessionDurationMinutes || 45;
     let sessionFocus = blueprint.focus;
+    let conditioningProtocolData: IConditioningProtocolData | undefined;
 
+    // Handle Conditioning vs Lifting sessions
     if (blueprint.isConditioningSession) {
       const condPlan = buildConditioningStructure(sessionSelectedItems, sessionEstimatedMinutes);
       sessionEstimatedMinutes = condPlan.estimatedMinutes;
-      sessionFocus = `${blueprint.focus} â€¢ ${condPlan.sessionNotes}`;
+      sessionFocus = `${blueprint.focus} • ${condPlan.sessionNotes}`;
+      conditioningProtocolData = condPlan.protocol;
+
+      plannedExercises = sessionSelectedItems.map((ex, idx) => {
+        let suggestedWeight = 0;
+        if (ex.equipment === 'dumbbell') {
+          suggestedWeight = profile.availableDumbbellWeightsKg.length > 0
+            ? (profile.availableDumbbellWeightsKg[0] || 4)
+            : 6;
+        }
+        return formatConditioningExercise(ex, condPlan, idx, suggestedWeight);
+      });
+    } else {
+      // Standard lifting session: calibrate sets to duration policy
+      const calibrated = calibrateSetsToTimeBudget(
+        sessionSelectedItems,
+        sessionEstimatedMinutes,
+        isBeginner,
+        durationPolicy
+      );
+
+      const budget = calculateSessionDuration(calibrated, sessionEstimatedMinutes, durationPolicy);
+      sessionEstimatedMinutes = budget.totalEstimatedMinutes;
+
+      plannedExercises = calibrated.map(item => {
+        const ex = item.exercise;
+
+        // Determine starting weight
+        const loggedWw = knownWorkingWeights.find(
+          ww => ww.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
+        );
+
+        let suggestedWeight = 0;
+        if (loggedWw && loggedWw.currentWeightKg > 0) {
+          suggestedWeight = loggedWw.currentWeightKg;
+        } else if (ex.equipment === 'dumbbell') {
+          const availableWeights = profile.availableDumbbellWeightsKg;
+          if (availableWeights.length > 0) {
+            if (['legs', 'chest', 'back'].includes(ex.targetMuscle)) {
+              suggestedWeight = isBeginner ? (availableWeights[1] || availableWeights[0]) : (availableWeights[2] || availableWeights[0]);
+            } else {
+              suggestedWeight = availableWeights[0];
+            }
+          } else {
+            suggestedWeight = isBeginner ? 6 : 10;
+          }
+        } else if (ex.equipment === 'barbell') {
+          suggestedWeight = isBeginner ? 20 : 30;
+        }
+
+        let exerciseName = ex.name;
+        let targetSets = item.sets;
+        let targetReps = item.reps;
+        let repUnit: 'reps' | 'seconds' = ex.isTimeBased ? 'seconds' : 'reps';
+        let restSeconds = item.restSeconds;
+        let notes = `${preferences.experienceLevel.toUpperCase()} prescription calibrated for ${targetFocus.replace('_', ' ')}.`;
+        let formTips = ex.formTips;
+
+        // Capability-based pull-up calibration
+        if (ex.name.toLowerCase().includes('pull-up') || ex.name.toLowerCase().includes('chin-up')) {
+          const calibratedPullup = calibratePullupPrescription(userBaselinePullups, isBeginner);
+          exerciseName = calibratedPullup.exerciseName;
+          targetSets = calibratedPullup.targetSets;
+          targetReps = calibratedPullup.targetReps;
+          repUnit = calibratedPullup.repUnit;
+          restSeconds = calibratedPullup.restSeconds;
+          notes = calibratedPullup.coachingNotes;
+          formTips = calibratedPullup.formTips;
+        }
+
+        // Capability-based push-up calibration
+        if (ex.name.toLowerCase().includes('push-up') && !ex.name.toLowerCase().includes('renegade')) {
+          const calibratedPushup = calibratePushupPrescription(userBaselinePushups, profile.hasPushupBars, isBeginner);
+          exerciseName = calibratedPushup.exerciseName;
+          targetSets = calibratedPushup.targetSets;
+          targetReps = calibratedPushup.targetReps;
+          repUnit = calibratedPushup.repUnit;
+          restSeconds = calibratedPushup.restSeconds;
+          notes = calibratedPushup.coachingNotes;
+          formTips = calibratedPushup.formTips;
+        }
+
+        // Time-based exercises (like Plank)
+        if (ex.isTimeBased) {
+          targetReps = ex.defaultTimeSeconds || 35;
+          repUnit = 'seconds';
+          notes = `Time-based hold: maintain solid abdominal bracing for ${targetReps} seconds per set.`;
+        }
+
+        return {
+          exerciseName,
+          targetMuscle: ex.targetMuscle,
+          equipment: ex.equipment,
+          targetSets,
+          targetReps,
+          repUnit,
+          suggestedWeightKg: suggestedWeight,
+          restSeconds,
+          videoUrl: ex.videoUrl || 'https://www.youtube.com/embed/rT7DgCr-3pg',
+          formTips,
+          notes,
+          movementPattern: ex.movementPattern,
+        };
+      });
     }
 
     schedule.push({
@@ -237,15 +330,18 @@ export const generateBalancedWeeklyPlan = (
       targetMuscles: blueprint.primaryMuscles,
       estimatedDurationMinutes: sessionEstimatedMinutes,
       exercises: plannedExercises,
+      conditioningProtocol: conditioningProtocolData,
     });
   }
 
-  // Evaluate holistic quality score and balance metrics
+  // Holistic quality scoring with hard critical constraint gates
   const { score: qualityScore, metrics: balanceMetrics } = scorePlanQuality(
     schedule,
     profile,
-    preferences.sessionDurationMinutes || 45
+    preferences.sessionDurationMinutes || 45,
+    targetFocus,
+    durationPolicy
   );
 
-  return { schedule, qualityScore, balanceMetrics };
+  return { schedule, qualityScore, balanceMetrics, explanations: allExplanations };
 };

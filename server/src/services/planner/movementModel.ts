@@ -117,6 +117,54 @@ export interface MovementSlotRequirement {
   isOptional?: boolean;
 }
 
+export type DurationPolicy = 'approximate_target' | 'hard_ceiling' | 'compact_efficient';
+
+export interface IConditioningProtocol {
+  rounds: number;
+  workSeconds: number;
+  restSeconds: number;
+  roundRestSeconds: number;
+  structureType: 'circuit' | 'interval' | 'density';
+}
+
+export interface CriticalConstraintResult {
+  isValid: boolean;
+  equipmentCompliance: boolean;
+  impossibleExercise: boolean;
+  intentFulfillment: boolean;
+  prescriptionValidity: boolean;
+  durationCompliance: boolean;
+  noSevereRecoveryConflict: boolean;
+  metadataValidity: boolean;
+  violations: string[];
+}
+
+export interface MuscleVolumeBreakdown {
+  directSets: number;
+  indirectSets: number;
+  effectiveSets: number;
+}
+
+export interface GoalBalanceTargets {
+  idealPushPullMin: number;
+  idealPushPullMax: number;
+  acceptablePushPullMin: number;
+  acceptablePushPullMax: number;
+  idealSquatHingeMin: number;
+  idealSquatHingeMax: number;
+  minWeeklyMajorMuscleSets: number;
+}
+
+export interface ExerciseDecisionExplanation {
+  exerciseName: string;
+  slotName: string;
+  selectedRationale: string;
+  rejectedCandidates: Array<{
+    exerciseName: string;
+    reason: string;
+  }>;
+}
+
 export interface SessionBlueprint {
   dayIndex: number;
   title: string;
@@ -125,6 +173,7 @@ export interface SessionBlueprint {
   primaryMuscles: MuscleGroup[];
   slots: MovementSlotRequirement[];
   isConditioningSession?: boolean;
+  conditioningProtocol?: IConditioningProtocol;
 }
 
 export interface WeeklyBalanceMetrics {
@@ -141,12 +190,16 @@ export interface WeeklyBalanceMetrics {
   coreSets: number;
   conditioningSessions: number;
   muscleSetCounts: Record<string, number>;
+  muscleVolumeBreakdown?: Record<string, MuscleVolumeBreakdown>;
   movementPatternCounts: Record<string, number>;
   repeatedExerciseCounts: Record<string, number>;
 }
 
 export interface PlanQualityScore {
-  overallScore: number; // 0 - 100
+  isValid: boolean; // Binary gate: all critical constraints met
+  status: 'VALID' | 'NEEDS_REPAIR' | 'REJECTED';
+  criticalConstraintResult: CriticalConstraintResult;
+  overallScore: number; // 0 - 100 (capped at 40 if !isValid)
   movementBalanceScore: number; // 0 - 100
   muscleCoverageScore: number; // 0 - 100
   recoveryScore: number; // 0 - 100
@@ -157,3 +210,4 @@ export interface PlanQualityScore {
   warnings: string[];
   strengths: string[];
 }
+

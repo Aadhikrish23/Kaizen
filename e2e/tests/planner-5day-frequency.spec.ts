@@ -40,7 +40,7 @@ test.describe('5-Day Planner Frequency and PDF Generation Verification', () => {
 
     // 3. Open Preferences and configure: 5 days/week, Home Dumbbell
     console.log('[3/4] Configuring plan for 5 days/week and Home Dumbbell split...');
-    await page.locator('button:has-text("Tune Preferences")').first().click();
+    await page.locator('button:has-text("Plan Settings"), button:has-text("Tune Preferences")').first().click();
     await expect(page.getByRole('heading', { name: 'Personalized Training Preferences' })).toBeVisible();
 
     // Select 5 days per week

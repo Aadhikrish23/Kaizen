@@ -20,6 +20,14 @@ export interface IPlannedExercise {
   isConditioning?: boolean;
 }
 
+export interface IConditioningProtocolData {
+  rounds: number;
+  workSeconds: number;
+  restSeconds: number;
+  roundRestSeconds: number;
+  structureType: 'circuit' | 'interval' | 'density';
+}
+
 export interface IPlannedDay {
   dayNumber: number;
   dayName: string;
@@ -29,6 +37,7 @@ export interface IPlannedDay {
   targetMuscles: string[];
   estimatedDurationMinutes: number;
   exercises: IPlannedExercise[];
+  conditioningProtocol?: IConditioningProtocolData;
 }
 
 export interface IDailyAdaptation {
@@ -86,6 +95,17 @@ const PlannedExerciseSchema = new Schema(
 );
 
 
+const ConditioningProtocolSchema = new Schema(
+  {
+    rounds: { type: Number, required: true },
+    workSeconds: { type: Number, required: true },
+    restSeconds: { type: Number, required: true },
+    roundRestSeconds: { type: Number, required: true },
+    structureType: { type: String, enum: ['circuit', 'interval', 'density'], default: 'circuit' },
+  },
+  { _id: false }
+);
+
 const PlannedDaySchema = new Schema(
   {
     dayNumber: { type: Number, required: true },
@@ -96,6 +116,7 @@ const PlannedDaySchema = new Schema(
     targetMuscles: [{ type: String }],
     estimatedDurationMinutes: { type: Number, default: 45 },
     exercises: [PlannedExerciseSchema],
+    conditioningProtocol: { type: ConditioningProtocolSchema, required: false },
   },
   { _id: false }
 );
@@ -120,6 +141,11 @@ const PlannerPreferencesSchema = new Schema(
   {
     daysPerWeek: { type: Number, required: true, default: 3 },
     sessionDurationMinutes: { type: Number, required: true, default: 45 },
+    durationPolicy: {
+      type: String,
+      enum: ['approximate_target', 'hard_ceiling', 'compact_efficient'],
+      default: 'approximate_target',
+    },
     splitStyle: {
       type: String,
       enum: ['full_body', 'upper_lower', 'ppl', 'home_dumbbell'],

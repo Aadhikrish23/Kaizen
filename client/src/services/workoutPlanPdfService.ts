@@ -243,7 +243,8 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
     }
 
     // Day Header
-    const headerHeight = 10.5;
+    const isConditioningDay = !!day.conditioningProtocol || day.exercises.some((e: any) => e.isConditioning);
+    const headerHeight = isConditioningDay ? 14 : 10.5;
     doc.setFillColor(...bgLight);
     doc.setDrawColor(...emeraldAccent);
     doc.setLineWidth(0.6);
@@ -272,6 +273,17 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
     const focusLine = doc.splitTextToSize(`Target Focus: ${day.focus}`, contentWidth - 8)[0];
     doc.text(focusLine, margin + 3, currentY + 8.5);
 
+    if (day.conditioningProtocol) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...emeraldAccent);
+      doc.text(
+        `CIRCUIT PROTOCOL: ${day.conditioningProtocol.rounds} ROUNDS • ${day.conditioningProtocol.workSeconds}S WORK / ${day.conditioningProtocol.restSeconds}S REST (${day.conditioningProtocol.roundRestSeconds}s between rounds)`,
+        margin + 3,
+        currentY + 12
+      );
+    }
+
     currentY += headerHeight + 2;
 
     // Exercises Table
@@ -279,7 +291,9 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
       const weightDisplay =
         ex.suggestedWeightKg && ex.suggestedWeightKg > 0 ? `${ex.suggestedWeightKg} kg` : 'Bodyweight';
       const isTimeBased = ex.repUnit === 'seconds' || (ex.notes && ex.notes.toLowerCase().includes('time-based'));
-      const setsReps = isTimeBased ? `${ex.targetSets} x ${ex.targetReps}s` : `${ex.targetSets} x ${ex.targetReps}`;
+      const setsReps = ex.isConditioning
+        ? `${ex.targetSets} Rnds x ${ex.targetReps}s`
+        : isTimeBased ? `${ex.targetSets} x ${ex.targetReps}s` : `${ex.targetSets} x ${ex.targetReps}`;
       const rest = `${ex.restSeconds || 60}s`;
 
 

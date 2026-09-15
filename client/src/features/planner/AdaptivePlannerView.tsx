@@ -13,6 +13,7 @@ import {
   ArrowRightLeft,
   Check,
   Pencil,
+  Flame,
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -738,6 +739,21 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
             </div>
           ) : (
             <div className="space-y-2.5">
+              {/* Conditioning Circuit Banner */}
+              {(selectedDay.conditioningProtocol || selectedDay.exercises.some(e => e.isConditioning)) && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+                  <div className="flex items-center gap-2 text-emerald-400">
+                    <Flame className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>
+                      <strong>High-Density Circuit:</strong> {selectedDay.conditioningProtocol?.rounds || selectedDay.exercises[0]?.targetSets || 4} Rounds • {selectedDay.conditioningProtocol?.workSeconds || selectedDay.exercises[0]?.targetReps || 40}s Work / {selectedDay.conditioningProtocol?.restSeconds || selectedDay.exercises[0]?.restSeconds || 20}s Rest
+                    </span>
+                  </div>
+                  <span className="text-kaizen-muted text-[11px]">
+                    {selectedDay.conditioningProtocol?.roundRestSeconds || 75}s recovery between rounds
+                  </span>
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-xs text-kaizen-text-muted font-mono uppercase tracking-wider pb-1">
                 <span>Movements ({selectedDay.exercises.length})</span>
                 <span>Actions</span>
@@ -761,6 +777,11 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                             <span className="font-semibold text-sm text-white">
                               {ex.exerciseName}
                             </span>
+                            {ex.isConditioning && (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase font-semibold">
+                                Circuit Station
+                              </span>
+                            )}
                             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-kaizen-text-secondary border border-white/5 capitalize">
                               {ex.targetMuscle}
                             </span>
@@ -771,7 +792,16 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
 
                           <div className="flex items-center gap-3 mt-1 text-xs font-mono text-kaizen-text-secondary flex-wrap">
                             <span>
-                              Target: <strong className="text-white">{ex.targetSets} sets × {ex.repUnit === 'seconds' || ex.notes?.toLowerCase().includes('time-based') ? `${ex.targetReps}s` : `${ex.targetReps} reps`}</strong>
+                              Target:{' '}
+                              <strong className="text-white">
+                                {ex.isConditioning
+                                  ? `${ex.targetSets} rounds × ${ex.targetReps}s work`
+                                  : `${ex.targetSets} sets × ${
+                                      ex.repUnit === 'seconds' || ex.notes?.toLowerCase().includes('time-based')
+                                        ? `${ex.targetReps}s`
+                                        : `${ex.targetReps} reps`
+                                    }`}
+                              </strong>
                             </span>
                             {ex.suggestedWeightKg > 0 && (
                               <>
