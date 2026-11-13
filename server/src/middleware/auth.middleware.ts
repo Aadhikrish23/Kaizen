@@ -1,6 +1,6 @@
 ﻿import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import User from '../features/auth/User';
 import { AppError } from './errorHandler';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod';
