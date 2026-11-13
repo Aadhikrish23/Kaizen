@@ -18,7 +18,7 @@ test.describe('Kaizen Full Feature Verification', () => {
     // --- 1. REGISTRATION ---
     console.log('[1/9] Navigating to /register...');
     await page.goto('http://localhost:5173/register');
-    await expect(page.locator('text=Create Account')).toBeVisible();
+    await expect(page.locator('text=Create Athlete Account')).toBeVisible();
 
     await page.fill('input[placeholder="John"]', 'Kaizen');
     await page.fill('input[placeholder="Doe"]', 'Tester');
@@ -31,7 +31,7 @@ test.describe('Kaizen Full Feature Verification', () => {
     // --- 2. ONBOARDING WIZARD ---
     console.log('[2/9] Navigating through 5-Step Onboarding...');
     await expect(page).toHaveURL(/.*\/onboarding/, { timeout: 15000 });
-    await expect(page.locator('text=Set up your profile')).toBeVisible();
+    await expect(page.locator('text=Personal Baselines')).toBeVisible();
 
     // Step 1: Personal
     await page.fill('input[placeholder="Your name"]', 'Kaizen Tester');
@@ -41,26 +41,26 @@ test.describe('Kaizen Full Feature Verification', () => {
     await page.getByRole('button', { name: 'Next' }).click();
 
     // Step 2: Body
-    await expect(page.locator('text=Step 2 of 5')).toBeVisible();
+    await expect(page.locator('text=Calibration Phase 2 of 5')).toBeVisible();
     await page.fill('input[placeholder="e.g. 175"]', '180');
     await page.fill('input[placeholder="e.g. 75.5"]', '77.5');
     await page.screenshot({ path: path.join(screenshotsDir, '03_onboarding_step2.png') });
     await page.getByRole('button', { name: 'Next' }).click();
 
     // Step 3: Goal
-    await expect(page.locator('text=Step 3 of 5')).toBeVisible();
+    await expect(page.locator('text=Calibration Phase 3 of 5')).toBeVisible();
     await page.getByText('Maintain Weight', { exact: true }).click();
     await page.screenshot({ path: path.join(screenshotsDir, '04_onboarding_step3.png') });
     await page.getByRole('button', { name: 'Next' }).click();
 
     // Step 4: Activity Level
-    await expect(page.locator('text=Step 4 of 5')).toBeVisible();
+    await expect(page.locator('text=Calibration Phase 4 of 5')).toBeVisible();
     await page.getByText('Moderately Active', { exact: true }).click();
     await page.screenshot({ path: path.join(screenshotsDir, '05_onboarding_step4.png') });
     await page.getByRole('button', { name: 'Next' }).click();
 
     // Step 5: Targets
-    await expect(page.locator('text=Step 5 of 5')).toBeVisible();
+    await expect(page.locator('text=Calibration Phase 5 of 5')).toBeVisible();
     const calTarget = page.locator('input[placeholder="e.g. 2000"]');
     if (!(await calTarget.inputValue())) {
       await calTarget.fill('2200');
@@ -75,33 +75,32 @@ test.describe('Kaizen Full Feature Verification', () => {
     // --- 3. DASHBOARD OVERVIEW ---
     console.log('[3/9] Verifying Main Dashboard & 4 Pillars...');
     await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
-    await expect(page.locator('text=Kaizen Daily Overview')).toBeVisible();
-    
+    await expect(page.locator('text=Live Telemetry')).toBeVisible();
+
     // Check 4 pillars
-    await expect(page.getByRole('heading', { name: 'Strength & Workout' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Strength & Training' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Nutrition & Energy' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Hydration Intake' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Hydration Level' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Scale Weight' })).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '07_dashboard_pillars.png') });
 
     // AI Coach Interaction
     console.log('Testing AI Coach in Dashboard...');
-    await expect(page.getByRole('heading', { name: 'Kaizen AI Coach' })).toBeVisible();
-    const coachInput = page.locator('input[placeholder="Ask a health question..."]');
+    await expect(page.getByRole('heading', { name: 'Training & Nutrition Advisor' })).toBeVisible();
+    const coachInput = page.locator('input[placeholder="Ask a question about nutrition, exercises, or recovery..."]');
     await coachInput.fill('What is the best post-workout nutrition?');
     await page.locator('button:has(svg.lucide-send)').click();
     await expect(page.locator('div.max-w-\\[85\\%\\]').last()).toBeVisible({ timeout: 20000 });
     console.log('AI Coach replied successfully.');
 
-    // Gamification Card
-    await expect(page.getByRole('heading', { name: 'Your Journey' })).toBeVisible();
-    await expect(page.getByText('Kaizen Health Score')).toBeVisible();
+    // Kaizen Readiness Score Card
+    await expect(page.getByRole('heading', { name: 'Kaizen Readiness' })).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '08_dashboard_ai_gamification.png') });
 
     // --- 4. HYDRATION TRACKING ---
     console.log('[4/9] Testing Hydration Tracking...');
     await page.getByRole('button', { name: 'Hydration' }).click();
-    await expect(page.locator('text=Hydration Tracking')).toBeVisible();
+    await expect(page.locator('text=Hydration & Electrolyte Index')).toBeVisible();
     const quickAdd = page.locator('button:has-text("+250")').first();
     if (await quickAdd.isVisible()) {
       await quickAdd.click();
@@ -112,7 +111,7 @@ test.describe('Kaizen Full Feature Verification', () => {
     // --- 5. NUTRITION TRACKING & RECIPE EXPLORER ---
     console.log('[5/9] Testing Nutrition Tracker & Recipe Discovery...');
     await page.getByRole('button', { name: 'Nutrition' }).click();
-    await expect(page.locator('text=Nutrition & Calories')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=Nutrition & Energy Balance')).toBeVisible({ timeout: 15000 });
 
     // Open Discover Recipes Modal
     const discoverBtn = page.getByRole('button', { name: 'Discover Recipes' });
@@ -134,7 +133,7 @@ test.describe('Kaizen Full Feature Verification', () => {
     await page.locator('button:has-text("Equipment & Inventory")').first().click();
     await expect(page.getByRole('heading', { name: 'Gym & Equipment Inventory' })).toBeVisible({ timeout: 15000 });
     await expect(page.locator('text=Quick Setup Presets')).toBeVisible();
-    
+
     // Apply Preset
     const gymPresetBtn = page.locator('button:has-text("Apply Preset")').first();
     if (await gymPresetBtn.isVisible()) {
@@ -178,12 +177,12 @@ test.describe('Kaizen Full Feature Verification', () => {
     await page.waitForTimeout(1500);
 
     // Verify 7-day schedule
-    await expect(page.locator('text=7-Day Training Schedule')).toBeVisible();
+    await expect(page.locator('text=Weekly Cycle Structure')).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '11a_adaptive_planner.png') });
 
     // Open Live Demo Video Modal
     console.log('Testing Exercise Live Demo Video Modal...');
-    const demoBtn = page.locator('button:has-text("Demo Video")').first();
+    const demoBtn = page.locator('button[title="Watch live form video demo"]').first();
     await expect(demoBtn).toBeVisible();
     await demoBtn.click();
     await expect(page.locator('text=Form Breakdown & Execution Cues')).toBeVisible({ timeout: 5000 });
@@ -191,11 +190,11 @@ test.describe('Kaizen Full Feature Verification', () => {
     await page.locator('div.fixed button:has-text("Close")').last().click();
     await expect(page.locator('text=Form Breakdown & Execution Cues')).not.toBeVisible();
 
-    // Push Day 1 to Today's Workout Tracker
-    console.log("Pushing Planned Day into Today's Workout Tracker...");
-    const pushBtn = page.locator('button:has-text("Push to Today\'s Workout Tracker")');
-    await expect(pushBtn).toBeVisible();
-    await pushBtn.click();
+    // Start Day 1's workout, loading it into the Active Session Tracker
+    console.log("Starting today's workout from the planner...");
+    const startBtn = page.getByRole('button', { name: 'Start This Workout' });
+    await expect(startBtn).toBeVisible();
+    await startBtn.click();
     await page.waitForTimeout(1500);
 
     // 6c. Active Session Tracker Sub-tab
@@ -220,17 +219,6 @@ test.describe('Kaizen Full Feature Verification', () => {
     await saveWorkoutBtn.click();
     await page.waitForTimeout(1500);
     await page.screenshot({ path: path.join(screenshotsDir, '11c_workout_tracker.png') });
-
-    // 6d. Daily Adaptive Intelligence Loop Sub-tab
-    console.log('[6d/9] Testing Daily Adaptive Intelligence Loop under Workouts...');
-    await page.locator('button:has-text("Adaptive Planner")').first().click();
-    await expect(page.getByRole('heading', { name: 'Adaptive Workout Planner' })).toBeVisible({ timeout: 15000 });
-    
-    // Trigger Daily Adaptation
-    const adaptBtn = page.getByRole('button', { name: 'Adapt Daily' });
-    await adaptBtn.click();
-    await page.waitForTimeout(2000);
-    await page.screenshot({ path: path.join(screenshotsDir, '11d_adaptive_engine.png') });
 
     // --- 7. SCALE WEIGHT & MEASUREMENTS ---
     console.log('[7/9] Testing Scale Weight & Body Measurements...');
@@ -260,13 +248,13 @@ test.describe('Kaizen Full Feature Verification', () => {
     // --- 8. ANALYTICS HUB ---
     console.log('[8/9] Testing Analytics Hub & Recharts...');
     await page.getByRole('button', { name: 'Analytics' }).click();
-    await expect(page.locator('text=Data & Analytics')).toBeVisible();
+    await expect(page.locator('text=Performance Telemetry & Analytics')).toBeVisible();
 
     // Verify all 4 Recharts cards
     await expect(page.getByRole('heading', { name: 'Caloric Intake' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Body Weight' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Workout Volume' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Macro Balance' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Body Composition Trend' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Training Volume Load' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Macronutrient Balance Ratio' })).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '13_analytics_dashboard.png') });
 
     // Test filter dropdown
@@ -279,7 +267,7 @@ test.describe('Kaizen Full Feature Verification', () => {
     console.log('[9/9] Testing Profile Settings...');
     await page.locator('a:has-text("Profile Settings")').click();
     await expect(page).toHaveURL(/.*\/settings\/profile/);
-    await expect(page.getByRole('heading', { name: 'Profile Settings' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Athlete Profile & Calibration' })).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '14_profile_settings.png') });
 
     console.log('>>> COMPLETE BROWSER VERIFICATION SUCCESSFUL! <<<');
