@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export const connectDB = async (): Promise<void> => {
   try {
-    const connURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/kaizen_db';
+    const connURI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/kaizen_db';
     const conn = await mongoose.connect(connURI);
     console.log(`[Kaizen DB] Connected to MongoDB: ${conn.connection.name}`);
   } catch (error) {
