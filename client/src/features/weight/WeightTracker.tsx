@@ -3,7 +3,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { LoadingState } from '../../components/ui/LoadingState';
-import { useWeightLogs, useAddWeightLog } from '../../services/weightService';
+import { useWeightLogs, useWeightHistory, useAddWeightLog } from '../../services/weightService';
 import { useAuth } from '../../contexts/AuthContext';
 import { WeightLog } from '../../types';
 import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp } from 'lucide-react';
@@ -16,7 +16,9 @@ interface WeightTrackerProps {
 
 export const WeightTracker: React.FC<WeightTrackerProps> = ({ currentDate }) => {
   const { user } = useAuth();
-  const { data: logsData, isLoading, error } = useWeightLogs(currentDate);
+  const { data: todayLogRaw, isLoading: isTodayLoading, error } = useWeightLogs(currentDate);
+  const todayLog = todayLogRaw as unknown as WeightLog | null;
+  const { data: historyData, isLoading: isHistoryLoading } = useWeightHistory();
   const { mutateAsync: addWeightLog } = useAddWeightLog();
 
   const [weightInput, setWeightInput] = useState('');
@@ -25,8 +27,8 @@ export const WeightTracker: React.FC<WeightTrackerProps> = ({ currentDate }) => 
 
   const targetWeight = user?.targetWeightKg ?? user?.currentWeightKg ?? 70;
 
-  const history: WeightLog[] = Array.isArray(logsData) ? (logsData as any) : ((logsData as any) || []);
-  const todayLog = history.find(log => log.date === currentDate) || null;
+  const history: WeightLog[] = Array.isArray(historyData) ? historyData : [];
+  const isLoading = isTodayLoading || isHistoryLoading;
 
   useEffect(() => {
     if (todayLog) {

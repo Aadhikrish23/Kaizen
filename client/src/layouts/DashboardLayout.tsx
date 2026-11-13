@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight, Scale } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
 import { AdaptivePlannerView } from '../features/planner/AdaptivePlannerView';
@@ -58,6 +58,7 @@ export const DashboardLayout = () => {
     { id: 'meals' as const, label: 'Nutrition', icon: Utensils, accent: 'text-amber-400' },
     { id: 'water' as const, label: 'Hydration', icon: Droplets, accent: 'text-cyan-400' },
     { id: 'sleep' as const, label: 'Sleep Cycle', icon: Moon, accent: 'text-indigo-400' },
+    { id: 'weight' as const, label: 'Scale Weight', icon: Scale, accent: 'text-violet-400' },
     { id: 'analytics' as const, label: 'Analytics', icon: BarChart3, accent: 'text-emerald-400' },
   ];
 
