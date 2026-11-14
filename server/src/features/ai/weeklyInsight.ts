@@ -1,13 +1,23 @@
 // Pure weekly aggregation + deterministic insight. No I/O, so it is unit-testable with fixed data.
 import { addDaysTz, dateRange } from '../../utils/dates';
 
+export interface WorkoutLike {
+  date: string;
+  totalVolumeKg?: number;
+  exercises?: Array<{ sets?: Array<{ completed?: boolean }> }>;
+}
+
+/** A workout counts only if at least one set was actually completed (planned-but-not-performed logs do not). */
+export const isPerformedWorkout = (w: WorkoutLike): boolean =>
+  Array.isArray(w.exercises) && w.exercises.some((ex) => Array.isArray(ex.sets) && ex.sets.some((s) => s.completed === true));
+
 export interface WeeklyInputs {
   endDate: string; // YYYY-MM-DD, the user's "today"
   days?: number; // window length, default 7
   targets: { calories: number; protein: number; water: number };
   meals: Array<{ date: string; calories?: number; protein?: number }>;
   water: Array<{ date: string; amount?: number }>;
-  workouts: Array<{ date: string; totalVolumeKg?: number }>;
+  workouts: WorkoutLike[];
   weights: Array<{ date: string; weight: number }>;
   sleep: Array<{ date: string; durationMinutes?: number }>;
 }
@@ -58,6 +68,8 @@ export const aggregateWeek = (input: WeeklyInputs): WeeklyAggregate => {
     return found.length ? found.reduce((s, r) => s + pick(r), 0) : null;
   };
 
+  const performed = input.workouts.filter(isPerformedWorkout);
+
   const days: DayRow[] = dates.map((date) => {
     const calories = sumBy(input.meals, date, (m) => m.calories || 0);
     const protein = sumBy(input.meals, date, (m) => m.protein || 0);
@@ -67,7 +79,7 @@ export const aggregateWeek = (input: WeeklyInputs): WeeklyAggregate => {
       calories,
       protein,
       waterMl: sumBy(input.water, date, (x) => x.amount || 0),
-      workouts: input.workouts.filter((x) => x.date === date).length,
+      workouts: performed.filter((x) => x.date === date).length,
       sleepMinutes: sumBy(input.sleep, date, (s) => s.durationMinutes || 0),
       weightKg: w.length ? w[w.length - 1].weight : null,
     };
@@ -88,7 +100,7 @@ export const aggregateWeek = (input: WeeklyInputs): WeeklyAggregate => {
   const avgWater = avg(waterDays.map((d) => d.waterMl as number));
   const avgSleepMin = avg(sleepDays.map((d) => d.sleepMinutes as number));
 
-  const volume = input.workouts.filter((w) => dates.includes(w.date)).reduce((s, w) => s + (w.totalVolumeKg || 0), 0);
+  const volume = performed.filter((w) => dates.includes(w.date)).reduce((s, w) => s + (w.totalVolumeKg || 0), 0);
 
   // Weight change needs at least two weigh-ins on different days (first vs last in the window)
   const weightChange = weightDays.length >= 2 ? (weightDays[weightDays.length - 1].weightKg as number) - (weightDays[0].weightKg as number) : null;

@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aggregateWeek, heuristicWeeklyInsight, WeeklyInputs, MIN_DAYS_WITH_DATA } from '../src/features/ai/weeklyInsight';
+import { aggregateWeek, heuristicWeeklyInsight, isPerformedWorkout, WeeklyInputs, MIN_DAYS_WITH_DATA } from '../src/features/ai/weeklyInsight';
 
 const targets = { calories: 2000, protein: 150, water: 2500 };
+const done = [{ sets: [{ completed: true }] }];
+const planned = [{ sets: [{ completed: false }, { completed: false }] }];
 const base = (over: Partial<WeeklyInputs> = {}): WeeklyInputs => ({
   endDate: '2026-03-08', targets, meals: [], water: [], workouts: [], weights: [], sleep: [], ...over,
 });
@@ -52,10 +54,10 @@ test('weight change needs two weigh-ins; uses first vs last in the window', () =
 test('workouts are counted and volume summed inside the window only', () => {
   const a = aggregateWeek(base({
     workouts: [
-      { date: '2026-03-03', totalVolumeKg: 4000 },
-      { date: '2026-03-03', totalVolumeKg: 500 },
-      { date: '2026-03-07', totalVolumeKg: 3000 },
-      { date: '2026-02-20', totalVolumeKg: 99999 }, // outside the window
+      { date: '2026-03-03', totalVolumeKg: 4000, exercises: done },
+      { date: '2026-03-03', totalVolumeKg: 500, exercises: done },
+      { date: '2026-03-07', totalVolumeKg: 3000, exercises: done },
+      { date: '2026-02-20', totalVolumeKg: 99999, exercises: done }, // outside the window
     ],
   }));
   assert.equal(a.workoutCount, 3);
@@ -85,7 +87,7 @@ test('heuristic insight with enough data uses real numbers and names what is mis
       { date: '2026-03-06', calories: 2100, protein: 95 },
       { date: '2026-03-07', calories: 1900, protein: 100 },
     ],
-    workouts: [{ date: '2026-03-06', totalVolumeKg: 5000 }],
+    workouts: [{ date: '2026-03-06', totalVolumeKg: 5000, exercises: done }],
   }));
   const r = heuristicWeeklyInsight(a);
   assert.ok(r.highlights.some((h) => h.includes('Average intake 2000 kcal')));
@@ -94,4 +96,32 @@ test('heuristic insight with enough data uses real numbers and names what is mis
   assert.match(r.insight, /Protein is the gap/); // 95/150 = 63% < 85%
   assert.match(r.insight, /Not logged: water, sleep/);
   assert.ok(!r.highlights.some((h) => /sleep|water/i.test(h) && /Average/.test(h)));
+});
+
+test('planned-but-not-performed workouts (only uncompleted sets) do not count', () => {
+  assert.equal(isPerformedWorkout({ date: 'd', exercises: planned }), false);
+  assert.equal(isPerformedWorkout({ date: 'd', exercises: [] }), false);
+  assert.equal(isPerformedWorkout({ date: 'd' }), false);
+  assert.equal(isPerformedWorkout({ date: 'd', exercises: [{ sets: [{ completed: false }, { completed: true }] }] }), true);
+
+  const a = aggregateWeek(base({ workouts: [{ date: '2026-03-07', totalVolumeKg: 0, exercises: planned }] }));
+  assert.equal(a.workoutCount, 0);
+  assert.equal(a.workoutDays, 0);
+  assert.equal(a.loggedDays.workouts, 0);
+  assert.equal(a.daysWithData, 0);
+  assert.ok(a.missing.includes('workouts'));
+});
+
+test('activated-but-unperformed plan days cannot push a thin week over the threshold', () => {
+  const thin = aggregateWeek(base({
+    meals: [{ date: '2026-03-06', calories: 2000 }, { date: '2026-03-07', calories: 2000 }],
+    workouts: [{ date: '2026-03-08', exercises: planned }], // planned for the 3rd day, never performed
+  }));
+  assert.equal(thin.daysWithData, 2);
+  assert.equal(thin.sufficient, false);
+  const real = aggregateWeek(base({
+    meals: [{ date: '2026-03-06', calories: 2000 }, { date: '2026-03-07', calories: 2000 }],
+    workouts: [{ date: '2026-03-08', exercises: done }],
+  }));
+  assert.equal(real.sufficient, true);
 });
