@@ -6,8 +6,7 @@ from ..schemas.coach import (
     CoachChatResponse,
     InsightResponse
 )
-from .ollama_client import ollama_client
-from ..config import settings
+from .llm import get_provider
 
 class CoachService:
     def build_system_prompt(
@@ -123,18 +122,19 @@ class CoachService:
 
         messages.append({"role": "user", "content": message})
 
-        # Send to Ollama
-        llm_reply = await ollama_client.chat(messages, model=settings.OLLAMA_MODEL)
+        # Send to the configured LLM provider (ollama / openai / anthropic)
+        provider = get_provider()
+        llm_reply = await provider.chat(messages)
 
         if llm_reply:
             return CoachChatResponse(
                 reply=llm_reply,
-                model_used=settings.OLLAMA_MODEL,
+                model_used=provider.model,
                 context_applied=True,
-                source="ollama"
+                source=provider.name
             )
 
-        # Fallback if Ollama is loading or unreachable
+        # Fallback if the provider is loading, misconfigured or unreachable
         fallback_reply = self._generate_fallback_reply(message, profile, metrics)
         return CoachChatResponse(
             reply=fallback_reply,
@@ -161,9 +161,10 @@ class CoachService:
             {"role": "user", "content": user_prompt}
         ]
 
-        llm_reply = await ollama_client.chat(messages, model=settings.OLLAMA_MODEL, temperature=0.7)
+        provider = get_provider()
+        llm_reply = await provider.chat(messages, temperature=0.7)
         if llm_reply:
-            return InsightResponse(insight=llm_reply.strip('\"'), category="daily", model_used=settings.OLLAMA_MODEL)
+            return InsightResponse(insight=llm_reply.strip('\"'), category="daily", model_used=provider.model)
 
         # Heuristic Insight
         if metrics and metrics.remainingCalories and metrics.remainingCalories > 0:

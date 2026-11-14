@@ -20,6 +20,12 @@ services:
       context: ./ai_services
     environment:
       - PORT=8000
+      - AI_PROVIDER=${AI_PROVIDER:-ollama}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5}
       - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-phi3:mini}
       - CORS_ORIGINS=${AI_CORS_ORIGINS:-http://localhost:5000}

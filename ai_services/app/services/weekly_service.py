@@ -2,16 +2,11 @@ from typing import Dict, List, Optional
 
 from ..schemas.coach import InsightResponse, UserProfileContext
 from ..schemas.weekly import WeeklyMetricsContext
+from .llm import get_provider
 
 
 async def _chat(messages: List[Dict[str, str]], temperature: float) -> "tuple[Optional[str], str]":
-    """Return (reply, model_name). Uses the provider abstraction when present, else the legacy Ollama client."""
-    try:
-        from .llm import get_provider  # provider-neutral layer
-    except ImportError:
-        from .ollama_client import ollama_client  # legacy path, removed once the provider layer lands
-        from ..config import settings
-        return await ollama_client.chat(messages, model=settings.OLLAMA_MODEL, temperature=temperature), settings.OLLAMA_MODEL
+    """Return (reply, model_name) from the configured LLM provider."""
     provider = get_provider()
     return await provider.chat(messages, temperature=temperature), provider.model
 
