@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+
 export const apiClient = axios.create({
-  baseURL: 'http://localhost:5000/api/v1',
+  baseURL: API_URL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -28,7 +30,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
-        const refreshRes = await axios.post('http://localhost:5000/api/v1/auth/refresh', {}, { withCredentials: true });
+        const refreshRes = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
         const newToken = refreshRes.data?.data?.accessToken;
         if (newToken) {
           localStorage.setItem('kaizen_access_token', newToken);
