@@ -23,6 +23,7 @@ export const activateDaySchema = z.object({
   body: z.object({
     dayNumber: z.number().int().min(1).max(7),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be YYYY-MM-DD').optional(),
+    force: z.boolean().optional(),
   }),
 });
 

@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { LoadingState } from '../../components/ui/LoadingState';
+import { ConfirmReplace, isCompletedSetsConflict } from '../../components/ui/ConfirmReplace';
 import { useSplitSchedule, useWorkoutLogs, useAddWorkoutLog, useDeleteWorkoutLog } from '../../services/workoutService';
 import { useExercises, useAddExercise } from '../../services/exerciseService';
 import { useInventory } from '../../services/inventoryService';
@@ -42,24 +43,27 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
     (d: any) => !d.isRestDay && d.exercises && d.exercises.length > 0
   );
 
-  const handleLoadPlannedRoutine = async () => {
-    const dayToLoad = todayPlannedDay?.dayNumber || (schedule?.today as any)?.dayNumber || currentDayNumber;
+  const [pendingReplaceDay, setPendingReplaceDay] = useState<number | null>(null);
+
+  const activateDay = async (dayNumber: number, force = false) => {
     try {
       setError(null);
-      await activatePlannedDay({ dayNumber: dayToLoad, date: currentDate });
+      await activatePlannedDay(force ? { dayNumber, date: currentDate, force: true } : { dayNumber, date: currentDate });
+      setPendingReplaceDay(null);
     } catch (err: any) {
+      if (isCompletedSetsConflict(err)) {
+        setPendingReplaceDay(dayNumber);
+        return;
+      }
+      setPendingReplaceDay(null);
       setError(err.message || 'Failed to load planned routine');
     }
   };
 
-  const handleLoadDayRoutine = async (dayNumber: number) => {
-    try {
-      setError(null);
-      await activatePlannedDay({ dayNumber, date: currentDate });
-    } catch (err: any) {
-      setError(err.message || 'Failed to load planned routine');
-    }
-  };
+  const handleLoadPlannedRoutine = () =>
+    activateDay(todayPlannedDay?.dayNumber || (schedule?.today as any)?.dayNumber || currentDayNumber);
+
+  const handleLoadDayRoutine = (dayNumber: number) => activateDay(dayNumber);
 
   const [selectedSplitName, setSelectedSplitName] = useState('Push Day');
   const [activeExercises, setActiveExercises] = useState<WorkoutExercise[]>([]);
@@ -325,6 +329,14 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
           </Button>
         </div>
       </div>
+
+      {pendingReplaceDay !== null && (
+        <ConfirmReplace
+          isPending={isActivatingPlan}
+          onReplace={() => activateDay(pendingReplaceDay, true)}
+          onCancel={() => setPendingReplaceDay(null)}
+        />
+      )}
 
       {error && (
         <div className="p-3.5 bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-mono rounded-control">
