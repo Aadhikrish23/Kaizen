@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 // Only this hash is persisted; the raw refresh token never touches the database.
 export const hashToken = (token: string): string =>
@@ -28,3 +29,9 @@ export const consumeRefreshToken = async (
   if (!doc || doc.revokedAt || Date.now() >= doc.expiresAt.getTime()) return null;
   return doc.user.toString();
 };
+
+// A unique jti makes every refresh JWT distinct even when minted for the same
+// user in the same second; otherwise rotation could re-save an identical token
+// (same hash) and a replay of the old token would succeed.
+export const signRefreshToken = (userId: string, secret: string): string =>
+  jwt.sign({ id: userId }, secret, { expiresIn: '7d', jwtid: crypto.randomUUID() });

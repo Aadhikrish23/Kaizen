@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hashToken, consumeRefreshToken, RefreshTokenStore } from '../src/features/auth/refreshTokenUtils';
+import jwt from 'jsonwebtoken';
+import { hashToken, consumeRefreshToken, signRefreshToken, RefreshTokenStore } from '../src/features/auth/refreshTokenUtils';
 
 // In-memory stand-in whose findOneAndDelete is atomic (like MongoDB's).
 const makeStore = (rows: any[]): RefreshTokenStore => ({
@@ -40,4 +41,29 @@ test('raw token lookup does not match; expired and revoked tokens are rejected',
   assert.equal(await consumeRefreshToken(store, 'raw-value'), null);
   assert.equal(await consumeRefreshToken(store, 'old'), null);
   assert.equal(await consumeRefreshToken(store, 'rev'), null);
+});
+
+const SECRET = 'unit-test-refresh-secret-0123456789';
+
+test('refresh tokens minted back to back for the same user differ', () => {
+  const tokens = new Set(Array.from({ length: 20 }, () => signRefreshToken('u1', SECRET)));
+  assert.equal(tokens.size, 20);
+  const decoded = jwt.verify([...tokens][0], SECRET) as jwt.JwtPayload;
+  assert.equal(decoded.id, 'u1');
+  assert.ok(decoded.jti);
+});
+
+test('replay of a rotated token is rejected even when rotation happens in the same second', async () => {
+  const rows: any[] = [];
+  const store = makeStore(rows);
+  const save = (t: string) => rows.push({ tokenHash: hashToken(t), user: 'u1', expiresAt: future() });
+
+  const t1 = signRefreshToken('u1', SECRET);
+  save(t1);
+  assert.equal(await consumeRefreshToken(store, t1), 'u1');
+  const t2 = signRefreshToken('u1', SECRET); // same second, same user
+  save(t2);
+  assert.notEqual(hashToken(t1), hashToken(t2));
+  assert.equal(await consumeRefreshToken(store, t1), null); // replay of old token
+  assert.equal(await consumeRefreshToken(store, t2), 'u1'); // new token still valid
 });
