@@ -19,6 +19,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Card } from '../../components/ui/Card';
 import { LoadingState } from '../../components/ui/LoadingState';
+import { ConfirmReplace, isCompletedSetsConflict } from '../../components/ui/ConfirmReplace';
 import {
   useUserPlan,
   useConfigurePlan,
@@ -129,16 +130,26 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
     setTimeout(() => setActionNotice(null), 3000);
   };
 
-  const handleActivateDay = async (dayNumber: number) => {
+  const [pendingReplaceDay, setPendingReplaceDay] = useState<number | null>(null);
+  const [activateError, setActivateError] = useState<string | null>(null);
+
+  const handleActivateDay = async (dayNumber: number, force = false) => {
     try {
-      await activatePlannedDay({ dayNumber, date: currentDate });
+      await activatePlannedDay(force ? { dayNumber, date: currentDate, force: true } : { dayNumber, date: currentDate });
+      setPendingReplaceDay(null);
       setActionNotice(`Day ${dayNumber} loaded into today's session.`);
       setTimeout(() => setActionNotice(null), 2500);
       if (onNavigateToWorkouts) {
         setTimeout(onNavigateToWorkouts, 600);
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to activate workout');
+      if (isCompletedSetsConflict(err)) {
+        setPendingReplaceDay(dayNumber);
+        return;
+      }
+      setPendingReplaceDay(null);
+      setActivateError(err.message || 'Failed to activate workout');
+      setTimeout(() => setActivateError(null), 4000);
     }
   };
 
@@ -348,6 +359,18 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
           </Button>
         </div>
       </div>
+
+      {pendingReplaceDay !== null && (
+        <ConfirmReplace
+          isPending={isActivating}
+          onReplace={() => handleActivateDay(pendingReplaceDay, true)}
+          onCancel={() => setPendingReplaceDay(null)}
+        />
+      )}
+
+      {activateError && (
+        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">{activateError}</div>
+      )}
 
       {/* Action Notice Toast */}
       {actionNotice && (

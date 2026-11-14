@@ -84,7 +84,7 @@ export const useAdaptPlan = () => {
 export const useActivatePlannedDay = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { dayNumber: number; date?: string }) =>
+    mutationFn: (data: { dayNumber: number; date?: string; force?: boolean }) =>
       apiClient.post<WorkoutLog>('/planner/activate', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutLogs'] });

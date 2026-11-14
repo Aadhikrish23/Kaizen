@@ -27,6 +27,12 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/auth/me" -H "Authorization:
 
 code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/analytics?days=99999" -H "Authorization: Bearer $token")
 [ "$code" = 400 ] || { echo "expected 400 for days=99999, got $code"; exit 1; }
+
+# Planner activate-day accepts only a boolean `force` (validated before any DB work).
+code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/planner/activate" -H "Authorization: Bearer $token" \
+  -H 'Content-Type: application/json' -d '{"dayNumber":1,"force":"yes"}')
+[ "$code" = 400 ] || { echo "expected 400 for non-boolean force on planner activate, got $code"; exit 1; }
+
 # AI chat must reject a client-supplied system role (validated before any AI call).
 code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/ai/chat" -H "Authorization: Bearer $token" \
   -H 'Content-Type: application/json' \

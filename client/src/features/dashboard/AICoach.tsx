@@ -20,12 +20,16 @@ export const AICoach: React.FC = () => {
   const handleSendPrompt = async (textToSend: string) => {
     if (!textToSend.trim() || isPending) return;
 
-    const userText = textToSend;
+    const userText = textToSend.trim().slice(0, 2000); // server caps message at 2000 chars
     // Server accepts at most 20 history items of <=4000 chars; the AI service only uses the last 8.
-    const historyPayload = chat.slice(-20).map(c => ({
-      role: (c.role === 'coach' ? 'assistant' : 'user') as 'assistant' | 'user',
-      content: c.text.slice(0, 4000)
-    }));
+    // Empty items (e.g. an empty assistant reply) would fail the server's content.min(1), so drop them.
+    const historyPayload = chat
+      .filter(c => c.text && c.text.trim().length > 0)
+      .slice(-20)
+      .map(c => ({
+        role: (c.role === 'coach' ? 'assistant' : 'user') as 'assistant' | 'user',
+        content: c.text.slice(0, 4000)
+      }));
 
     setChat(prev => [...prev, { role: 'user', text: userText }]);
     setInput('');
@@ -35,7 +39,7 @@ export const AICoach: React.FC = () => {
         message: userText,
         history: historyPayload
       });
-      setChat(prev => [...prev, { role: 'coach', text: res.reply }]);
+      setChat(prev => [...prev, { role: 'coach', text: res.reply || 'No response received. Please try again.' }]);
     } catch (err) {
       setChat(prev => [...prev, { role: 'coach', text: 'Advisor offline. Please check connection and try again.' }]);
     }
@@ -142,6 +146,7 @@ export const AICoach: React.FC = () => {
         <Input 
           placeholder="Ask a question about nutrition, exercises, or recovery..." 
           value={input} 
+          maxLength={2000}
           onChange={e => setInput(e.target.value)}
           className="flex-1 bg-kaizen-surface text-xs sm:text-sm"
         />
