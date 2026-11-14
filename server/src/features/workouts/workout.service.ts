@@ -1,3 +1,5 @@
+import { todayInTz, weekdayOfDate } from '../../utils/dates';
+import { getUserTimezone } from '../../utils/userTimezone';
 import WorkoutLog from './WorkoutLog';
 import UserWorkoutPlan from './UserWorkoutPlan';
 import * as inventoryService from '../inventory/inventory.service';
@@ -13,8 +15,9 @@ const DEFAULT_SPLITS = [
 ];
 
 export const getSchedule = async (userId?: string) => {
-  const today = new Date();
-  const jsDay = today.getDay(); // 0-6
+  // Weekday of the user's current calendar day in their timezone (see docs/timezone.md).
+  const tz = userId ? await getUserTimezone(userId) : undefined;
+  const jsDay = weekdayOfDate(todayInTz(tz)); // 0-6
   const tomorrowDay = (todayDay: number) => (todayDay + 1) % 7;
 
   // If user has a workout plan configured, align to their plan

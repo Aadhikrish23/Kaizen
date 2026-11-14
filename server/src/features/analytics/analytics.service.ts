@@ -1,15 +1,13 @@
-﻿import WaterLog from '../water/WaterLog';
+﻿import { todayInTz, addDaysTz, dateRange } from '../../utils/dates';
+import WaterLog from '../water/WaterLog';
 import MealLog from '../meals/MealLog';
 import WeightLog from '../weight/WeightLog';
 import WorkoutLog from '../workouts/WorkoutLog';
 
-export const getAnalyticsDashboard = async (userId: string, days: number = 30) => {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - days);
-
-  const startDateStr = startDate.toISOString().split('T')[0];
-  const endDateStr = endDate.toISOString().split('T')[0];
+export const getAnalyticsDashboard = async (userId: string, days: number = 30, timezone?: string) => {
+  // Buckets are calendar days in the user's timezone (see docs/timezone.md).
+  const endDateStr = todayInTz(timezone);
+  const startDateStr = addDaysTz(endDateStr, -days);
 
   // Fetch all logs in the date range
   const [waterLogs, meals, weightLogs, workoutLogs] = await Promise.all([
@@ -23,8 +21,7 @@ export const getAnalyticsDashboard = async (userId: string, days: number = 30) =
   const dateMap: Record<string, any> = {};
   
   // Initialize map with all dates in range
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-    const dStr = d.toISOString().split('T')[0];
+  for (const dStr of dateRange(startDateStr, endDateStr)) {
     dateMap[dStr] = {
       date: dStr,
       waterAmount: 0,

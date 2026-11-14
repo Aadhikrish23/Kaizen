@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../utils/date';
 import React, { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -36,7 +37,7 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
   const currentWorkout: WorkoutLog | null = Array.isArray(workoutData) ? (workoutData[0] as any) : ((workoutData as any) || null);
   const exercisesCatalog: Exercise[] = (catalogData as any) || [];
 
-  const jsDay = new Date(currentDate).getDay(); // 0 is Sun, 1 is Mon...
+  const jsDay = parseLocalDate(currentDate).getDay(); // 0 is Sun, 1 is Mon...
   const currentDayNumber = jsDay === 0 ? 7 : jsDay;
   const todayPlannedDay = userPlan?.schedule?.find((d: any) => d.dayNumber === currentDayNumber);
   const availableDaysWithExercises = (userPlan?.schedule || []).filter(

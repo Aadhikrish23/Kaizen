@@ -1,3 +1,4 @@
+import { localDateString } from '../utils/date';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight, Scale } from 'lucide-react';
@@ -20,25 +21,16 @@ export const DashboardLayout = () => {
   const [workoutSubTab, setWorkoutSubTab] = useState<WorkoutSubTab>('tracker');
   const { logout, user } = useAuth();
   
-  // Format today's date as YYYY-MM-DD
-  const getTodayString = () => {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  // Today's date as YYYY-MM-DD in the browser's local timezone
+  const getTodayString = () => localDateString();
 
   const [currentDate, setCurrentDate] = useState<string>(getTodayString());
 
   // Date stepper handlers
   const shiftDate = (days: number) => {
-    const d = new Date(currentDate);
-    d.setDate(d.getDate() + days);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    setCurrentDate(`${year}-${month}-${day}`);
+    // Parse as a local calendar date (new Date('YYYY-MM-DD') is UTC midnight and shifts the day west of UTC)
+    const [y, m, d] = currentDate.split('-').map(Number);
+    setCurrentDate(localDateString(new Date(y, m - 1, d + days)));
   };
 
   const isToday = currentDate === getTodayString();

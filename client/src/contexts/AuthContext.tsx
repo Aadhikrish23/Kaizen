@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
+import { browserTimezone } from '../utils/date';
 
 export interface User {
   id: string;
@@ -18,6 +19,7 @@ export interface User {
   proteinDailyTargetG?: number;
   waterDailyTargetMl?: number;
   units?: 'metric' | 'imperial';
+  timezone?: string;
 }
 
 interface AuthContextType {
@@ -56,6 +58,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           userData.id = userData._id;
         }
         setUser(userData as User);
+        // Adopt the browser timezone while the account is still on the server default.
+        const tz = browserTimezone();
+        if (tz && tz !== 'UTC' && (!userData.timezone || userData.timezone === 'UTC')) {
+          apiClient.patch('/profile', { timezone: tz })
+            .then(() => setUser(prev => (prev ? { ...prev, timezone: tz } : prev)))
+            .catch(() => { /* non-fatal: retried on next load */ });
+        }
       } catch {
         setUser(null);
         localStorage.removeItem('kaizen_access_token');

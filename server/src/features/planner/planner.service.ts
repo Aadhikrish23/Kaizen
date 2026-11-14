@@ -1,3 +1,4 @@
+import { todayForUser } from '../../utils/userTimezone';
 import mongoose from 'mongoose';
 import UserWorkoutPlan, {
   IUserWorkoutPlan,
@@ -192,14 +193,14 @@ export const configurePlan = async (
         schedule,
         dailyAdaptations: [
           {
-            date: new Date().toISOString().split('T')[0],
+            date: await todayForUser(userId),
             reason: `Generated ${preferences.splitStyle.replace('_', ' ').toUpperCase()} split (Quality Score: ${qualityScore.overallScore}/100). Balanced push/pull (${balanceMetrics.pushPullRatio}) and squat/hinge (${balanceMetrics.squatHingeRatio}). Strict inventory matched.`,
             type: 'streak_milestone',
             exerciseName: 'Program Initialized',
           },
         ],
         adherenceRate: 100,
-        lastEvaluatedDate: new Date().toISOString().split('T')[0],
+        lastEvaluatedDate: await todayForUser(userId),
       });
       return await plan.save();
     } catch (err: any) {
@@ -217,7 +218,7 @@ export const configurePlan = async (
     plan.isCustomPlan = false;
     plan.programName = `${preferences.splitStyle.replace('_', ' ').toUpperCase()} Balanced Split`;
     plan.dailyAdaptations.unshift({
-      date: new Date().toISOString().split('T')[0],
+      date: await todayForUser(userId),
       reason: `Program synthesized: Quality Score ${qualityScore.overallScore}/100. Push/Pull ratio: ${balanceMetrics.pushPullRatio}, Squat/Hinge ratio: ${balanceMetrics.squatHingeRatio}. ${qualityScore.strengths.slice(0, 2).join(' ')}`,
       type: 'volume_adjustment',
       exerciseName: 'Preferences Updated',
@@ -237,7 +238,7 @@ export const adaptPlanDaily = async (
   force?: boolean
 ): Promise<IUserWorkoutPlan> => {
   const plan = await getUserPlan(userId);
-  const evalDate = targetDate || new Date().toISOString().split('T')[0];
+  const evalDate = targetDate || await todayForUser(userId);
 
   // If already evaluated today and force not specified, return current plan
   if (!force && plan.lastEvaluatedDate === evalDate && plan.dailyAdaptations.length > 1) {
@@ -363,7 +364,7 @@ export const activatePlannedDay = async (
     throw new Error(`Day ${dayNumber} is configured as a rest day. Select a training day to activate.`);
   }
 
-  const workoutDate = targetDate || new Date().toISOString().split('T')[0];
+  const workoutDate = targetDate || await todayForUser(userId);
 
   const exercises = plannedDay.exercises.map(ex => {
     const sets = [];
@@ -484,7 +485,7 @@ export const swapPlannedExercise = async (
   };
 
   plan.dailyAdaptations.unshift({
-    date: new Date().toISOString().split('T')[0],
+    date: await todayForUser(userId),
     reason: `Swapped movement: replaced "${oldExName}" with "${newEx.name}" on Day ${dayNumber}.`,
     type: 'exercise_swap',
     exerciseName: newEx.name
@@ -516,7 +517,7 @@ export const saveCustomPlan = async (
       },
       schedule: data.schedule,
       dailyAdaptations: [{
-        date: new Date().toISOString().split('T')[0],
+        date: await todayForUser(userId),
         reason: `Created routine: "${data.programName || 'Custom Program'}"`,
         type: 'volume_adjustment',
       }],
@@ -532,7 +533,7 @@ export const saveCustomPlan = async (
       plan.preferences.daysPerWeek = data.schedule.filter(d => !d.isRestDay).length;
     }
     plan.dailyAdaptations.unshift({
-      date: new Date().toISOString().split('T')[0],
+      date: await todayForUser(userId),
       reason: `Updated routine: "${data.programName || 'Custom Program'}"`,
       type: 'volume_adjustment',
     });
@@ -555,7 +556,7 @@ export const addExerciseToDay = async (
   day.isRestDay = false;
 
   plan.dailyAdaptations.unshift({
-    date: new Date().toISOString().split('T')[0],
+    date: await todayForUser(userId),
     reason: `Added "${exercise.exerciseName}" to Day ${dayNumber}`,
     type: 'exercise_swap',
     exerciseName: exercise.exerciseName,
@@ -588,7 +589,7 @@ export const removeExerciseFromDay = async (
   }
 
   plan.dailyAdaptations.unshift({
-    date: new Date().toISOString().split('T')[0],
+    date: await todayForUser(userId),
     reason: `Removed "${removedName}" from Day ${dayNumber}`,
     type: 'exercise_swap',
     exerciseName: removedName,
@@ -600,7 +601,7 @@ export const removeExerciseFromDay = async (
 export const deleteUserPlan = async (userId: string | mongoose.Types.ObjectId): Promise<IUserWorkoutPlan> => {
   await UserWorkoutPlan.findOneAndDelete({ userId });
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = await todayForUser(userId);
   const todayLog = await WorkoutLog.findOne({ userId, date: todayStr });
   if (todayLog && todayLog.exercises.every(e => e.sets.every(s => !s.completed))) {
     await WorkoutLog.findByIdAndDelete(todayLog._id);
