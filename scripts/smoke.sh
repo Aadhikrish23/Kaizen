@@ -28,7 +28,7 @@ fail() { echo "$*"; exit 1; }
 # http_code <curl args...>: prints only the HTTP status code.
 http_code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
-# auth_get/auth_post/auth_patch <path> [curl args...]: authenticated request, prints the response body.
+# auth_get/auth_post <path> [curl args...]: authenticated request, prints the response body.
 auth_get()   { local p="$1"; shift; curl -s "$BASE$p" -H "Authorization: Bearer $token" "$@"; }
 auth_post()  { local p="$1"; shift; curl -s -X POST "$BASE$p" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' "$@"; }
 

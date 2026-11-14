@@ -45,30 +45,55 @@ const NUMBER_WORDS: Record<string, number> = {
 };
 
 /** Units that count whole portions of the food rather than a weight/volume. */
-export const COUNT_UNITS = new Set(['piece', 'slice', 'serving', 'bowl', 'glass', 'plate', 'scoop', 'cup', 'tbsp', 'tsp']);
+export const COUNT_UNITS = new Set(['piece', 'slice', 'serving', 'bowl', 'glass', 'plate', 'scoop']);
 
+// Real volume units and their size in ml (a cup is 240 ml, a tablespoon 15 ml, a teaspoon 5 ml).
+const ML_PER_UNIT: Record<string, number> = { ml: 1, l: 1000, cup: 240, tbsp: 15, tsp: 5 };
+
+/** Volume of the parsed amount in ml, or null if the unit is not a volume. */
+export const toMl = (unit: string, quantity: number): number | null =>
+  unit in ML_PER_UNIT ? Math.round(quantity * ML_PER_UNIT[unit] * 10) / 10 : null;
+
+export const MAX_GRAMS = 100000; // matches the AI service schema
+export const MAX_QUANTITY = 10000; // matches the AI service schema; anything larger is rejected as absurd
+
+const UNICODE_FRACTIONS: Record<string, string> = {
+  '½': '1/2', '⅓': '1/3', '⅔': '2/3', '¼': '1/4', '¾': '3/4', '⅕': '1/5', '⅖': '2/5', '⅗': '3/5', '⅘': '4/5',
+  '⅙': '1/6', '⅚': '5/6', '⅛': '1/8', '⅜': '3/8', '⅝': '5/8', '⅞': '7/8',
+};
+
+/** "1½ cups" -> "1 1/2 cups", "½ cup" -> "1/2 cup" so fractions become ordinary tokens. */
+export const normalizeFractions = (text: string): string =>
+  text.replace(/([0-9])?([½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞])/g, (_m, digit, frac) => `${digit ? digit + ' ' : ''}${UNICODE_FRACTIONS[frac]}`);
+
+// Returns a finite positive number or null. Digit strings long enough to overflow are rejected here.
 const parseQuantity = (token: string): number | null => {
   const t = token.toLowerCase();
-  if (t in NUMBER_WORDS) return NUMBER_WORDS[t];
-  const frac = /^(\d+)\/(\d+)$/.exec(t);
-  if (frac) return Number(frac[2]) === 0 ? null : Number(frac[1]) / Number(frac[2]);
-  if (/^\d+(\.\d+)?$/.test(t)) return parseFloat(t);
-  return null;
+  let value: number | null = null;
+  if (t in NUMBER_WORDS) value = NUMBER_WORDS[t];
+  else {
+    const frac = /^(\d{1,6})\/(\d{1,6})$/.exec(t);
+    if (frac) value = Number(frac[2]) === 0 ? null : Number(frac[1]) / Number(frac[2]);
+    else if (/^\d{1,9}(\.\d{1,6})?$/.test(t)) value = parseFloat(t);
+  }
+  return value !== null && isFinite(value) && value > 0 && value <= MAX_QUANTITY ? value : null;
 };
+
+const isFractionToken = (t: string | undefined): boolean => !!t && /^\d{1,6}\/\d{1,6}$/.test(t);
 
 /**
  * Deterministic parser: "2 rotis and 1 cup dal, 150g chicken" -> items.
  * Segments split on commas, "and", "&", "+", "with" and newlines. Quantity defaults to 1.
  */
 export const regexParseFood = (text: string): ParsedItem[] => {
-  const segments = text
-    .toLowerCase()
+  const segments = normalizeFractions(text.toLowerCase().normalize('NFC'))
     .split(/\s*(?:,|;|\n|&|\+|\band\b|\bwith\b)\s*/)
     .map((s) => s.trim())
     .filter(Boolean);
 
   const items: ParsedItem[] = [];
   for (const seg of segments) {
+    if (/^\d[\d.]*e[+-]?\d/.test(seg)) continue; // scientific notation (1e400): not a quantity we accept
     // glue "150g" -> "150 g"
     const tokens = seg.replace(/^(\d+(?:\.\d+)?)([a-z]+)/, '$1 $2').split(/\s+/);
     let quantity = 1;
@@ -79,6 +104,16 @@ export const regexParseFood = (text: string): ParsedItem[] => {
       quantity = q;
       hadQuantity = true;
       i = 1;
+      // mixed fraction: "1 1/2 cups" = 1.5
+      if (/^\d+$/.test(tokens[0]) && isFractionToken(tokens[1])) {
+        const frac = parseQuantity(tokens[1]);
+        if (frac !== null) {
+          quantity += frac;
+          i = 2;
+        }
+      }
+    } else if (/^\d/.test(tokens[0])) {
+      continue; // a number we refuse (overflow, absurd size, malformed): drop the item instead of guessing
     }
     let unit = 'piece';
     let gramsPerUnit: number | null = null;
@@ -91,6 +126,7 @@ export const regexParseFood = (text: string): ParsedItem[] => {
     }
     const name = tokens.slice(i).join(' ').replace(/[^a-z0-9\s'-]/g, '').trim();
     if (!name || !(quantity > 0)) continue;
+    if (gramsPerUnit && quantity * gramsPerUnit > MAX_GRAMS) continue; // e.g. 9999 kg: absurd, drop it
     items.push({
       name,
       quantity,
@@ -139,10 +175,12 @@ export const resolveAmount = (item: ParsedItem, food: FoodRecord): ResolvedAmoun
   const unitOfFood: 'g' | 'ml' = food.servingUnit === 'ml' ? 'ml' : 'g';
   const isCount = COUNT_UNITS.has(item.unit);
   const grams = item.grams && item.grams > 0 ? item.grams : null;
+  const ml = toMl(item.unit, item.quantity);
 
   if (basis === 'per_100g') {
     if (grams) return { amount: grams, amountUnit: unitOfFood };
-    if (item.unit === 'ml') return { amount: item.quantity, amountUnit: 'ml' };
+    // A volume is only usable for foods measured per 100 ml; converting to grams needs a density we do not know.
+    if (ml !== null) return unitOfFood === 'ml' ? { amount: ml, amountUnit: 'ml' } : null;
     if (isCount && food.servingQty && food.servingQty > 0) return { amount: item.quantity * food.servingQty, amountUnit: unitOfFood };
     return null;
   }
@@ -150,6 +188,7 @@ export const resolveAmount = (item: ParsedItem, food: FoodRecord): ResolvedAmoun
   // per_serving
   if (isCount) return { amount: item.quantity, amountUnit: 'serving' };
   const serving = parseServingSize(food.servingSize);
+  if (ml !== null) return serving && serving.unit === 'ml' ? { amount: Math.round((ml / serving.qty) * 100) / 100, amountUnit: 'serving' } : null;
   if (grams && serving && serving.unit === 'g') return { amount: Math.round((grams / serving.qty) * 100) / 100, amountUnit: 'serving' };
   return null;
 };

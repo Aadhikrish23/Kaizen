@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { regexParseFood, searchTerms, pickBestFood, resolveAmount, computeNutrition, buildResult } from '../src/features/ai/foodParsing';
+import { regexParseFood, searchTerms, pickBestFood, resolveAmount, computeNutrition, buildResult, toMl, normalizeFractions, MAX_QUANTITY } from '../src/features/ai/foodParsing';
 import { aiParseResponseSchema } from '../src/features/ai/parseFood.service';
 import { parseFoodSchema, recommendationsSchema } from '../src/features/ai/ai.schema';
+import { CANDIDATE_SORT } from '../src/features/ai/recommendations';
 import { escapeRegex } from '../src/utils/escapeRegex';
 
 const item = (o: any) => ({ name: 'x', quantity: 1, unit: 'piece', grams: null, confidence: 0.9, ...o });
@@ -107,4 +108,57 @@ test('escapeRegex neutralises regex operators', () => {
   assert.equal(escapeRegex('a.b*c'), 'a\\.b\\*c');
   assert.ok(new RegExp(escapeRegex('(x+)+$')).test('(x+)+$'));
   assert.equal(new RegExp(escapeRegex('.*')).test('anything'), false);
+});
+
+test('absurd or overflowing quantities are dropped, never Infinity/null in the response', () => {
+  for (const text of ['9'.repeat(400) + ' apples', '1e400 apples', '20000 apples', '9999 kg rice', '1/0 cup rice', '99999999999 g rice']) {
+    assert.deepEqual(regexParseFood(text), [], text);
+  }
+  const mixed = regexParseFood('2 apples and ' + '9'.repeat(400) + ' bananas');
+  assert.deepEqual(mixed.map((i) => i.name), ['apples']); // the sane item survives
+  const json = JSON.parse(JSON.stringify(regexParseFood('2 apples, 150 g chicken')));
+  for (const it of json) assert.ok(Number.isFinite(it.quantity) && it.quantity > 0 && it.quantity <= MAX_QUANTITY);
+  assert.equal(regexParseFood(MAX_QUANTITY + ' g rice').length, 1); // boundary is accepted
+});
+
+test('mixed and unicode fractions parse to the right quantity', () => {
+  const q = (t: string) => regexParseFood(t).map((i) => [i.name, i.quantity, i.unit]);
+  assert.deepEqual(q('1 1/2 cups rice'), [['rice', 1.5, 'cup']]);
+  assert.deepEqual(q('2 3/4 tbsp honey'), [['honey', 2.75, 'tbsp']]);
+  assert.deepEqual(q('1/2 cup oats'), [['oats', 0.5, 'cup']]);
+  assert.deepEqual(q('1½ cups milk'), [['milk', 1.5, 'cup']]);
+  assert.deepEqual(q('1 ½ cups milk'), [['milk', 1.5, 'cup']]);
+  assert.deepEqual(q('½ cup oats'), [['oats', 0.5, 'cup']]);
+  assert.deepEqual(q('¾ tsp salt'), [['salt', 0.75, 'tsp']]);
+  assert.equal(normalizeFractions('1½'), '1 1/2');
+  assert.equal(normalizeFractions('½'), '1/2');
+  assert.deepEqual(q('1 egg'), [['egg', 1, 'piece']]); // a following non-fraction is not merged
+});
+
+test('cup/tbsp/tsp are real volumes, not whole servings', () => {
+  assert.equal(toMl('cup', 1), 240);
+  assert.equal(toMl('tbsp', 2), 30);
+  assert.equal(toMl('tsp', 1.5), 7.5);
+  assert.equal(toMl('l', 0.5), 500);
+  assert.equal(toMl('piece', 2), null);
+
+  const solid = { name: 'Rice', basis: 'per_100g' as const, calories: 130, protein: 2.7, carbs: 28, fat: 0.3 };
+  assert.equal(resolveAmount(item({ quantity: 1, unit: 'cup' }), solid), null); // density unknown: ask the user
+  assert.equal(buildResult(item({ name: 'rice', quantity: 1, unit: 'cup' }), solid as any).source, 'estimate');
+
+  const milk = { name: 'Milk', basis: 'per_100g' as const, servingUnit: 'ml' as const, calories: 64, protein: 3.4, carbs: 5, fat: 3.6 };
+  assert.deepEqual(resolveAmount(item({ quantity: 1, unit: 'cup' }), milk), { amount: 240, amountUnit: 'ml' });
+  assert.equal(computeNutrition(item({ quantity: 1, unit: 'cup' }), milk)!.nutrition.calories, 154); // 2.4 x 64
+  assert.deepEqual(resolveAmount(item({ quantity: 2, unit: 'tbsp' }), milk), { amount: 30, amountUnit: 'ml' });
+
+  const drink = { name: 'Juice', basis: 'per_serving' as const, servingSize: '250 ml', calories: 110, protein: 1, carbs: 26, fat: 0 };
+  assert.deepEqual(resolveAmount(item({ quantity: 1, unit: 'cup' }), drink), { amount: 0.96, amountUnit: 'serving' });
+  const unitless = { ...drink, servingSize: '1 glass' };
+  assert.equal(resolveAmount(item({ quantity: 1, unit: 'cup' }), unitless), null);
+  // countable units still scale by servings
+  assert.deepEqual(resolveAmount(item({ quantity: 2, unit: 'glass' }), unitless), { amount: 2, amountUnit: 'serving' });
+});
+
+test('recommendation candidate pools use a deterministic sort', () => {
+  assert.deepEqual(CANDIDATE_SORT, { name: 1, _id: 1 });
 });
