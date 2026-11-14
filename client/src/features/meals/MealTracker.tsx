@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { MealLog, FoodItem } from '../../types';
 import { Trash2, Plus, Utensils, Sparkles } from 'lucide-react';
 import { FoodSearch } from '../../components/ui/FoodSearch';
+import { scaleFood, defaultAmount, amountUnitLabel, resolveBasis } from '../../utils/nutrition';
 import { RecipeList } from './RecipeList';
 import { RecipeExplorerModal } from './RecipeExplorerModal';
 
@@ -67,6 +68,9 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
+  // Selected database food + amount; macros below are derived from these and stay editable.
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+  const [amount, setAmount] = useState('');
   const [mealType, setMealType] = useState<'breakfast' | 'lunch' | 'dinner' | 'snack'>('lunch');
   const [showRecipeExplorer, setShowRecipeExplorer] = useState(false);
 
@@ -93,6 +97,20 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
     }
   };
 
+  const applyScaled = (food: FoodItem, amt: number) => {
+    const m = scaleFood(food, amt);
+    setCalories(String(m.calories));
+    setProtein(String(m.protein));
+    setCarbs(String(m.carbs));
+    setFat(String(m.fat));
+  };
+
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    const n = Number(value);
+    if (selectedFood && isFinite(n) && n > 0) applyScaled(selectedFood, n);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !calories) return;
@@ -117,6 +135,8 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
       setProtein('');
       setCarbs('');
       setFat('');
+      setSelectedFood(null);
+      setAmount('');
 
       if (onUpdate) onUpdate();
     } catch (err) {
@@ -228,11 +248,11 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
                 <label className="text-xs font-medium text-kaizen-muted">Find Food or Enter Name</label>
                 <FoodSearch 
                   onSelectFood={(food: FoodItem) => {
+                    const startAmount = defaultAmount(food);
+                    setSelectedFood(food);
+                    setAmount(String(startAmount));
                     setName(food.name);
-                    setCalories(String(food.calories));
-                    setProtein(String(food.protein));
-                    setCarbs(String(food.carbs));
-                    setFat(String(food.fat));
+                    applyScaled(food, startAmount);
                   }} 
                   className="mb-2" 
                 />
@@ -243,6 +263,24 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
                   required
                 />
               </div>
+
+              {selectedFood && (
+                <div className="space-y-1">
+                  <Input
+                    label={`Amount (${amountUnitLabel(selectedFood)})`}
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={amount}
+                    onChange={(e) => handleAmountChange(e.target.value)}
+                  />
+                  <p className="text-[11px] font-mono text-kaizen-subtle">
+                    {resolveBasis(selectedFood) === 'per_100g'
+                      ? `Database values are per 100 ${selectedFood.servingUnit ?? 'g'}; macros below are scaled to this amount.`
+                      : `Database values are per serving (${selectedFood.servingSize}); macros below are scaled to this many servings.`}
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <Input

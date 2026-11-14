@@ -57,10 +57,10 @@ export const calculateOptimalSleepWindows = (targetWakeTime: string) => {
 
   const latencyMinutes = 15;
   const cycles = [
-    { cycles: 6, durationHours: '9h', label: 'Maximum Recovery', desc: '6 cycles - Best for intense athletic strain & neurogenesis' },
-    { cycles: 5, durationHours: '7h 30m', label: 'Optimal Window', desc: '5 cycles - Gold standard for energy and circadian balance' },
-    { cycles: 4, durationHours: '6h', label: 'Minimum Restorative', desc: '4 cycles - Baseline restorative sleep' },
-    { cycles: 3, durationHours: '4h 30m', label: 'Power Rest', desc: '3 cycles - Emergency short night' }
+    { cycles: 6, durationHours: '9h', label: 'Longer Night', desc: 'About 6 cycles (~9h). Often chosen after hard training or when you are short on sleep' },
+    { cycles: 5, durationHours: '7h 30m', label: 'Typical Target', desc: 'About 5 cycles (~7.5h). A commonly suggested target for most adults' },
+    { cycles: 4, durationHours: '6h', label: 'Shorter Night', desc: 'About 4 cycles (~6h). Many people feel they need more than this regularly' },
+    { cycles: 3, durationHours: '4h 30m', label: 'Very Short Night', desc: 'About 3 cycles (~4.5h). Best kept for occasional nights' }
   ];
 
   return cycles.map(c => {

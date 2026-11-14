@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../utils/date';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -117,7 +118,7 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
   const chartData = useMemo(() => {
     const list = [...sleepHistory].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
     return list.map(item => {
-      const d = new Date(item.date);
+      const d = parseLocalDate(item.date);
       const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
       const hours = Number((item.durationMinutes / 60).toFixed(1));
       return {
@@ -188,7 +189,7 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
             </span>
             <span className="text-xs font-mono text-kaizen-muted">cycles (90m)</span>
           </div>
-          <p className="mt-2 text-xs font-mono text-kaizen-muted">5 complete cycles recommended</p>
+          <p className="mt-2 text-xs font-mono text-kaizen-muted">About 5 cycles (~7.5h) is a typical target; cycle length varies by person</p>
         </Card>
 
         {/* Sleep Quality */}
@@ -314,7 +315,7 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
                       Calculated Duration: <span className="font-mono text-white font-bold">{liveHours}h {liveMinutes}m</span>
                     </div>
                     <div className="text-[11px] text-kaizen-text-muted">
-                      Completes approximately <span className="font-mono text-indigo-300">{liveCycles}</span> cycles
+                      Roughly <span className="font-mono text-indigo-300">{liveCycles}</span> cycles
                     </div>
                   </div>
                 </div>
@@ -348,7 +349,7 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
           {/* 90-Minute Sleep Cycle Visualizer */}
           <Card
             title="Ultradian Sleep Cycle Architecture"
-            subtitle="The human brain cycles between NREM (Deep) and REM sleep in ~90-minute waves"
+            subtitle="Sleep typically moves through light, deep and REM stages in waves of roughly 90 minutes. Exact timing varies by person and night."
           >
             <div className="space-y-4">
               {/* Cycle blocks */}
@@ -440,8 +441,8 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
               <div className="p-3 rounded-lg bg-kaizen-bg border border-kaizen-border text-xs text-kaizen-text-secondary flex items-start gap-2.5">
                 <Info className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
                 <p>
-                  Waking up in the middle of Deep Sleep causes <strong>sleep inertia</strong> (morning grogginess). 
-                  Target waking up between full 90-minute cycle boundaries for peak alertness and high heart rate variability.
+                  Waking from deep sleep can cause <strong>sleep inertia</strong> (morning grogginess). 
+                  Waking near the end of a cycle (roughly every 90 minutes, as an estimate) may reduce grogginess for some people; this is not a guarantee.
                 </p>
               </div>
             </div>
@@ -453,7 +454,7 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
           {/* Circadian Bedtime Planner */}
           <Card
             title="Circadian Bedtime Planner"
-            subtitle="Plan tonight's sleep window to eliminate morning grogginess"
+            subtitle="Estimated bedtimes based on typical 90-minute cycles plus about 15 minutes to fall asleep. Real cycles vary."
           >
             <div className="space-y-4">
               <div>
