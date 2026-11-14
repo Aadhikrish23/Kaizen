@@ -111,3 +111,14 @@ test('exercises without a logged RPE yield no RPE (nothing is defaulted when rec
   );
   assert.equal(res[0].avgLoggedRpe, undefined);
 });
+
+test('uncalibrated exercises are skipped by the evaluator instead of assuming a load', () => {
+  const profile = buildEquipmentProfile(dumbbells);
+  const sets = [1, 2, 3].map((n) => ({ reps: 12, weightKg: 12, rpe: 7, completed: true, setNumber: n }));
+  const day = (ex: any) => [{ exercises: [ex] }] as any;
+  const base = { exerciseName: 'Dumbbell Row', equipment: 'dumbbell', targetReps: 10, targetSets: 3 };
+
+  assert.equal(evaluateSessionAdaptations(day({ ...base, needsCalibration: true }), [{ exerciseName: 'Dumbbell Row', sets }], profile).length, 0);
+  assert.equal(evaluateSessionAdaptations(day({ ...base }), [{ exerciseName: 'Dumbbell Row', sets }], profile).length, 0); // load unset
+  assert.equal(evaluateSessionAdaptations(day({ ...base, suggestedWeightKg: 10 }), [{ exerciseName: 'Dumbbell Row', sets }], profile).length, 1);
+});

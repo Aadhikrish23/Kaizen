@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import User from './User';
 import RefreshToken from './RefreshToken';
 import { hashToken, consumeRefreshToken, signRefreshToken } from './refreshTokenUtils';
+import { isValidTimezone } from '../../utils/dates';
 import { AppError } from '../../middleware/errorHandler';
 
 import { getJwtSecret, getJwtRefreshSecret } from '../../config/secrets';
@@ -40,6 +41,7 @@ export const formatUserResponse = (user: any) => ({
   proteinDailyTargetG: user.proteinDailyTargetG,
   waterDailyTargetMl: user.waterDailyTargetMl,
   units: user.units || 'metric',
+  timezone: user.timezone || 'UTC',
   healthScore: user.healthScore,
   xp: user.xp,
   level: user.level,
@@ -60,6 +62,7 @@ export const register = async (data: any) => {
     email: data.email,
     passwordHash,
     onboardingComplete: false,
+    ...(isValidTimezone(data.timezone) ? { timezone: data.timezone } : {}),
   });
   await user.save();
 
@@ -80,6 +83,12 @@ export const login = async (data: any) => {
   const isMatch = await bcrypt.compare(data.password, user.passwordHash);
   if (!isMatch) {
     throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password');
+  }
+
+  // Adopt the browser timezone only while the account is still on the default.
+  if (isValidTimezone(data.timezone) && (!user.timezone || user.timezone === 'UTC') && data.timezone !== 'UTC') {
+    user.timezone = data.timezone;
+    await user.save();
   }
 
   const tokens = await generateTokens(user.id);

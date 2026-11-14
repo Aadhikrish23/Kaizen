@@ -1,4 +1,6 @@
 import { applyWorkingWeightToPlan } from '../planner/planner.service';
+import { todayInTz, weekdayOfDate } from '../../utils/dates';
+import { getUserTimezone } from '../../utils/userTimezone';
 import WorkoutLog from './WorkoutLog';
 import UserWorkoutPlan from './UserWorkoutPlan';
 import * as inventoryService from '../inventory/inventory.service';
@@ -14,8 +16,9 @@ const DEFAULT_SPLITS = [
 ];
 
 export const getSchedule = async (userId?: string) => {
-  const today = new Date();
-  const jsDay = today.getDay(); // 0-6
+  // Weekday of the user's current calendar day in their timezone (see docs/timezone.md).
+  const tz = userId ? await getUserTimezone(userId) : undefined;
+  const jsDay = weekdayOfDate(todayInTz(tz)); // 0-6
   const tomorrowDay = (todayDay: number) => (todayDay + 1) % 7;
 
   // If user has a workout plan configured, align to their plan
@@ -138,16 +141,20 @@ export const createOrUpdateWorkout = async (data: any) => {
         if (completedSetsWithWeight.length > 0) {
           const bestSet = completedSetsWithWeight.reduce((prev: any, curr: any) => (curr.weightKg > prev.weightKg ? curr : prev), completedSetsWithWeight[0]);
           const loggedName = ex.exerciseName || ex.name || 'Exercise';
-          applyWorkingWeightToPlan(data.userId, loggedName, bestSet.weightKg)
-            .catch(err => console.error('[PlanSync] Error applying calibrated weight:', err));
-          inventoryService.recordWorkingWeight(data.userId, {
-            exerciseName: loggedName,
-            exerciseId: ex.exerciseId,
-            currentWeightKg: bestSet.weightKg,
-            targetReps: bestSet.reps || 10,
-            date: data.date,
-            rpe: bestSet.rpe
-          }).catch(err => console.error('[InventorySync] Error updating working weight:', err));
+          // Awaited with errors logged: a failed sync must not be silent, nor fail the workout save itself
+          try {
+            await inventoryService.recordWorkingWeight(data.userId, {
+              exerciseName: loggedName,
+              exerciseId: ex.exerciseId,
+              currentWeightKg: bestSet.weightKg,
+              targetReps: bestSet.reps || 10,
+              date: data.date,
+              rpe: bestSet.rpe
+            });
+            await applyWorkingWeightToPlan(data.userId, loggedName, bestSet.weightKg);
+          } catch (err) {
+            console.error('[InventorySync] Error syncing working weight for', loggedName, err);
+          }
         }
       }
     }

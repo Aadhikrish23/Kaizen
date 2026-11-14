@@ -1,3 +1,4 @@
+import { isValidTimezone } from '../../utils/dates';
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IUser extends Document {
@@ -25,6 +26,7 @@ export interface IUser extends Document {
   streakDays: number;
   // Preferences
   units?: 'metric' | 'imperial';
+  timezone?: string;
   // Onboarding
   onboardingComplete?: boolean;
   createdAt: Date;
@@ -63,6 +65,12 @@ const UserSchema = new Schema(
     streakDays: { type: Number, default: 0, min: 0 },
     // Preferences
     units: { type: String, enum: ['metric', 'imperial'], default: 'metric' },
+    // IANA timezone; defines the user's calendar day (see docs/timezone.md)
+    timezone: {
+      type: String,
+      default: 'UTC',
+      validate: { validator: (v: string) => isValidTimezone(v), message: 'Invalid IANA timezone' }
+    },
     // Onboarding
     onboardingComplete: { type: Boolean, default: false }
   },

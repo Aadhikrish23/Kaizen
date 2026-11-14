@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiClient } from '../../api/client';
+import { browserTimezone } from '../../utils/date';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ export const LoginForm: React.FC = () => {
     setError('');
     setIsSubmitting(true);
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
+      const response = await apiClient.post('/auth/login', { email, password, timezone: browserTimezone() });
       login(response as any);
       const userData = (response as any)?.user || response;
       if (userData?.onboardingComplete) {

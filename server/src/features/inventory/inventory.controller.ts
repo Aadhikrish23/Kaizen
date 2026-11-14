@@ -33,7 +33,12 @@ export const recordWorkingWeight = asyncHandler(async (req: Request, res: Respon
   // @ts-ignore
   const userId = req.user.id;
   const data = await inventoryService.recordWorkingWeight(userId, req.body);
-  await applyWorkingWeightToPlan(userId, req.body.exerciseName, req.body.currentWeightKg);
+  try {
+    await applyWorkingWeightToPlan(userId, req.body.exerciseName, req.body.currentWeightKg);
+  } catch (err) {
+    // The weight itself is saved; log (not swallow silently) a failure to calibrate the plan
+    console.error('[PlanSync] Error applying calibrated weight:', err);
+  }
 
   const response: SuccessResponse<typeof data> = {
     success: true,

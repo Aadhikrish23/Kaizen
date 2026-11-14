@@ -1,3 +1,4 @@
+import { localDateString } from '../../utils/date';
 import React, { useState } from 'react';
 import {
   Dumbbell,
@@ -273,7 +274,7 @@ export const InventoryView: React.FC = () => {
       currentWeightKg: weight,
       targetReps: isNaN(reps) ? 10 : reps,
       rpe: isNaN(rpe) ? undefined : rpe,
-      date: new Date().toISOString().split('T')[0],
+      date: localDateString(),
     });
 
     setEditingExercise(null);

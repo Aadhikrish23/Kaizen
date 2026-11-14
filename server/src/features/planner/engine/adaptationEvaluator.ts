@@ -48,6 +48,9 @@ export const evaluateSessionAdaptations = (
       }
     }
     if (!matchedPlanEx) continue;
+    // No known working weight (awaiting calibration): there is no prescription to evaluate, so do not invent one.
+    if (matchedPlanEx.needsCalibration) continue;
+    if (matchedPlanEx.suggestedWeightKg === undefined && matchedPlanEx.equipment !== 'bodyweight') continue;
 
     const catalogItem = COMPREHENSIVE_EXERCISE_CATALOG.find((c) => c.name.toLowerCase() === key);
     const minReps = catalogItem?.defaultRepRange.min || Math.max(matchedPlanEx.targetReps - 2, 6);
@@ -57,7 +60,7 @@ export const evaluateSessionAdaptations = (
       {
         exerciseName: loggedEx.exerciseName,
         equipment: matchedPlanEx.equipment,
-        currentPrescribedWeightKg: matchedPlanEx.suggestedWeightKg || 10,
+        currentPrescribedWeightKg: matchedPlanEx.suggestedWeightKg ?? 0,
         currentPrescribedReps: matchedPlanEx.targetReps || 10,
         minReps,
         maxReps,
