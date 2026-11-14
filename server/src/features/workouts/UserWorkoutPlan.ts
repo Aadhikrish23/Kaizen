@@ -7,7 +7,8 @@ export interface IPlannedExercise {
   equipment: string;
   targetSets: number;
   targetReps: number;
-  suggestedWeightKg: number;
+  suggestedWeightKg?: number; // unset until calibrated (see needsCalibration)
+  needsCalibration?: boolean; // true when no working weight is known for this exercise
   restSeconds: number;
   videoUrl?: string;
   formTips?: string[];
@@ -80,7 +81,8 @@ const PlannedExerciseSchema = new Schema(
     equipment: { type: String, required: true },
     targetSets: { type: Number, required: true, default: 3 },
     targetReps: { type: Number, required: true, default: 10 },
-    suggestedWeightKg: { type: Number, default: 10 },
+    suggestedWeightKg: { type: Number },
+    needsCalibration: { type: Boolean, default: false },
     restSeconds: { type: Number, default: 60 },
     videoUrl: { type: String },
     formTips: [{ type: String }],

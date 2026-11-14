@@ -25,6 +25,12 @@ import { EquipmentItem } from '../../types';
 
 const PRESETS: { id: string; name: string; description: string; items: EquipmentItem[] }[] = [
   {
+    id: 'bodyweight-only',
+    name: 'Bodyweight Only',
+    description: 'No equipment: floor work, push-ups, bodyweight squats and hinges',
+    items: [],
+  },
+  {
     id: 'home-dumbbells',
     name: 'Home Dumbbell Starter',
     description: 'Adjustable dumbbells, incline bench, resistance bands, and pull-up bar',
@@ -382,6 +388,16 @@ export const InventoryView: React.FC = () => {
       {/* Tab 1: Equipment */}
       {activeTab === 'equipment' && (
         <div className="space-y-6">
+          {inventory?.needsSetup && (
+            <div className="p-4 rounded-structural bg-amber-500/10 border border-amber-500/30 text-amber-200 text-sm">
+              <p className="font-semibold">Set up your equipment</p>
+              <p className="text-xs mt-1">
+                We do not assume what you own. Start with one of the options below (Bodyweight Only, Home Dumbbell Starter or
+                Full Commercial Gym Access), then adjust the list to match.
+              </p>
+            </div>
+          )}
+
           {/* Preset Quick Load */}
           <div className="p-4 bg-kaizen-surface/60 border border-kaizen-border rounded-structural space-y-3">
             <div className="flex items-center justify-between">
@@ -390,7 +406,7 @@ export const InventoryView: React.FC = () => {
               </span>
               <span className="text-[11px] text-kaizen-subtle">Replace or bootstrap equipment list</span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {PRESETS.map((preset) => (
                 <div
                   key={preset.id}

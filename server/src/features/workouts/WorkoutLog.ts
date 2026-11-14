@@ -6,6 +6,7 @@ export interface IWorkoutSet {
   reps: number;
   rpe?: number; // Rate of Perceived Exertion (1-10)
   completed: boolean;
+  needsCalibration?: boolean; // planned set whose load is unknown; weightKg 0 is a placeholder, not a prescription
 }
 
 export interface IWorkoutExercise {
@@ -33,7 +34,8 @@ const WorkoutSetSchema = new Schema({
   weightKg: { type: Number, required: true, min: 0 },
   reps: { type: Number, required: true, min: 0 },
   rpe: { type: Number, min: 1, max: 10 },
-  completed: { type: Boolean, default: true }
+  completed: { type: Boolean, default: true },
+  needsCalibration: { type: Boolean }
 }, { _id: false });
 
 const WorkoutExerciseSchema = new Schema({
