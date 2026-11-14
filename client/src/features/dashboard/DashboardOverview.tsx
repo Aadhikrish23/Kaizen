@@ -11,6 +11,7 @@ import { Dumbbell, Utensils, Scale, Moon, ArrowRight, Activity, Zap } from 'luci
 import { QuickWeighInModal } from '../weight/QuickWeighInModal';
 import { AICoach } from './AICoach';
 import { WeeklyInsightCard } from './WeeklyInsightCard';
+import { GamificationCard } from './GamificationCard';
 import { computeReadiness, READINESS_LABELS } from './readiness';
 
 interface DashboardOverviewProps {
@@ -290,6 +291,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
         </Card>
       </div>
       
+      {/* Level, streak and achievements */}
+      <div className="w-full">
+        <GamificationCard />
+      </div>
+
       {/* Weekly insight (next to the advisor's daily insight) */}
       <div className="w-full">
         <WeeklyInsightCard />

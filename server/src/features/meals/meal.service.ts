@@ -1,4 +1,5 @@
 import MealLog from './MealLog';
+import { recordActivity } from '../gamification/gamification.service';
 
 export const getLogsByDate = async (date: string, userId: string) => {
   const meals = await MealLog.find({ date, userId }).sort({ createdAt: 1 });
@@ -22,7 +23,9 @@ export const createLog = async (data: {
   userId: string; 
 }) => {
   const meal = new MealLog(data);
-  return await meal.save();
+  const saved = await meal.save();
+  recordActivity(data.userId, 'meal', data.date, saved._id);
+  return saved;
 };
 
 export const deleteLog = async (id: string, userId: string) => {
