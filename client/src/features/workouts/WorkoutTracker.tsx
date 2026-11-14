@@ -509,6 +509,12 @@ export const WorkoutTracker: React.FC<WorkoutTrackerProps> = ({ currentDate, onU
                   </button>
                 </div>
 
+                {ex.sets.some(s => s.needsCalibration && !s.completed && s.weightKg === 0) && (
+                  <p className="mb-2 text-[11px] font-mono text-amber-300">
+                    No working weight known yet: enter the weight you use for the first set. It will be saved as your starting weight.
+                  </p>
+                )}
+
                 {/* Set-by-Set Logging Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left font-mono text-xs">

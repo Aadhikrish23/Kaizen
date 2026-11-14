@@ -32,6 +32,7 @@ import { useInventory } from '../../services/inventoryService';
 import { useAuth } from '../../contexts/AuthContext';
 import { ExerciseVideoModal } from '../workouts/ExerciseVideoModal';
 import { SwapExerciseModal } from './SwapExerciseModal';
+import { CalibrationPrompt } from './CalibrationPrompt';
 import { AddExerciseToDayModal } from './AddExerciseToDayModal';
 import { CustomPlanBuilderModal } from './CustomPlanBuilderModal';
 import { downloadWorkoutPlanPdf } from '../../services/workoutPlanPdfService';
@@ -368,6 +369,13 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
         />
       )}
 
+      {inventory?.needsSetup && (
+        <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
+          You have not set up your equipment yet, so this plan uses bodyweight exercises only. Choose your equipment in the
+          Inventory tab (bodyweight only, home dumbbells or full gym) and regenerate the plan.
+        </div>
+      )}
+
       {activateError && (
         <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">{activateError}</div>
       )}
@@ -433,7 +441,6 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                   <option value="general_fitness">General Health & Conditioning</option>
                   <option value="hypertrophy">Muscle Hypertrophy</option>
                   <option value="strength">Maximal Strength</option>
-                  <option value="endurance">Muscular Endurance</option>
                 </select>
               </div>
 
@@ -826,7 +833,7 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                                     }`}
                               </strong>
                             </span>
-                            {ex.suggestedWeightKg > 0 && (
+                            {(ex.suggestedWeightKg ?? 0) > 0 && (
                               <>
                                 <span>•</span>
                                 <span>
@@ -839,6 +846,9 @@ export const AdaptivePlannerView: React.FC<AdaptivePlannerViewProps> = ({
                               Rest: <strong className="text-kaizen-muted">{ex.restSeconds || 60}s</strong>
                             </span>
                           </div>
+                          {ex.needsCalibration && (
+                            <CalibrationPrompt exerciseName={ex.exerciseName} targetReps={ex.targetReps} />
+                          )}
                           {ex.notes && (ex.notes.includes('Guidance') || ex.notes.includes('Circuit')) && (
                             <p className="text-[11px] text-emerald-400/90 font-mono mt-1">
                               💡 {ex.notes}

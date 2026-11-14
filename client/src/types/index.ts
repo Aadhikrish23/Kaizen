@@ -146,6 +146,8 @@ export interface UserInventory {
   userId?: string;
   equipment: EquipmentItem[];
   workingWeights: ExerciseWorkingWeight[];
+  // true for a brand-new inventory whose equipment the user has not chosen yet
+  needsSetup?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -156,6 +158,7 @@ export interface WorkoutSet {
   reps: number;
   rpe?: number; // 1-10
   completed: boolean;
+  needsCalibration?: boolean; // weightKg 0 is a placeholder: load unknown
 }
 
 export interface WorkoutExercise {
@@ -247,7 +250,8 @@ export interface PlannedExercise {
   equipment: string;
   targetSets: number;
   targetReps: number;
-  suggestedWeightKg: number;
+  suggestedWeightKg?: number; // unset until calibrated
+  needsCalibration?: boolean;
   restSeconds: number;
   videoUrl?: string;
   formTips?: string[];

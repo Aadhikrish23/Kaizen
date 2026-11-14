@@ -15,7 +15,8 @@ import { COMPREHENSIVE_EXERCISE_CATALOG } from './engine/exerciseCatalog';
 import { ExerciseCatalogItem } from './engine/movementModel';
 import { buildEquipmentProfile, isExerciseCompatibleWithProfile } from './engine/inventoryEvaluator';
 import { generateBalancedWeeklyPlan } from './engine/weeklyBalanceEngine';
-import { evaluateDoubleProgression, ExercisePerformanceEvaluation } from './engine/progressiveOverloadEngine';
+import { resolveSwapLoad, applyCalibratedWeight } from './engine/swapCalibration';
+import { evaluateSessionAdaptations, pickLogForDate } from './engine/adaptationEvaluator';
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -247,79 +248,47 @@ export const adaptPlanDaily = async (
   const inventory = await getUserInventory(userId);
   const profile = buildEquipmentProfile(inventory?.equipment || []);
 
-  // Find recent workout logs (today or most recent)
-  const recentLogs = await WorkoutLog.find({ userId }).sort({ date: -1 }).limit(5);
-  if (!recentLogs || recentLogs.length === 0) {
+  // Use the log for the requested date only (not the newest log overall).
+  const logForDate = pickLogForDate(await WorkoutLog.find({ userId, date: evalDate }), evalDate);
+  if (!logForDate) {
     plan.lastEvaluatedDate = evalDate;
     return await plan.save();
   }
 
-  const latestLog = recentLogs[0];
   const adaptations: IDailyAdaptation[] = [];
 
-  for (const loggedEx of latestLog.exercises) {
-    // Find matching planned exercise in schedule
-    let matchedPlanEx: IPlannedExercise | undefined;
-    for (const day of plan.schedule) {
-      const found = day.exercises.find(e => e.exerciseName.trim().toLowerCase() === loggedEx.exerciseName.trim().toLowerCase());
-      if (found) {
-        matchedPlanEx = found;
-        break;
-      }
-    }
-
-    if (!matchedPlanEx) continue;
-
-    const catalogItem = COMPREHENSIVE_EXERCISE_CATALOG.find(
-      c => c.name.toLowerCase() === loggedEx.exerciseName.toLowerCase()
-    );
-
-    const minReps = catalogItem?.defaultRepRange.min || Math.max(matchedPlanEx.targetReps - 2, 6);
-    const maxReps = catalogItem?.defaultRepRange.max || Math.min(matchedPlanEx.targetReps + 2, 12);
-
-    const evalData: ExercisePerformanceEvaluation = {
-      exerciseName: loggedEx.exerciseName,
-      equipment: matchedPlanEx.equipment,
-      currentPrescribedWeightKg: matchedPlanEx.suggestedWeightKg || 10,
-      currentPrescribedReps: matchedPlanEx.targetReps || 10,
-      minReps,
-      maxReps,
-      completedSets: loggedEx.sets.map(s => ({
-        reps: s.reps,
-        weightKg: s.weightKg,
-        rpe: s.rpe,
-        completed: s.completed,
-      })),
-    };
-
-    const recommendation = evaluateDoubleProgression(evalData, profile);
+  for (const item of evaluateSessionAdaptations(plan.schedule, logForDate.exercises as any, profile)) {
+    const { exerciseName, matchedPlanEx, recommendation, avgLoggedRpe } = item;
 
     if (recommendation.type === 'weight_increase' || recommendation.type === 'volume_adjustment' || recommendation.type === 'deload') {
+      // Capture the prescription before it is overwritten below (matchedPlanEx is part of the schedule)
+      const oldValue = `${matchedPlanEx.suggestedWeightKg} kg × ${matchedPlanEx.targetReps} reps`;
+
       // Update planned exercise across schedule
       for (const day of plan.schedule) {
         for (const ex of day.exercises) {
-          if (ex.exerciseName.trim().toLowerCase() === loggedEx.exerciseName.trim().toLowerCase()) {
+          if (ex.exerciseName.trim().toLowerCase() === exerciseName.trim().toLowerCase()) {
             ex.suggestedWeightKg = recommendation.newWeightKg;
             ex.targetReps = recommendation.newTargetReps;
           }
         }
       }
 
-      // Record working weight into UserInventory
+      // Record working weight into UserInventory, with the RPE the user actually logged (if any)
       if (recommendation.newWeightKg > 0) {
         await recordWorkingWeight(userId, {
-          exerciseName: loggedEx.exerciseName,
+          exerciseName,
           currentWeightKg: recommendation.newWeightKg,
           date: evalDate,
-          rpe: 8,
+          rpe: avgLoggedRpe,
         });
       }
 
       adaptations.push({
         date: evalDate,
         type: recommendation.type === 'weight_increase' ? 'weight_increase' : recommendation.type === 'deload' ? 'deload' : 'volume_adjustment',
-        exerciseName: loggedEx.exerciseName,
-        oldValue: `${matchedPlanEx.suggestedWeightKg} kg × ${matchedPlanEx.targetReps} reps`,
+        exerciseName,
+        oldValue,
         newValue: `${recommendation.newWeightKg} kg × ${recommendation.newTargetReps} reps`,
         reason: recommendation.reason,
       });
@@ -370,10 +339,11 @@ export const activatePlannedDay = async (
     for (let i = 1; i <= ex.targetSets; i++) {
       sets.push({
         setNumber: i,
-        weightKg: ex.suggestedWeightKg || 0,
+        // Unknown load: weight 0 flagged, so the tracker does not pretend a prescribed load
+        weightKg: ex.needsCalibration ? 0 : ex.suggestedWeightKg || 0,
         reps: ex.targetReps || 10,
-        rpe: 7.5,
         completed: false,
+        ...(ex.needsCalibration ? { needsCalibration: true } : {}),
       });
     }
     return {
@@ -454,16 +424,7 @@ export const swapPlannedExercise = async (
     ww => ww.exerciseName.trim().toLowerCase() === newEx.name.trim().toLowerCase()
   );
 
-  let suggestedWeight = 0;
-  if (loggedWw && loggedWw.currentWeightKg > 0) {
-    suggestedWeight = loggedWw.currentWeightKg;
-  } else if (newEx.equipment === 'bodyweight') {
-    suggestedWeight = 0;
-  } else if (newEx.equipment === 'dumbbell') {
-    suggestedWeight = 8;
-  } else if (newEx.equipment === 'barbell') {
-    suggestedWeight = 20;
-  }
+  const load = resolveSwapLoad(newEx.equipment, loggedWw?.currentWeightKg);
 
   day.exercises[exerciseIndex] = {
     exerciseId: (newEx._id as mongoose.Types.ObjectId).toString(),
@@ -472,7 +433,8 @@ export const swapPlannedExercise = async (
     equipment: newEx.equipment,
     targetSets: currentSets,
     targetReps: currentReps,
-    suggestedWeightKg: suggestedWeight,
+    suggestedWeightKg: load.suggestedWeightKg,
+    needsCalibration: load.needsCalibration,
     restSeconds: currentRest,
     videoUrl: newEx.videoUrl || 'https://www.youtube.com/embed/rT7DgCr-3pg',
     formTips: newEx.formTips && newEx.formTips.length > 0 ? newEx.formTips : [
@@ -480,7 +442,9 @@ export const swapPlannedExercise = async (
       'Control the eccentric phase for 2-3 seconds.',
       'Breathe out during the concentric effort.'
     ],
-    notes: `Swapped from ${oldExName}. Calibrated for active inventory.`
+    notes: load.needsCalibration
+      ? `Swapped from ${oldExName}. Enter a starting weight to calibrate this exercise.`
+      : `Swapped from ${oldExName}.`
   };
 
   plan.dailyAdaptations.unshift({
@@ -626,4 +590,21 @@ export const deleteUserPlan = async (userId: string | mongoose.Types.ObjectId): 
   });
 
   return await emptyPlan.save();
+};
+
+/**
+ * Once a working weight is recorded (via workout logging or the inventory editor), planned exercises that
+ * were waiting for calibration take that weight as their prescribed load.
+ */
+export const applyWorkingWeightToPlan = async (
+  userId: string | mongoose.Types.ObjectId,
+  exerciseName: string,
+  weightKg: number
+): Promise<void> => {
+  const plan = await UserWorkoutPlan.findOne({ userId });
+  if (!plan) return;
+  if (applyCalibratedWeight(plan.schedule, exerciseName, weightKg)) {
+    plan.markModified('schedule');
+    await plan.save();
+  }
 };

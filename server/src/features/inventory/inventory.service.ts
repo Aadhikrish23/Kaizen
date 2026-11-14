@@ -1,36 +1,17 @@
 import mongoose from 'mongoose';
 import UserInventory, { IUserInventory, IEquipmentItem } from './UserInventory';
 
-export const DEFAULT_EQUIPMENT: IEquipmentItem[] = [
-  {
-    id: 'dumbbells-starter',
-    type: 'dumbbell',
-    name: 'Adjustable Dumbbells Set',
-    availableWeightsKg: [2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20],
-    notes: 'Standard starter dumbbell pair with spinlocks'
-  },
-  {
-    id: 'flat-bench',
-    type: 'bench',
-    name: 'Adjustable Incline/Flat Bench',
-    availableWeightsKg: [],
-    notes: '0 to 90 degree positions'
-  },
-  {
-    id: 'pullup-bar',
-    type: 'pullup_bar',
-    name: 'Doorway Pull-up & Dip Station',
-    availableWeightsKg: [],
-    notes: 'Home doorway mount'
-  },
-  {
-    id: 'resistance-bands',
-    type: 'bands',
-    name: 'Loop & Tube Resistance Bands',
-    availableWeightsKg: [5, 10, 15, 20, 25],
-    notes: 'Light, medium, heavy tension bands'
-  }
-];
+/**
+ * A new user starts with an empty, unconfirmed inventory: we do not assume any equipment.
+ * Legacy inventories (created before the `confirmed` flag existed) have no value and count as confirmed.
+ */
+export const inventoryNeedsSetup = (inv: { confirmed?: boolean | null } | null | undefined): boolean =>
+  !!inv && inv.confirmed === false;
+
+export const toInventoryResponse = (inv: IUserInventory) => ({
+  ...inv.toObject(),
+  needsSetup: inventoryNeedsSetup(inv),
+});
 
 export const getUserInventory = async (userId: string | mongoose.Types.ObjectId): Promise<IUserInventory> => {
   let inventory = await UserInventory.findOne({ userId });
@@ -38,7 +19,8 @@ export const getUserInventory = async (userId: string | mongoose.Types.ObjectId)
     try {
       inventory = await UserInventory.create({
         userId,
-        equipment: DEFAULT_EQUIPMENT,
+        equipment: [],
+        confirmed: false,
         workingWeights: []
       });
     } catch (err: any) {
@@ -61,10 +43,12 @@ export const updateUserInventory = async (
     inventory = new UserInventory({
       userId,
       equipment,
+      confirmed: true,
       workingWeights: []
     });
   } else {
     inventory.equipment = equipment;
+    inventory.confirmed = true; // the user explicitly chose this equipment (possibly none = bodyweight only)
   }
   return await inventory.save();
 };

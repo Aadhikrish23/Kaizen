@@ -219,7 +219,7 @@ export const SwapExerciseModal: React.FC<SwapExerciseModalProps> = ({
             </div>
             <div className="text-xs font-mono text-kaizen-muted sm:text-right">
               Target: <span className="text-kaizen-text font-bold">{currentExercise.targetSets} × {currentExercise.targetReps}</span>
-              {currentExercise.suggestedWeightKg > 0 && (
+              {(currentExercise.suggestedWeightKg ?? 0) > 0 && (
                 <span className="text-emerald-400 font-bold ml-1.5">({currentExercise.suggestedWeightKg}kg)</span>
               )}
             </div>

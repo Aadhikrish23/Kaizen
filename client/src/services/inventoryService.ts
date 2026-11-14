@@ -32,6 +32,8 @@ export const useUpdateWorkingWeight = () => {
     }) => apiClient.post('/inventory/working-weight', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      // A recorded weight can calibrate planned exercises that were waiting for one
+      queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
     },
   });
 };

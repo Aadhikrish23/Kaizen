@@ -1,3 +1,4 @@
+import { applyWorkingWeightToPlan } from '../planner/planner.service';
 import WorkoutLog from './WorkoutLog';
 import UserWorkoutPlan from './UserWorkoutPlan';
 import * as inventoryService from '../inventory/inventory.service';
@@ -136,8 +137,11 @@ export const createOrUpdateWorkout = async (data: any) => {
         const completedSetsWithWeight = ex.sets.filter((s: any) => s.completed && typeof s.weightKg === 'number' && s.weightKg > 0);
         if (completedSetsWithWeight.length > 0) {
           const bestSet = completedSetsWithWeight.reduce((prev: any, curr: any) => (curr.weightKg > prev.weightKg ? curr : prev), completedSetsWithWeight[0]);
+          const loggedName = ex.exerciseName || ex.name || 'Exercise';
+          applyWorkingWeightToPlan(data.userId, loggedName, bestSet.weightKg)
+            .catch(err => console.error('[PlanSync] Error applying calibrated weight:', err));
           inventoryService.recordWorkingWeight(data.userId, {
-            exerciseName: ex.exerciseName || ex.name || 'Exercise',
+            exerciseName: loggedName,
             exerciseId: ex.exerciseId,
             currentWeightKg: bestSet.weightKg,
             targetReps: bestSet.reps || 10,

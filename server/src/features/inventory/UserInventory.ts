@@ -30,6 +30,8 @@ export interface IUserInventory extends Document {
   userId: mongoose.Types.ObjectId;
   equipment: IEquipmentItem[];
   workingWeights: IExerciseWorkingWeight[];
+  // false = brand-new, equipment not yet chosen by the user; undefined (legacy rows) counts as confirmed
+  confirmed?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,7 +69,8 @@ const ExerciseWorkingWeightSchema = new Schema({
 const UserInventorySchema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
   equipment: [EquipmentItemSchema],
-  workingWeights: [ExerciseWorkingWeightSchema]
+  workingWeights: [ExerciseWorkingWeightSchema],
+  confirmed: { type: Boolean } // intentionally no default, see inventoryNeedsSetup
 }, {
   timestamps: true
 });
