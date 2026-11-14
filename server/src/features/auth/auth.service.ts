@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import User from './User';
 import RefreshToken from './RefreshToken';
+import { hashToken, consumeRefreshToken } from './refreshTokenUtils';
 import { AppError } from '../../middleware/errorHandler';
 
 import { getJwtSecret, getJwtRefreshSecret } from '../../config/secrets';
@@ -13,7 +14,7 @@ export const generateTokens = async (userId: string) => {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
   const refreshToken = new RefreshToken({
-    token: refreshString,
+    tokenHash: hashToken(refreshString),
     user: userId,
     expiresAt
   });
@@ -90,25 +91,17 @@ export const login = async (data: any) => {
 };
 
 export const refresh = async (token: string) => {
-  const existingToken = await RefreshToken.findOne({ token }).populate('user');
-  
-  if (!existingToken || !existingToken.isActive) {
+  // Single atomic delete: a replayed or concurrent request finds nothing and gets 401.
+  const userId = await consumeRefreshToken(RefreshToken, token);
+  if (!userId) {
     throw new AppError(401, 'INVALID_TOKEN', 'Refresh token is invalid or expired');
   }
 
-  // Revoke the old token (rotation)
-  existingToken.revokedAt = new Date();
-  await existingToken.save();
-
-  // @ts-ignore
-  const userId = existingToken.user._id.toString();
-  const tokens = await generateTokens(userId);
-  
-  return tokens;
+  return generateTokens(userId);
 };
 
 export const logout = async (token: string) => {
-  await RefreshToken.findOneAndUpdate({ token }, { revokedAt: new Date() });
+  await RefreshToken.findOneAndUpdate({ tokenHash: hashToken(token) }, { revokedAt: new Date() });
 };
 
 export const mockForgotPassword = async (email: string) => {

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IRefreshToken extends Document {
-  token: string;
+  tokenHash: string; // sha256 hex of the refresh JWT; the raw token is never stored
   user: mongoose.Types.ObjectId;
   expiresAt: Date;
   revokedAt?: Date;
@@ -12,7 +12,7 @@ export interface IRefreshToken extends Document {
 
 const RefreshTokenSchema = new Schema(
   {
-    token: { type: String, required: true },
+    tokenHash: { type: String, required: true, index: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     expiresAt: { type: Date, required: true },
     revokedAt: Date,

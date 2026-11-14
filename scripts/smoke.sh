@@ -13,7 +13,8 @@ done
 code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/auth/me")
 [ "$code" = 401 ] || { echo "expected 401 without token, got $code"; exit 1; }
 
-reg=$(curl -s -X POST "$BASE/auth/register" -H 'Content-Type: application/json' \
+HDRS=$(mktemp); trap 'rm -f "$HDRS"' EXIT
+reg=$(curl -s -D "$HDRS" -X POST "$BASE/auth/register" -H 'Content-Type: application/json' \
   -d "{\"name\":\"Smoke Test\",\"email\":\"$EMAIL\",\"password\":\"smoke-pass-123\"}")
 token=$(echo "$reg" | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("data",{}).get("accessToken",""))')
 [ -n "$token" ] || { echo "register failed: $reg"; exit 1; }
@@ -23,4 +24,12 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/auth/me" -H "Authorization:
 
 code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/analytics?days=99999" -H "Authorization: Bearer $token")
 [ "$code" = 400 ] || { echo "expected 400 for days=99999, got $code"; exit 1; }
+# Refresh-token replay: first use rotates (200), reuse of the same token must fail (401).
+# Cookie is passed explicitly: in production it is Secure and a jar would not resend it over http.
+rt=$(tr -d '\r' < "$HDRS" | sed -n 's/^[Ss]et-[Cc]ookie: refreshToken=\([^;]*\).*/\1/p' | head -1)
+[ -n "$rt" ] || { echo "no refreshToken cookie set on register"; exit 1; }
+code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/auth/refresh" -H "Cookie: refreshToken=$rt")
+[ "$code" = 200 ] || { echo "expected 200 on first refresh, got $code"; exit 1; }
+code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/auth/refresh" -H "Cookie: refreshToken=$rt")
+[ "$code" = 401 ] || { echo "expected 401 on replayed refresh, got $code"; exit 1; }
 echo "smoke ok"
