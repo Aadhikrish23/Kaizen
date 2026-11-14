@@ -4,10 +4,13 @@ set -euo pipefail
 BASE="${1:-http://localhost:5000/api/v1}"
 EMAIL="smoke_$(date +%s)@example.com"
 
+# Wait for the server and its database connection (health reports db up).
+health=""
 for i in $(seq 1 30); do
-  curl -s -o /dev/null "$BASE/auth/me" && break
+  health=$(curl -sf "$BASE/health" || true)
+  echo "$health" | grep -q '"db":"up"' && break
   sleep 1
-  [ "$i" = 30 ] && { echo "server did not start"; exit 1; }
+  [ "$i" = 30 ] && { echo "server not healthy (db up) after 30s: $health"; exit 1; }
 done
 
 code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/auth/me")
