@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/Card';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiClient } from '../../api/client';
 import { QuickWeighInModal } from '../weight/QuickWeighInModal';
+import { ReminderSettings } from '../reminders/ReminderSettings';
 
 const GOALS = [
   { id: 'lose_weight', label: 'Lose Weight' },
@@ -271,6 +272,8 @@ export const ProfileSettings: React.FC = () => {
           <Input label="Water Target (ml)" type="number" value={form.waterDailyTargetMl} onChange={(e) => set('waterDailyTargetMl', e.target.value)} />
         </div>
       </Card>
+
+      <ReminderSettings />
 
       <div className="flex items-center justify-end gap-3 pt-2">
         <Button variant="primary" onClick={handleSave} disabled={isSaving} className="gap-2 px-6 font-semibold shadow-glow-emerald">
