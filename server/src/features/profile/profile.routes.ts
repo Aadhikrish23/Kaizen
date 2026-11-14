@@ -8,6 +8,8 @@ const router = Router();
 
 router.get('/', protect, profileController.getProfile);
 router.patch('/', protect, validateRequest(updateProfileSchema), profileController.updateProfile);
+router.get('/goal-history', protect, profileController.getGoalHistory);
+router.get('/goal-progress', protect, profileController.getGoalProgressSummary);
 router.post('/onboarding', protect, validateRequest(completeOnboardingSchema), profileController.completeOnboarding);
 router.post('/tdee', protect, profileController.computeTDEE);
 

@@ -9,10 +9,10 @@ import { aggregateWeek, heuristicWeeklyInsight, WeeklyAggregate } from './weekly
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000';
 
-export const getWeeklyInsight = async (user: any) => {
+/** Load the user's logs for the `days` ending on `endDate` and aggregate them (shared by the weekly insight and reports). */
+export const loadAggregate = async (user: any, endDate: string, days = 7): Promise<WeeklyAggregate> => {
   const userId = user._id || user.id;
-  const endDate = todayInTz(user.timezone);
-  const startDate = addDaysTz(endDate, -6);
+  const startDate = addDaysTz(endDate, -(days - 1));
   const range = { $gte: startDate, $lte: endDate };
 
   const [meals, water, workouts, weights, sleep] = await Promise.all([
@@ -23,8 +23,9 @@ export const getWeeklyInsight = async (user: any) => {
     SleepLog.find({ userId, date: range }).lean(),
   ]);
 
-  const aggregate: WeeklyAggregate = aggregateWeek({
+  return aggregateWeek({
     endDate,
+    days,
     targets: {
       calories: user.calorieDailyTarget || 2000,
       protein: user.proteinDailyTargetG || 150,
@@ -36,6 +37,10 @@ export const getWeeklyInsight = async (user: any) => {
     weights: weights as any,
     sleep: sleep as any,
   });
+};
+
+export const getWeeklyInsight = async (user: any) => {
+  const aggregate: WeeklyAggregate = await loadAggregate(user, todayInTz(user.timezone), 7);
 
   const stats = {
     startDate: aggregate.startDate,

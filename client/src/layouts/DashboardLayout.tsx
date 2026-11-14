@@ -1,7 +1,7 @@
 import { localDateString } from '../utils/date';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight, Scale } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight, Scale, FileText } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
 import { AdaptivePlannerView } from '../features/planner/AdaptivePlannerView';
@@ -13,8 +13,9 @@ import { WeightTracker } from '../features/weight/WeightTracker';
 import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
 import { GlobalSearch } from '../components/GlobalSearch';
+import { ReportsPage } from '../features/reports/ReportsPage';
 
-type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight';
+type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight' | 'reports';
 type WorkoutSubTab = 'tracker' | 'planner' | 'inventory';
 
 export const DashboardLayout = () => {
@@ -53,6 +54,7 @@ export const DashboardLayout = () => {
     { id: 'sleep' as const, label: 'Sleep Cycle', icon: Moon, accent: 'text-indigo-400' },
     { id: 'weight' as const, label: 'Scale Weight', icon: Scale, accent: 'text-violet-400' },
     { id: 'analytics' as const, label: 'Analytics', icon: BarChart3, accent: 'text-emerald-400' },
+    { id: 'reports' as const, label: 'Reports', icon: FileText, accent: 'text-sky-400' },
   ];
 
   return (
@@ -342,6 +344,9 @@ export const DashboardLayout = () => {
         )}
         {activeTab === 'analytics' && (
           <AnalyticsDashboard />
+        )}
+        {activeTab === 'reports' && (
+          <ReportsPage currentDate={currentDate} />
         )}
       </main>
 
