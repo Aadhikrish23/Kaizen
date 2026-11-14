@@ -53,6 +53,10 @@ export const per100gFromOff = (nutriments: any): Macros | undefined => {
   };
 };
 
+/** Legacy cached Open Food Facts rows have no basis but hold per-100g values. */
+export const resolveBasis = (food: { basis?: NutritionBasis | null; source?: string | null }): NutritionBasis =>
+  food.basis ?? (food.source === 'openfoodfacts' ? 'per_100g' : 'per_serving');
+
 /** How many "base units" a portion is: grams/100 for per_100g foods, servings for per_serving foods. */
 export const portionFactor = (basis: NutritionBasis, amount: number): number =>
   basis === 'per_100g' ? amount / 100 : amount;

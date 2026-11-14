@@ -20,11 +20,11 @@ export const useInsights = () => {
   });
 };
 
-export const useRecommendations = () => {
+export const useRecommendations = (date?: string, refreshKey?: number) => {
   return useQuery({
-    queryKey: ['ai', 'recommendations'],
+    queryKey: ['ai', 'recommendations', date, refreshKey],
     queryFn: async () => {
-      const response = await apiClient.get('/ai/recommendations');
+      const response = await apiClient.get(`/ai/recommendations${date ? `?date=${encodeURIComponent(date)}` : ''}`);
       return response as any;
     }
   });

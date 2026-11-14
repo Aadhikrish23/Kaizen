@@ -12,6 +12,8 @@ import { Trash2, Plus, Utensils, Sparkles } from 'lucide-react';
 import { FoodSearch } from '../../components/ui/FoodSearch';
 import { scaleFood, defaultAmount, amountUnitLabel, resolveBasis } from '../../utils/nutrition';
 import { RecipeList } from './RecipeList';
+import { QuickAddByText } from './QuickAddByText';
+import { MealSuggestions } from './MealSuggestions';
 import { RecipeExplorerModal } from './RecipeExplorerModal';
 
 interface MealTrackerProps {
@@ -241,7 +243,8 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Add Meal Form */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 space-y-6">
+          <QuickAddByText currentDate={currentDate} onUpdate={onUpdate} />
           <Card title="Log Meal" subtitle="Enter meal details and estimated calories">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1.5">
@@ -348,6 +351,7 @@ export const MealTracker: React.FC<MealTrackerProps> = ({ currentDate, onUpdate 
             </form>
           </Card>
           <RecipeList currentDate={currentDate} />
+          <MealSuggestions date={currentDate} refreshKey={data.meals.length} />
         </div>
 
         {/* Meal Logs List */}

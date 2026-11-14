@@ -2,18 +2,12 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { SuccessResponse } from '../../types/api';
 import * as aiMicroservice from './aiMicroservice.service';
+import { parseFoodFromText } from './parseFood.service';
+import { getMealRecommendations } from './recommendations';
 
-// Phase 13-16: Mock AI Controller
 export const parseFoodText = asyncHandler(async (req: Request, res: Response) => {
-  const { text } = req.body;
-  // Mock AI parsing
-  const data = {
-    name: text.split(' ')[0] || 'Unknown Food',
-    calories: 250,
-    protein: 15,
-    carbs: 30,
-    fat: 8
-  };
+  const userId = (req as any).user._id.toString();
+  const data = await parseFoodFromText(userId, req.body.text);
   res.json({ success: true, data });
 });
 
@@ -25,10 +19,10 @@ export const getInsights = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getRecommendations = asyncHandler(async (req: Request, res: Response) => {
-  res.json({ success: true, data: [
-    { name: 'Grilled Chicken Salad', calories: 350, protein: 40 },
-    { name: 'Greek Yogurt & Berries', calories: 200, protein: 20 }
-  ] });
+  const user = (req as any).user;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const data = await getMealRecommendations(user, { date: req.query.date as string | undefined, limit });
+  res.json({ success: true, data });
 });
 
 export const chatWithCoach = asyncHandler(async (req: Request, res: Response) => {

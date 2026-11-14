@@ -1,4 +1,5 @@
 ﻿import FoodItem from './FoodItem';
+import { escapeRegex } from '../../utils/escapeRegex';
 
 export const searchFoods = async (userId: string, query: string, limit = 20) => {
   // Search global foods OR user's custom foods
@@ -10,7 +11,7 @@ export const searchFoods = async (userId: string, query: string, limit = 20) => 
   };
 
   if (query) {
-    searchCriteria.name = { $regex: query, $options: 'i' };
+    searchCriteria.name = { $regex: escapeRegex(query), $options: 'i' };
   }
 
   return FoodItem.find(searchCriteria)

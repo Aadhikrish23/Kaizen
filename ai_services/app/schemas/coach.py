@@ -40,7 +40,7 @@ class CoachChatResponse(BaseModel):
     reply: str
     model_used: str
     context_applied: bool
-    source: str = "ollama"
+    source: str = "llm"
 
 class InsightRequest(BaseModel):
     user_profile: Optional[UserProfileContext] = None
