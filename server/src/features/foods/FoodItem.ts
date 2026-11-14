@@ -12,6 +12,10 @@ export interface IFoodItem extends Document {
   userId?: mongoose.Types.ObjectId; // null if global
   imageUrl?: string;
   externalId?: string;
+  // What calories/protein/carbs/fat refer to; absent on legacy rows (see resolveBasis)
+  basis?: 'per_100g' | 'per_serving';
+  servingQty?: number;  // numeric serving size when known (g or ml)
+  servingUnit?: 'g' | 'ml';
   source?: 'local' | 'spoonacular' | 'openfoodfacts';
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +34,9 @@ const FoodItemSchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
     imageUrl: { type: String },
     externalId: { type: String },
+    basis: { type: String, enum: ['per_100g', 'per_serving'] },
+    servingQty: { type: Number, min: 0 },
+    servingUnit: { type: String, enum: ['g', 'ml'] },
     source: { type: String, enum: ['local', 'spoonacular', 'openfoodfacts'], default: 'local' }
   },
   { timestamps: true }

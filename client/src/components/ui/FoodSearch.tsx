@@ -2,6 +2,7 @@
 import { useSearchFoods } from '../../services/foodService';
 import { FoodItem } from '../../types';
 import { Search } from 'lucide-react';
+import { resolveBasis } from '../../utils/nutrition';
 
 interface FoodSearchProps {
   onSelectFood: (food: FoodItem) => void;
@@ -66,7 +67,7 @@ export const FoodSearch: React.FC<FoodSearchProps> = ({ onSelectFood, className 
                       {food.name} {food.brand && <span className="text-kaizen-muted text-xs ml-1">({food.brand})</span>}
                     </p>
                     <p className="text-xs text-kaizen-muted mt-0.5 font-mono">
-                      {food.servingSize} • {food.calories} kcal
+                      {resolveBasis(food) === 'per_100g' ? 'per 100 g' : food.servingSize} • {food.calories} kcal
                     </p>
                   </div>
                   <div className="text-[10px] font-mono text-kaizen-subtle">

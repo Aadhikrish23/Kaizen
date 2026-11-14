@@ -12,6 +12,9 @@ export interface FoodItem {
   isCustom: boolean;
   imageUrl?: string;
   externalId?: string;
+  basis?: 'per_100g' | 'per_serving';
+  servingQty?: number;
+  servingUnit?: 'g' | 'ml';
   source?: 'local' | 'spoonacular' | 'openfoodfacts';
 }
 
@@ -20,10 +23,11 @@ export interface RecipeIngredient {
   name: string;
   servingSize: string;
   quantity: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
+  // Unknown for imported recipes (not fabricated); only recipe totals are authoritative there
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 export interface Recipe {

@@ -5,10 +5,11 @@ export interface IRecipeIngredient {
   name: string;
   servingSize: string;
   quantity: number;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
+  // Optional: unknown for imported external recipes (never fabricated)
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
 }
 
 export interface IRecipe extends Document {
@@ -35,10 +36,10 @@ const RecipeIngredientSchema = new Schema({
   name: { type: String, required: true },
   servingSize: { type: String, required: true },
   quantity: { type: Number, required: true, min: 0.1 },
-  calories: { type: Number, required: true, min: 0 },
-  protein: { type: Number, required: true, min: 0 },
-  carbs: { type: Number, required: true, min: 0 },
-  fat: { type: Number, required: true, min: 0 }
+  calories: { type: Number, min: 0 },
+  protein: { type: Number, min: 0 },
+  carbs: { type: Number, min: 0 },
+  fat: { type: Number, min: 0 }
 });
 
 const RecipeSchema = new Schema(

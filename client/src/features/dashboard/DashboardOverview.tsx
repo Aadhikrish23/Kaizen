@@ -9,6 +9,7 @@ import { DailySummary } from '../../types';
 import { Dumbbell, Utensils, Scale, Moon, ArrowRight, Activity, Zap } from 'lucide-react';
 import { QuickWeighInModal } from '../weight/QuickWeighInModal';
 import { AICoach } from './AICoach';
+import { computeReadiness, READINESS_LABELS } from './readiness';
 
 interface DashboardOverviewProps {
   currentDate: string;
@@ -29,6 +30,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
   const bodyMetrics = summary?.bodyMetrics;
   const strength = summary?.strength;
   const sleep = summary?.sleep;
+
+  const readiness = computeReadiness({ nutrition, hydration, strength, sleep });
 
   const caloriePercent = nutrition ? Math.min(100, Math.round((nutrition.totalCalories / nutrition.calorieGoal) * 100)) : 0;
 
@@ -253,21 +256,30 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
         >
           <div className="flex items-center justify-between py-1">
             <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl sm:text-4xl font-mono font-bold text-emerald-400">
-                  {Math.round(
-                    ((caloriePercent > 0 ? Math.min(100, caloriePercent) : 50) +
-                     (hydration ? Math.min(100, (hydration.totalWater / hydration.waterGoal) * 100) : 50) +
-                     (strength?.workoutCompleted ? 100 : 40) +
-                     (sleep?.logged ? sleep.recoveryScore : 60)) / 4
+              {readiness.status === 'ok' ? (
+                <>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl sm:text-4xl font-mono font-bold text-emerald-400">{readiness.score}</span>
+                    <span className="text-xs font-mono text-kaizen-muted">/ 100</span>
+                  </div>
+                  <p className="text-xs text-kaizen-muted mt-1.5 font-mono flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
+                    {readiness.label} • Tier {readiness.tier}
+                  </p>
+                  {readiness.missing.length > 0 && (
+                    <p className="text-[11px] text-kaizen-subtle mt-1 font-mono">
+                      Based on {readiness.used.length} of 4 inputs. Missing: {readiness.missing.map(c => READINESS_LABELS[c]).join(', ')}.
+                    </p>
                   )}
-                </span>
-                <span className="text-xs font-mono text-kaizen-muted">/ 100</span>
-              </div>
-              <p className="text-xs text-kaizen-muted mt-1.5 font-mono flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-                Prime Condition • Tier 1
-              </p>
+                </>
+              ) : (
+                <>
+                  <span className="text-lg font-mono font-semibold text-kaizen-text">Not enough data</span>
+                  <p className="text-xs text-kaizen-muted mt-1.5 font-mono">
+                    Log {readiness.missing.map(c => READINESS_LABELS[c]).join(', ')} to see your readiness.
+                  </p>
+                </>
+              )}
             </div>
             <div className="w-12 h-12 shrink-0 rounded-control bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-glow-emerald">
               <Activity className="w-6 h-6" />
