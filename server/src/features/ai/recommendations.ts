@@ -109,6 +109,9 @@ export const recipeToCandidate = (r: any): MealCandidate | null => {
   return { id: String(r._id), type: 'recipe', name: r.name, servingLabel: '1 serving', ...m };
 };
 
+/** Candidate pools are read in a stable order so the same rows are considered on every request. */
+export const CANDIDATE_SORT = { name: 1, _id: 1 } as const;
+
 export const getMealRecommendations = async (
   user: any,
   opts: { date?: string; limit?: number; rerank?: Reranker } = {}
@@ -122,8 +125,9 @@ export const getMealRecommendations = async (
   };
 
   const [foods, recipes] = await Promise.all([
-    FoodItem.find({ $or: [{ isCustom: false }, { userId: user._id, isCustom: true }] }).limit(400).lean(),
-    Recipe.find({ userId: user._id }).limit(100).lean(),
+    // Deterministic order, so the same 400 rows are always considered (not whatever the DB returns first)
+    FoodItem.find({ $or: [{ isCustom: false }, { userId: user._id, isCustom: true }] }).sort(CANDIDATE_SORT).limit(400).lean(),
+    Recipe.find({ userId: user._id }).sort(CANDIDATE_SORT).limit(100).lean(),
   ]);
   const candidates = [
     ...foods.map(foodToCandidate),

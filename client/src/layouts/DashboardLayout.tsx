@@ -12,6 +12,7 @@ import { SleepTracker } from '../features/sleep/SleepTracker';
 import { WeightTracker } from '../features/weight/WeightTracker';
 import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
+import { GlobalSearch } from '../components/GlobalSearch';
 
 type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight';
 type WorkoutSubTab = 'tracker' | 'planner' | 'inventory';
@@ -251,6 +252,14 @@ export const DashboardLayout = () => {
 
       {/* Main Content Workspace */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full pb-24 md:pb-8">
+        <div className="mb-5">
+          <GlobalSearch
+            onNavigate={(target) => {
+              setActiveTab(target);
+              if (target === 'workouts') setWorkoutSubTab('tracker');
+            }}
+          />
+        </div>
         {activeTab === 'dashboard' && (
           <DashboardOverview
             currentDate={currentDate}

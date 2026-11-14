@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
-from .routers import health, coach, food
+from .routers import health, coach, food, weekly
 from .services.llm import get_provider
 
 app = FastAPI(
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(coach.router)
 app.include_router(food.router)
+app.include_router(weekly.router)
 
 @app.on_event("startup")
 async def startup_event():
