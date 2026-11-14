@@ -37,9 +37,3 @@ export const chatWithCoach = asyncHandler(async (req: Request, res: Response) =>
   const data = await aiMicroservice.chatWithCoach(user, message, history, date);
   res.json({ success: true, data });
 });
-
-// Phase 20: Search
-export const globalSearch = asyncHandler(async (req: Request, res: Response) => {
-  const q = req.query.q as string;
-  res.json({ success: true, data: { foods: [], recipes: [], workouts: [], query: q } });
-});

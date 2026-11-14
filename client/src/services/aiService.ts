@@ -46,14 +46,37 @@ export const useChatCoach = () => {
   });
 };
 
+export interface SearchResults {
+  foods: Array<{ id: string; name: string; brand?: string; servingSize?: string; calories?: number }>;
+  recipes: Array<{ id: string; name: string; totalCalories?: number; servings?: number }>;
+  exercises: Array<{ id: string; name: string; targetMuscle?: string; equipment?: string }>;
+  routines: Array<{ id: string; name: string; exercisesCount: number }>;
+}
+
 export const useSearch = (query: string) => {
-  return useQuery({
-    queryKey: ['search', query],
+  const q = query.trim();
+  return useQuery<SearchResults>({
+    queryKey: ['search', q],
     queryFn: async () => {
-      if (!query || query.length < 2) return { foods: [], recipes: [], workouts: [] };
-      const response = await apiClient.get(`/ai/search?q=${encodeURIComponent(query)}`);
-      return response as any;
+      const response = await apiClient.get(`/ai/search?q=${encodeURIComponent(q)}`);
+      return response as unknown as SearchResults;
     },
-    enabled: query.length >= 2
+    enabled: q.length >= 2,
+    staleTime: 30 * 1000,
+  });
+};
+
+export interface WeeklyInsight {
+  insight: string;
+  highlights: string[];
+  sufficient: boolean;
+  modelUsed?: string;
+}
+
+export const useWeeklyInsight = () => {
+  return useQuery<WeeklyInsight>({
+    queryKey: ['ai', 'weeklyInsight'],
+    queryFn: async () => (await apiClient.get('/ai/insight/weekly')) as unknown as WeeklyInsight,
+    staleTime: 10 * 60 * 1000,
   });
 };

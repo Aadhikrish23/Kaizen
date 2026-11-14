@@ -10,6 +10,7 @@ import { DailySummary } from '../../types';
 import { Dumbbell, Utensils, Scale, Moon, ArrowRight, Activity, Zap } from 'lucide-react';
 import { QuickWeighInModal } from '../weight/QuickWeighInModal';
 import { AICoach } from './AICoach';
+import { WeeklyInsightCard } from './WeeklyInsightCard';
 import { computeReadiness, READINESS_LABELS } from './readiness';
 
 interface DashboardOverviewProps {
@@ -289,6 +290,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
         </Card>
       </div>
       
+      {/* Weekly insight (next to the advisor's daily insight) */}
+      <div className="w-full">
+        <WeeklyInsightCard />
+      </div>
+
       {/* AI Coach Assistant */}
       <div className="w-full">
         <AICoach />
