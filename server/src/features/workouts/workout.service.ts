@@ -1,3 +1,5 @@
+import { recordActivity } from '../gamification/gamification.service';
+import { isPerformedWorkout } from '../ai/weeklyInsight';
 import { applyWorkingWeightToPlan } from '../planner/planner.service';
 import { todayInTz, weekdayOfDate } from '../../utils/dates';
 import { getUserTimezone } from '../../utils/userTimezone';
@@ -131,6 +133,11 @@ export const createOrUpdateWorkout = async (data: any) => {
       notes: data.notes
     });
     savedWorkout = await workout.save();
+  }
+
+  // XP only for a performed workout (>= 1 completed set); a planned-but-not-performed log earns nothing
+  if (savedWorkout && isPerformedWorkout(savedWorkout as any)) {
+    recordActivity(data.userId, 'workout', String(data.date), savedWorkout._id);
   }
 
   // Synchronize completed exercise weights to user inventory
