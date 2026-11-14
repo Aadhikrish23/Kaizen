@@ -43,8 +43,8 @@ export const adaptPlan = asyncHandler(async (req: Request, res: Response) => {
 export const activateDay = asyncHandler(async (req: Request, res: Response) => {
   // @ts-ignore
   const userId = req.user.id;
-  const { dayNumber, date } = req.body;
-  const data = await plannerService.activatePlannedDay(userId, dayNumber, date);
+  const { dayNumber, date, force } = req.body;
+  const data = await plannerService.activatePlannedDay(userId, dayNumber, date, { force: force === true });
 
   const response: SuccessResponse<typeof data> = {
     success: true,

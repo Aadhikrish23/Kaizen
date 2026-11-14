@@ -4,13 +4,12 @@ import User from './User';
 import RefreshToken from './RefreshToken';
 import { AppError } from '../../middleware/errorHandler';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'fallback_refresh_secret_do_not_use_in_prod';
+import { getJwtSecret, getJwtRefreshSecret } from '../../config/secrets';
 
 export const generateTokens = async (userId: string) => {
-  const accessToken = jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: '15m' });
+  const accessToken = jwt.sign({ id: userId }, getJwtSecret(), { expiresIn: '15m' });
   
-  const refreshString = jwt.sign({ id: userId }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  const refreshString = jwt.sign({ id: userId }, getJwtRefreshSecret(), { expiresIn: '7d' });
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
   const refreshToken = new RefreshToken({
@@ -116,6 +115,6 @@ export const mockForgotPassword = async (email: string) => {
   const user = await User.findOne({ email });
   if (!user) return; // Silent return for security
 
-  const resetToken = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+  const resetToken = jwt.sign({ id: user.id }, getJwtSecret(), { expiresIn: '1h' });
   console.log(`[MOCK EMAIL] Password reset requested for ${email}. Link: http://localhost:5173/reset-password?token=${resetToken}`);
 };

@@ -2,8 +2,8 @@
 import jwt from 'jsonwebtoken';
 import User from '../features/auth/User';
 import { AppError } from './errorHandler';
+import { getJwtSecret } from '../config/secrets';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_prod';
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   let token;
@@ -17,7 +17,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, getJwtSecret()) as { id: string };
     const user = await User.findById(decoded.id).select('-passwordHash');
     
     if (!user) {

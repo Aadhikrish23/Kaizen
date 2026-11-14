@@ -7,6 +7,7 @@ import UserWorkoutPlan, {
   IDailyAdaptation,
 } from '../workouts/UserWorkoutPlan';
 import User from '../auth/User';
+import { AppError } from '../../middleware/errorHandler';
 import Exercise, { IExercise } from '../exercises/Exercise';
 import WorkoutLog from '../workouts/WorkoutLog';
 import { getUserInventory, recordWorkingWeight } from '../inventory/inventory.service';
@@ -348,7 +349,8 @@ export const adaptPlanDaily = async (
 export const activatePlannedDay = async (
   userId: string | mongoose.Types.ObjectId,
   dayNumber: number,
-  targetDate?: string
+  targetDate?: string,
+  options?: { force?: boolean }
 ): Promise<any> => {
   const plan = await getUserPlan(userId);
   const plannedDay = plan.schedule.find(d => d.dayNumber === dayNumber);
@@ -384,6 +386,14 @@ export const activatePlannedDay = async (
 
   let workout = await WorkoutLog.findOne({ userId, date: workoutDate });
   if (workout) {
+    const hasCompletedSets = workout.exercises.some(ex => ex.sets.some(s => s.completed));
+    if (hasCompletedSets && !options?.force) {
+      throw new AppError(
+        409,
+        'WORKOUT_HAS_COMPLETED_SETS',
+        `A workout for ${workoutDate} already has completed sets. Activating this day would erase them; pass force=true to replace it.`
+      );
+    }
     workout.splitName = plannedDay.title;
     workout.muscleGroups = plannedDay.targetMuscles;
     workout.exercises = exercises as any;

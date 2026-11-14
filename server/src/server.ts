@@ -6,6 +6,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import { connectDB } from './config/db';
+import { assertSecretsConfigured } from './config/secrets';
 
 // 1. Load environment variables
 dotenv.config();
@@ -14,7 +15,8 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 3. Connect to MongoDB
+// 3. Validate secrets, then connect to MongoDB
+assertSecretsConfigured();
 connectDB();
 
 // 4. Middlewares

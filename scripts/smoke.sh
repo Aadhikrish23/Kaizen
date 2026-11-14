@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Smoke test against a running server. Usage: scripts/smoke.sh [base_url]
+set -euo pipefail
+BASE="${1:-http://localhost:5000/api/v1}"
+EMAIL="smoke_$(date +%s)@example.com"
+
+for i in $(seq 1 30); do
+  curl -s -o /dev/null "$BASE/auth/me" && break
+  sleep 1
+  [ "$i" = 30 ] && { echo "server did not start"; exit 1; }
+done
+
+code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/auth/me")
+[ "$code" = 401 ] || { echo "expected 401 without token, got $code"; exit 1; }
+
+reg=$(curl -s -X POST "$BASE/auth/register" -H 'Content-Type: application/json' \
+  -d "{\"name\":\"Smoke Test\",\"email\":\"$EMAIL\",\"password\":\"smoke-pass-123\"}")
+token=$(echo "$reg" | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("data",{}).get("accessToken",""))')
+[ -n "$token" ] || { echo "register failed: $reg"; exit 1; }
+
+code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/auth/me" -H "Authorization: Bearer $token")
+[ "$code" = 200 ] || { echo "expected 200 with token, got $code"; exit 1; }
+
+code=$(curl -s -o /dev/null -w '%{http_code}' "$BASE/analytics?days=99999" -H "Authorization: Bearer $token")
+[ "$code" = 400 ] || { echo "expected 400 for days=99999, got $code"; exit 1; }
+echo "smoke ok"
