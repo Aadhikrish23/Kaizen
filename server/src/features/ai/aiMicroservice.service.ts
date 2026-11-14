@@ -1,4 +1,5 @@
-﻿import axios from 'axios';
+﻿import { todayInTz } from '../../utils/dates';
+import axios from 'axios';
 import MealLog from '../meals/MealLog';
 import WaterLog from '../water/WaterLog';
 import WorkoutLog from '../workouts/WorkoutLog';
@@ -11,7 +12,7 @@ export interface ChatHistoryMessage {
 }
 
 export const buildUserHealthContext = async (user: any, targetDate?: string) => {
-  const date = targetDate || new Date().toISOString().split('T')[0];
+  const date = targetDate || todayInTz(user.timezone);
   const userId = user._id || user.id;
 
   // Aggregate today's nutrition

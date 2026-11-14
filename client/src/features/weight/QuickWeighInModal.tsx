@@ -1,3 +1,4 @@
+import { localDateString } from '../../utils/date';
 import React, { useState, useEffect } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -17,7 +18,7 @@ export const QuickWeighInModal: React.FC<QuickWeighInModalProps> = ({
   defaultDate
 }) => {
   const { user, updateUser } = useAuth();
-  const todayStr = defaultDate || new Date().toISOString().split('T')[0];
+  const todayStr = defaultDate || localDateString();
   const [date, setDate] = useState(todayStr);
   const [weight, setWeight] = useState<string>('');
   const [notes, setNotes] = useState<string>('');

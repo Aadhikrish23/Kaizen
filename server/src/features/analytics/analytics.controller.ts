@@ -15,7 +15,7 @@ export const getDashboard = asyncHandler(async (req: Request, res: Response) => 
   }
   const days = parsedDays;
   
-  const data = await analyticsService.getAnalyticsDashboard(userId, days);
+  const data = await analyticsService.getAnalyticsDashboard(userId, days, (req as any).user?.timezone);
   const response: SuccessResponse<typeof data> = { success: true, data };
   res.json(response);
 });
