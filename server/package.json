@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && node -e \"require('fs').cpSync('src/docs','dist/docs',{recursive:true})\"",
     "start": "node dist/server.js",
-    "test": "node -r ts-node/register/transpile-only --test test/refreshToken.test.ts test/ai.schema.test.ts test/dates.test.ts test/nutrition.test.ts test/planner.test.ts test/foodParsing.test.ts test/recommendations.test.ts test/search.test.ts test/weeklyInsight.test.ts test/aiRateLimit.test.ts"
+    "test": "node -r ts-node/register/transpile-only --test test/refreshToken.test.ts test/ai.schema.test.ts test/dates.test.ts test/nutrition.test.ts test/planner.test.ts test/foodParsing.test.ts test/recommendations.test.ts test/search.test.ts test/weeklyInsight.test.ts test/aiRateLimit.test.ts test/reports.test.ts test/goals.test.ts"
   },
   "dependencies": {
     "axios": "^1.20.0",
