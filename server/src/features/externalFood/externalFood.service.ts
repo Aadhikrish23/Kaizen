@@ -2,6 +2,7 @@
 import FoodItem, { IFoodItem } from '../foods/FoodItem';
 import Recipe, { IRecipe } from '../recipes/Recipe';
 import mongoose from 'mongoose';
+import { parseServingSize, per100gFromOff, perServingFrom100g, Macros, NutritionBasis } from './nutrition';
 
 export interface ExternalRecipeResult {
   externalId: string;
@@ -31,7 +32,12 @@ export interface ExternalRecipeResult {
 export interface ExternalFoodResult {
   name: string;
   brand?: string;
-  servingSize: string;
+  servingSize: string; // label for the basis, e.g. "100 g" for per_100g foods
+  // calories/protein/carbs/fat are expressed on `basis`; never copy per-100g values as a serving
+  basis: NutritionBasis;
+  servingQty?: number; // numeric serving (g/ml) when parseable
+  servingUnit?: 'g' | 'ml';
+  perServing?: Macros; // only when a numeric serving size is known
   calories: number;
   protein: number;
   carbs: number;
@@ -153,20 +159,20 @@ export const searchOpenFoodFacts = async (query: string): Promise<ExternalFoodRe
       const name = p.product_name || p.product_name_en;
       if (!name) continue;
 
-      const nutriments = p.nutriments || {};
-      const calories = Math.round(nutriments['energy-kcal_100g'] ?? nutriments['energy-kcal'] ?? 0);
-      const protein = Math.round(nutriments.proteins_100g ?? nutriments.proteins ?? 0);
-      const carbs = Math.round(nutriments.carbohydrates_100g ?? nutriments.carbohydrates ?? 0);
-      const fat = Math.round(nutriments.fat_100g ?? nutriments.fat ?? 0);
+      const per100 = per100gFromOff(p.nutriments);
+      if (!per100) continue; // no nutrition data: do not invent zeros
+
+      const serving = parseServingSize(p.serving_size);
 
       parsed.push({
         name,
         brand: p.brands || undefined,
-        servingSize: p.serving_size || '100g',
-        calories,
-        protein,
-        carbs,
-        fat,
+        servingSize: '100 g',
+        basis: 'per_100g',
+        servingQty: serving?.qty,
+        servingUnit: serving?.unit,
+        perServing: perServingFrom100g(per100, serving),
+        ...per100,
         imageUrl: p.image_front_small_url || p.image_url,
         externalId: p.code || p.id,
         source: 'openfoodfacts',
@@ -205,6 +211,10 @@ export const searchUnifiedFoods = async (
     name: item.name,
     brand: item.brand,
     servingSize: item.servingSize,
+    // Legacy cached Open Food Facts rows stored per-100g values without a basis
+    basis: item.basis ?? (item.source === 'openfoodfacts' ? 'per_100g' : 'per_serving'),
+    servingQty: item.servingQty,
+    servingUnit: item.servingUnit,
     calories: item.calories,
     protein: item.protein,
     carbs: item.carbs,
@@ -232,6 +242,9 @@ export const searchUnifiedFoods = async (
               name: item.name,
               brand: item.brand,
               servingSize: item.servingSize,
+              basis: item.basis,
+              servingQty: item.servingQty,
+              servingUnit: item.servingUnit,
               calories: item.calories,
               protein: item.protein,
               carbs: item.carbs,
@@ -286,10 +299,12 @@ export const importExternalRecipe = async (
       name: ing.name,
       servingSize: ing.unit || '1 serving',
       quantity: ing.amount || 1,
-      calories: Math.round(recipe.calories / Math.max(1, recipe.ingredients.length)),
-      protein: Math.round(recipe.protein / Math.max(1, recipe.ingredients.length)),
-      carbs: Math.round(recipe.carbs / Math.max(1, recipe.ingredients.length)),
-      fat: Math.round(recipe.fat / Math.max(1, recipe.ingredients.length)),
+      // Per-ingredient macros are unknown for external recipes: leave them unset rather than
+      // splitting the recipe totals evenly. Recipe-level totals above stay authoritative.
+      calories: typeof ing.calories === 'number' ? ing.calories : undefined,
+      protein: typeof ing.protein === 'number' ? ing.protein : undefined,
+      carbs: typeof ing.carbs === 'number' ? ing.carbs : undefined,
+      fat: typeof ing.fat === 'number' ? ing.fat : undefined,
     })),
   });
 

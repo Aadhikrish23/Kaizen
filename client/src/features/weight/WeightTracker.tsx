@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../utils/date';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -58,7 +59,7 @@ export const WeightTracker: React.FC<WeightTrackerProps> = ({ currentDate }) => 
 
   const chartData = useMemo(() => {
     return sortedHistory.map(log => {
-      const d = new Date(log.date);
+      const d = parseLocalDate(log.date);
       return {
         ...log,
         displayDate: `${d.getMonth()+1}/${d.getDate()}`

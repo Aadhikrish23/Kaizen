@@ -1,12 +1,15 @@
-﻿import Recipe from './Recipe';
+﻿import { AppError } from '../../middleware/errorHandler';
+import Recipe from './Recipe';
 
-const calculateTotals = (ingredients: any[]) => {
+// Returns null when any ingredient lacks macros (imported recipes), so existing totals are not overwritten.
+export const calculateTotals = (ingredients: any[]) => {
+  if (ingredients.some((i) => typeof i.calories !== 'number')) return null;
   return ingredients.reduce(
     (acc, curr) => ({
       totalCalories: acc.totalCalories + curr.calories,
-      totalProtein: acc.totalProtein + curr.protein,
-      totalCarbs: acc.totalCarbs + curr.carbs,
-      totalFat: acc.totalFat + curr.fat
+      totalProtein: acc.totalProtein + (curr.protein || 0),
+      totalCarbs: acc.totalCarbs + (curr.carbs || 0),
+      totalFat: acc.totalFat + (curr.fat || 0)
     }),
     { totalCalories: 0, totalProtein: 0, totalCarbs: 0, totalFat: 0 }
   );
@@ -18,6 +21,10 @@ export const getRecipes = async (userId: string) => {
 
 export const createRecipe = async (userId: string, data: any) => {
   const totals = calculateTotals(data.ingredients);
+  if (!totals) {
+    // Manual recipes must carry macros on every ingredient (the route's zod schema enforces this too).
+    throw new AppError(400, 'VALIDATION_ERROR', 'Every ingredient needs calories to create a recipe');
+  }
   return Recipe.create({
     ...data,
     userId,
@@ -35,7 +42,7 @@ export const updateRecipe = async (userId: string, recipeId: string, data: any) 
   const updateData = { ...data };
   if (data.ingredients) {
     const totals = calculateTotals(data.ingredients);
-    Object.assign(updateData, totals);
+    if (totals) Object.assign(updateData, totals);
   }
   const recipe = await Recipe.findOneAndUpdate({ _id: recipeId, userId }, updateData, { new: true });
   if (!recipe) throw new Error('Recipe not found');

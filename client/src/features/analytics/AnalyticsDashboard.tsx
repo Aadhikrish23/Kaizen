@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../utils/date';
 import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { LoadingState } from '../../components/ui/LoadingState';
@@ -16,7 +17,7 @@ export const AnalyticsDashboard: React.FC = () => {
 
   // Format date for charts
   const chartData = dailyStats.map((d: any) => {
-    const dateObj = new Date(d.date);
+    const dateObj = parseLocalDate(d.date);
     return {
       ...d,
       displayDate: `${dateObj.getMonth() + 1}/${dateObj.getDate()}`

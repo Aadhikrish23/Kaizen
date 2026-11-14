@@ -1,3 +1,4 @@
+import { localDateString } from '../utils/date';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { UserWorkoutPlan, EquipmentItem, PlannedDay, PlannedExercise } from '../types';
@@ -408,7 +409,7 @@ export function generateWorkoutPlanPdf(options: GeneratePdfOptions): jsPDF {
 export function downloadWorkoutPlanPdf(options: GeneratePdfOptions): string {
   const doc = generateWorkoutPlanPdf(options);
   const splitClean = (options.plan.preferences?.splitStyle || 'workout').replace(/_/g, '-');
-  const dateStr = new Date().toISOString().split('T')[0];
+  const dateStr = localDateString();
   const filename = options.filename || `Kaizen-Workout-Plan-${splitClean}-${dateStr}.pdf`;
   doc.save(filename);
   return filename;
