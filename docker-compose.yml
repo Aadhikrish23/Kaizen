@@ -2,11 +2,35 @@ version: '3.8'
 
 services:
   mongodb:
-    image: mongo:latest
+    image: mongo:7
     ports:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    restart: always
+
+  ai_services:
+    build:
+      context: ./ai_services
+    environment:
+      - PORT=8000
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-phi3:mini}
+      - CORS_ORIGINS=${AI_CORS_ORIGINS:-http://localhost:5000}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=8)"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
     restart: always
 
   server:
@@ -20,18 +44,33 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/kaizen
       - JWT_SECRET=${JWT_SECRET:?Set JWT_SECRET in .env or the shell}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?Set JWT_REFRESH_SECRET in .env or the shell}
-      - CORS_ORIGIN=http://localhost:80
+      # Browser origin of the client (no trailing slash; port 80 is implicit).
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
+      - AI_SERVICE_URL=http://ai_services:8000
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
+      ai_services:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/v1/health | grep -q '\"db\":\"up\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
     restart: always
 
   client:
     build:
       context: ./client
+      args:
+        # Baked into the bundle at build time; must be reachable from the user's browser.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:5000/api/v1}
     ports:
       - "80:80"
     depends_on:
-      - server
+      server:
+        condition: service_healthy
     restart: always
 
 volumes:

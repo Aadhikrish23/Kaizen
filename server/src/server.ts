@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
@@ -23,6 +24,14 @@ connectDB();
 app.use(helmet());
 app.use(compression());
 app.use(mongoSanitize());
+
+// Public health check: mounted before the rate limiter and auth so probes are never blocked.
+app.get('/api/v1/health', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    data: { status: 'ok', db: mongoose.connection.readyState === 1 ? 'up' : 'down' }
+  });
+});
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -85,19 +94,6 @@ app.use('/api/v1/routines', routinesRouter);
 app.use('/api/v1/inventory', inventoryRouter);
 app.use('/api/v1/planner', plannerRouter);
 app.use('/api/v1/sleep', sleepRouter);
-
-// Health Check
-app.get('/api/v1/health', (req: Request, res: Response) => {
-  res.json({
-    success: true,
-    data: {
-      status: 'healthy',
-      app: 'Kaizen API Server',
-      version: '1.0.0',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
 
 import { errorHandler } from './middleware/errorHandler';
 app.use(errorHandler);

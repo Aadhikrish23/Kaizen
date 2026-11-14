@@ -22,3 +22,5 @@ jobs:
           cache-dependency-path: ${{ matrix.package }}/package-lock.json
       - run: npm ci
       - run: npm run build
+      - run: npm test
+        if: matrix.package == 'server'
