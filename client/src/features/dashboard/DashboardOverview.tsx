@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../utils/date';
 import React, { useState } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -48,11 +49,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({ currentDat
                 Live Telemetry
               </span>
               <span className="text-xs font-mono text-kaizen-subtle uppercase tracking-wider">
-                {new Date(currentDate).toLocaleDateString('en-US', { weekday: 'long' })}
+                {parseLocalDate(currentDate).toLocaleDateString('en-US', { weekday: 'long' })}
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-display font-extrabold tracking-tight text-white">
-              {new Date(currentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              {parseLocalDate(currentDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </h2>
           </div>
 

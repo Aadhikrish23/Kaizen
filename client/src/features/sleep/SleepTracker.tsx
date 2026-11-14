@@ -1,3 +1,4 @@
+import { parseLocalDate } from '../../utils/date';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -117,7 +118,7 @@ export const SleepTracker: React.FC<SleepTrackerProps> = ({ currentDate }) => {
   const chartData = useMemo(() => {
     const list = [...sleepHistory].sort((a, b) => a.date.localeCompare(b.date)).slice(-7);
     return list.map(item => {
-      const d = new Date(item.date);
+      const d = parseLocalDate(item.date);
       const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' });
       const hours = Number((item.durationMinutes / 60).toFixed(1));
       return {

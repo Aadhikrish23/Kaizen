@@ -1,3 +1,4 @@
+import { todayForUser } from '../../utils/userTimezone';
 import mongoose from 'mongoose';
 import UserInventory, { IUserInventory, IEquipmentItem } from './UserInventory';
 
@@ -81,7 +82,7 @@ export const recordWorkingWeight = async (
   }
 ): Promise<IUserInventory> => {
   const inventory = await getUserInventory(userId);
-  const logDate = data.date || new Date().toISOString().split('T')[0];
+  const logDate = data.date || (await todayForUser(userId));
   const targetReps = data.targetReps || 10;
 
   const existingIdx = inventory.workingWeights.findIndex(

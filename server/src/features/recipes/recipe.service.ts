@@ -1,4 +1,5 @@
-﻿import Recipe from './Recipe';
+﻿import { AppError } from '../../middleware/errorHandler';
+import Recipe from './Recipe';
 
 // Returns null when any ingredient lacks macros (imported recipes), so existing totals are not overwritten.
 export const calculateTotals = (ingredients: any[]) => {
@@ -20,10 +21,14 @@ export const getRecipes = async (userId: string) => {
 
 export const createRecipe = async (userId: string, data: any) => {
   const totals = calculateTotals(data.ingredients);
+  if (!totals) {
+    // Manual recipes must carry macros on every ingredient (the route's zod schema enforces this too).
+    throw new AppError(400, 'VALIDATION_ERROR', 'Every ingredient needs calories to create a recipe');
+  }
   return Recipe.create({
     ...data,
     userId,
-    ...(totals || {})
+    ...totals
   });
 };
 

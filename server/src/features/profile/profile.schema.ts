@@ -1,4 +1,5 @@
 ﻿import { z } from 'zod';
+import { isValidTimezone } from '../../utils/dates';
 
 export const updateProfileSchema = z.object({
   body: z.object({
@@ -14,7 +15,8 @@ export const updateProfileSchema = z.object({
     calorieDailyTarget: z.number().positive().optional(),
     proteinDailyTargetG: z.number().positive().optional(),
     waterDailyTargetMl: z.number().positive().optional(),
-    units: z.enum(['metric', 'imperial']).optional()
+    units: z.enum(['metric', 'imperial']).optional(),
+    timezone: z.string().refine(isValidTimezone, 'Invalid IANA timezone').optional()
   })
 });
 

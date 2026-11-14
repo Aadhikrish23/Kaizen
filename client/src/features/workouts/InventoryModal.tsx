@@ -1,3 +1,4 @@
+import { localDateString } from '../../utils/date';
 import React, { useState } from 'react';
 import {
   X,
@@ -228,7 +229,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose 
       exerciseName,
       currentWeightKg: weightKg,
       targetReps: reps,
-      date: new Date().toISOString().split('T')[0],
+      date: localDateString(),
     });
     setEditingExercise(null);
   };
@@ -241,7 +242,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose 
       exerciseName: newExName.trim(),
       currentWeightKg: newExWeight,
       targetReps: newExReps,
-      date: new Date().toISOString().split('T')[0],
+      date: localDateString(),
     });
 
     setNewExName('');

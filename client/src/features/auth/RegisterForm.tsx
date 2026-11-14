@@ -5,6 +5,7 @@ import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiClient } from '../../api/client';
+import { browserTimezone } from '../../utils/date';
 
 export const RegisterForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -24,7 +25,8 @@ export const RegisterForm: React.FC = () => {
       const response = await apiClient.post('/auth/register', { 
         email, 
         password, 
-        name: `${firstName} ${lastName}`.trim() 
+        name: `${firstName} ${lastName}`.trim(),
+        timezone: browserTimezone()
       });
       register(response as any);
       navigate('/dashboard');
