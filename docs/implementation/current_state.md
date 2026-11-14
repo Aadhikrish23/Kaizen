@@ -47,7 +47,7 @@ A working full-stack app that had grown in bulk phases (see `git log`):
 **Security.**
 - `JWT_SECRET` falls back to the literal `'fallback_secret_do_not_use_in_prod'` in `features/auth/auth.service.ts:7` and `middleware/auth.middleware.ts:6`. The dev `server/.env` sets no `JWT_SECRET`, so local runs use it, and a production deploy that forgets the variable would silently sign forgeable tokens. The server should refuse to start without it outside development.
 - `docker-compose.yml` ships the placeholder `JWT_SECRET=your_jwt_secret_key_here`.
-- The AI service allows CORS origin `"*"` together with `allow_credentials=True` (`ai_services/app/config.py`).
+- The AI service CORS origins come from the `CORS_ORIGINS` env var (comma-separated, default: the four localhost/127.0.0.1 dev origins on ports 5173 and 5000); `"*"` is removed and ignored if supplied, since credentials are allowed (`ai_services/app/config.py`). Coach chat history is validated at the Express edge (zod: roles `user`/`assistant` only, bounded sizes) and again in the AI service schema.
 
 **Deployment.**
 - `docker-compose.yml` sets `MONGO_URI`, but the server reads `MONGODB_URI` (`config/db.ts`); inside compose the server would fall back to `localhost` and fail to reach Mongo. It also has no `ai_services` container.
@@ -67,7 +67,7 @@ A working full-stack app that had grown in bulk phases (see `git log`):
 
 ## Suggested next steps
 
-1. **Security first:** fail fast without `JWT_SECRET`; fix the compose env name and add the AI service; tighten AI-service CORS.
+1. **Security first:** fail fast without `JWT_SECRET`; fix the compose env name and add the AI service; AI-service CORS is now tightened.
 2. **Add CI** (GitHub Actions): `tsc` for both apps, planner suites, and Playwright with `--workers=1` against built or preview servers.
 3. Run the full e2e suite on all three browsers and keep it green; add a `test` script to `server/package.json`.
 4. Add a top-level React error boundary.

@@ -21,9 +21,10 @@ export const AICoach: React.FC = () => {
     if (!textToSend.trim() || isPending) return;
 
     const userText = textToSend;
-    const historyPayload = chat.map(c => ({
+    // Server accepts at most 20 history items of <=4000 chars; the AI service only uses the last 8.
+    const historyPayload = chat.slice(-20).map(c => ({
       role: (c.role === 'coach' ? 'assistant' : 'user') as 'assistant' | 'user',
-      content: c.text
+      content: c.text.slice(0, 4000)
     }));
 
     setChat(prev => [...prev, { role: 'user', text: userText }]);

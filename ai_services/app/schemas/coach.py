@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 class ChatMessage(BaseModel):
-    role: str = Field(..., description="Role of the speaker: user, assistant, or system")
+    role: Literal["user", "assistant"] = Field(..., description="Role of the speaker: user or assistant")
     content: str = Field(..., description="Message text content")
 
 class UserProfileContext(BaseModel):
