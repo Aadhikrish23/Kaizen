@@ -1,7 +1,7 @@
 ﻿# Requirement Traceability Matrix
 
 **Document Version:** 3.1
-**Last reviewed:** 2026-11-15 (code on `main` at `b6f852e`)
+**Last reviewed:** 2026-11-15 (code on `main` at `72a4788`)
 
 Version 1.0 of this file was written at project start and marked nearly everything NOT IMPLEMENTED. This version reflects the code on `main`. Paths are relative to `server/src/` (server) and `client/src/` (client). Overall narrative: [../implementation/current_state.md](../implementation/current_state.md).
 
@@ -9,7 +9,7 @@ Version 1.0 of this file was written at project start and marked nearly everythi
 
 | Req ID | Description | Status | Implemented Location | Tests | Swagger |
 |---|---|---|---|---|---|
-| **REQ-AUTH** | Complete JWT Auth (Register, Login, Token Rotation, Profile, Sessions) | ✅ COMPLETE | `features/auth/`; client `features/auth/`, `contexts/AuthContext`. Refresh tokens hashed and single-use. No email delivery for password reset (mock) | unit: refresh token; smoke: replay; e2e: `auth`, `auth-onboarding-routing` | Documented (generated from zod) |
+| **REQ-AUTH** | Complete JWT Auth (Register, Login, Token Rotation, Profile, Sessions) | ✅ COMPLETE | `features/auth/`; client `features/auth/`, `contexts/AuthContext`. Refresh tokens hashed and single-use; the client refreshes single-flight (`api/singleFlightRefresh.ts`, Web Lock across tabs). No email delivery for password reset (mock) | unit: refresh token, refreshPolicy, singleFlightRefresh; smoke: replay; e2e: `auth`, `auth-onboarding-routing`, `login-error`, `refresh-single-flight` | Documented (generated from zod) |
 | **REQ-PROFILE** | User Profile, Activity Level, Onboarding | ✅ COMPLETE | `features/profile/` (strict whitelist, timezone); client `features/profile/`, `features/onboarding/` | unit: profile; smoke: profile hardening; e2e: onboarding, walkthrough | Documented (generated from zod) |
 | **REQ-GOALS** | Weight Goals, Target Dates, Goal History | ✅ COMPLETE | `features/goals/`, `features/profile/` (goal, target weight, target date, history, progress and pace); client `features/weight/GoalProgressCard.tsx` | unit: goals; smoke: reports-goals | Documented (generated from zod) |
 | **REQ-WATER** | Track water, Quick Adds, Calibrated Progress, Configurable Goal | ✅ COMPLETE | `features/water/`; client `features/water/` | e2e: walkthrough; smoke: idempotency (#23) | Documented (generated from zod) |
