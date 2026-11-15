@@ -19,6 +19,8 @@ export const createMealLogSchema = z.object({
   })
 });
 
+export const MEAL_CREATE_KEYS = Object.keys(createMealLogSchema.shape.body.shape);
+
 export const deleteMealLogSchema = z.object({
   params: z.object({
     id: z.string().min(1, 'ID is required')

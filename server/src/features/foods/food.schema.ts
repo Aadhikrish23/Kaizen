@@ -12,6 +12,8 @@ export const createFoodSchema = z.object({
   })
 });
 
+export const FOOD_CREATE_KEYS = Object.keys(createFoodSchema.shape.body.shape);
+
 export const searchFoodSchema = z.object({
   query: z.object({
     q: z.string().min(1).optional(),

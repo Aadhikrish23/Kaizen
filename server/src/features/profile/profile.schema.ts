@@ -1,4 +1,5 @@
 ﻿import { z } from 'zod';
+import { pickAllowed } from '../../utils/pickAllowed';
 import { isRealDate } from '../reports/reports.schema';
 import { isValidTimezone } from '../../utils/dates';
 
@@ -43,6 +44,4 @@ export const completeOnboardingSchema = z.object({
 export const PROFILE_UPDATE_KEYS = Object.keys(updateProfileSchema.shape.body.shape);
 export const ONBOARDING_KEYS = Object.keys(completeOnboardingSchema.shape.body.shape);
 
-/** Defence in depth: copy only whitelisted keys, so the service never receives a field the schema did not allow. */
-export const pickAllowed = (data: Record<string, unknown>, keys: string[]): Record<string, unknown> =>
-  Object.fromEntries(Object.entries(data || {}).filter(([k]) => keys.includes(k)));
+export { pickAllowed };

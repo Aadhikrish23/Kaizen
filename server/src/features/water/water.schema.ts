@@ -14,6 +14,8 @@ export const createWaterLogSchema = z.object({
   })
 });
 
+export const WATER_CREATE_KEYS = Object.keys(createWaterLogSchema.shape.body.shape);
+
 export const deleteWaterLogSchema = z.object({
   params: z.object({
     id: z.string().min(1, 'ID is required')

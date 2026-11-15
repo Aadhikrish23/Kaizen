@@ -1,5 +1,6 @@
 import { todayForUser } from '../../utils/userTimezone';
 import mongoose from 'mongoose';
+import { exerciseScope } from '../search/search.query';
 import UserWorkoutPlan, {
   IUserWorkoutPlan,
   IPlannerPreferences,
@@ -405,7 +406,10 @@ export const swapPlannedExercise = async (
     throw new Error(`Exercise index ${exerciseIndex} not found in day ${dayNumber}`);
   }
 
-  const newEx = await Exercise.findById(newExerciseId);
+  // Only the global catalog or the caller's own custom exercises: another user's custom exercise id must not work
+  const newEx = mongoose.isValidObjectId(newExerciseId)
+    ? await Exercise.findOne({ $and: [{ _id: newExerciseId }, exerciseScope(userId)] })
+    : null;
   if (!newEx) {
     throw new Error('Selected exercise not found');
   }

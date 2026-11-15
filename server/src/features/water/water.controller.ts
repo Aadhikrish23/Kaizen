@@ -1,4 +1,6 @@
-﻿import { Request, Response } from 'express';
+﻿import { pickAllowed } from '../../utils/pickAllowed';
+import { WATER_CREATE_KEYS } from './water.schema';
+import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import * as waterService from './water.service';
 import { SuccessResponse } from '../../types/api';
@@ -20,7 +22,7 @@ export const getWaterLogs = asyncHandler(async (req: Request, res: Response) => 
 export const createWaterLog = asyncHandler(async (req: Request, res: Response) => {
   // @ts-ignore
   const userId = req.user.id;
-  const data = await waterService.createLog({ ...req.body, userId });
+  const data = await waterService.createLog({ ...pickAllowed(req.body, WATER_CREATE_KEYS), userId } as any);
   
   const response: SuccessResponse<typeof data> = {
     success: true,

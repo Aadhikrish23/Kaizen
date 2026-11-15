@@ -1,4 +1,6 @@
 ﻿import FoodItem from './FoodItem';
+import { pickAllowed } from '../../utils/pickAllowed';
+import { FOOD_CREATE_KEYS } from './food.schema';
 import { escapeRegex } from '../../utils/escapeRegex';
 
 export const searchFoods = async (userId: string, query: string, limit = 20) => {
@@ -21,7 +23,7 @@ export const searchFoods = async (userId: string, query: string, limit = 20) => 
 
 export const createCustomFood = async (userId: string, data: any) => {
   const food = await FoodItem.create({
-    ...data,
+    ...pickAllowed(data, FOOD_CREATE_KEYS),
     userId,
     isCustom: true
   });

@@ -1,3 +1,5 @@
+import { pickAllowed } from '../../utils/pickAllowed';
+import { EXERCISE_CREATE_KEYS } from './exercise.schema';
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import * as exerciseService from './exercise.service';
@@ -20,7 +22,7 @@ export const getExercises = asyncHandler(async (req: Request, res: Response) => 
 export const createExercise = asyncHandler(async (req: Request, res: Response) => {
   // @ts-ignore
   const userId = req.user.id;
-  const data = await exerciseService.createExercise({ ...req.body, userId });
+  const data = await exerciseService.createExercise({ ...pickAllowed(req.body, EXERCISE_CREATE_KEYS), userId });
   
   const response: SuccessResponse<typeof data> = {
     success: true,

@@ -10,7 +10,11 @@ export const measurementLogSchema = z.object({
     hipsCm: z.number().min(0).optional(),
     armsCm: z.number().min(0).optional(),
     legsCm: z.number().min(0).optional(),
-  }),
+  }).strict(),
 });
+
+export const MEASUREMENT_KEYS = Object.keys(measurementLogSchema.shape.body.shape);
+/** The measured values (everything except the date, which comes from the filter). */
+export const MEASUREMENT_FIELDS = MEASUREMENT_KEYS.filter((k) => k !== 'date');
 
 export type MeasurementLogInput = z.infer<typeof measurementLogSchema>;
