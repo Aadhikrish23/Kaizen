@@ -42,10 +42,6 @@ export const formatUserResponse = (user: any) => ({
   waterDailyTargetMl: user.waterDailyTargetMl,
   units: user.units || 'metric',
   timezone: user.timezone || 'UTC',
-  healthScore: user.healthScore,
-  xp: user.xp,
-  level: user.level,
-  streakDays: user.streakDays,
 });
 
 export const register = async (data: any) => {

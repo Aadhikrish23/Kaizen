@@ -9,7 +9,7 @@ d = json.load(sys.stdin)["data"]
 assert d["period"] == "weekly" and isinstance(d["daysWithData"], int), d
 assert d["daysInPeriod"] == 7 and len(d["days"]) == 7, d
 if not d["sufficient"]:
-    assert d["notEnoughData"].startswith("Not enough data") and d["calories"] is None, d
+    assert d["notEnoughData"].startswith("Not enough data") and d["calories"] is None and d["workouts"] is None, d
 ' || fail "unexpected weekly report: $rp_body"
 
 code=$(http_code "$BASE/reports?period=yearly" -H "Authorization: Bearer $token")
