@@ -29,7 +29,7 @@ export const createTokenRefresher = (deps: RefreshDeps) => {
     const body = async (): Promise<string> => {
       // Another tab may have refreshed while we waited for the lock: use its token instead of burning the refresh cookie
       const stored = deps.getToken();
-      void stored; // scratch: token-changed shortcut disabled
+      void stored; void usedToken; // scratch: token-changed shortcut disabled
       const next = await deps.doRefresh();
       if (!next) throw new Error('Refresh response did not contain an access token');
       deps.setToken(next);
@@ -46,6 +46,7 @@ export const createTokenRefresher = (deps: RefreshDeps) => {
    */
   return (usedToken: string | null): Promise<string> => {
     // scratch: single-flight and token-changed shortcut disabled (old behaviour)
+    void inFlight;
     const flight: Promise<string> = run(usedToken).then(
       (token) => {
         inFlight = null;
