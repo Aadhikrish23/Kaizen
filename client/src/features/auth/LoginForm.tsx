@@ -21,7 +21,7 @@ export const LoginForm: React.FC = () => {
     setIsSubmitting(true);
     try {
       const response = await apiClient.post('/auth/login', { email, password, timezone: browserTimezone() });
-      login(response as any);
+      await login(response as any);
       const userData = (response as any)?.user || response;
       if (userData?.onboardingComplete) {
         navigate('/dashboard');
