@@ -25,20 +25,32 @@ test.describe('Access token expiry with many parallel requests', () => {
       if (r.status() === 401 && r.url().includes('/api/v1/') && !r.url().includes('/auth/refresh')) unauthorized.push(r.url());
     });
 
-    // The access token "expires": it is no longer valid, and the next navigation fires many API requests in parallel
+    // The access token "expires". Requests that carry it are held for 1.5 s before they reach the server, so the requests fired by
+    // the quick tab switches below are all in flight together and get their 401 at (almost) the same moment: a real burst.
+    await page.route('**/api/v1/**', async (route) => {
+      const req = route.request();
+      if (req.method() !== 'OPTIONS' && !req.url().includes('/auth/') && req.headers()['authorization'] === 'Bearer expired-token') {
+        await new Promise((r) => setTimeout(r, 1500));
+      }
+      await route.continue();
+    });
     await page.evaluate(() => localStorage.setItem('kaizen_access_token', 'expired-token'));
-    await page.locator('button[title="Previous Day"]').click();
+    const sidebar = page.locator('aside');
+    for (const tab of ['Nutrition', 'Hydration', 'Sleep Cycle', 'Scale Weight']) {
+      await sidebar.getByRole('button', { name: tab }).click();
+    }
 
-    await expect.poll(() => unauthorized.length, { timeout: 15000 }).toBeGreaterThanOrEqual(2); // really parallel 401s
-    await expect.poll(async () => page.evaluate(() => localStorage.getItem('kaizen_access_token')), { timeout: 15000 })
+    await expect.poll(() => unauthorized.length, { timeout: 20000 }).toBeGreaterThanOrEqual(3); // really parallel 401s
+    await expect.poll(async () => page.evaluate(() => localStorage.getItem('kaizen_access_token')), { timeout: 20000 })
       .not.toBe('expired-token');
-    await page.waitForTimeout(2000); // let every retry settle
+    await page.waitForTimeout(2500); // let every retry settle
 
     expect(refreshCalls).toHaveLength(1);
     expect(await page.evaluate(() => localStorage.getItem('kaizen_access_token'))).toBeTruthy();
     await expect(page).toHaveURL(/.*\/dashboard/);
-    await expect(page.locator('text=Sleep & Circadian')).toBeVisible();
+    await expect(sidebar).toBeVisible(); // still the signed-in layout
+    await sidebar.getByRole('button', { name: 'Dashboard' }).click();
+    await expect(page.locator('text=Sleep & Circadian')).toBeVisible({ timeout: 15000 }); // data renders with the new token
     await expect(page.locator('text=Scale Weight').first()).toBeVisible();
-    await expect(page.locator('button[title="Previous Day"]')).toBeVisible(); // still the signed-in layout
   });
 });
