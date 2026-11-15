@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 
 export interface AdminUser {
   id: string;
@@ -37,12 +37,12 @@ export interface AdminStats {
 }
 
 export const useAdminStats = () =>
-  useQuery<AdminStats>({ queryKey: ['admin', 'stats'], queryFn: async () => (await apiClient.get('/admin/stats')) as unknown as AdminStats });
+  useQuery<AdminStats>({ queryKey: ['admin', 'stats'], queryFn: () => api.get<AdminStats>('/admin/stats') });
 
 export const useAdminUsers = (page: number, q: string) =>
   useQuery<Paged<AdminUser>>({
     queryKey: ['admin', 'users', page, q],
-    queryFn: async () => (await apiClient.get(`/admin/users?page=${page}&limit=25${q ? `&q=${encodeURIComponent(q)}` : ''}`)) as unknown as Paged<AdminUser>,
+    queryFn: () => api.get<Paged<AdminUser>>(`/admin/users?page=${page}&limit=25${q ? `&q=${encodeURIComponent(q)}` : ''}`),
   });
 
 export const useUpdateAdminUser = () => {
@@ -50,7 +50,7 @@ export const useUpdateAdminUser = () => {
   return useMutation({
     mutationFn: async (v: { id: string; role?: 'user' | 'admin'; isActive?: boolean }) => {
       const { id, ...body } = v;
-      return apiClient.patch(`/admin/users/${id}`, body);
+      return api.patch(`/admin/users/${id}`, body);
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin'] }),
   });
@@ -59,14 +59,14 @@ export const useUpdateAdminUser = () => {
 export const useAdminFoods = (page: number, q: string) =>
   useQuery<Paged<AdminFood>>({
     queryKey: ['admin', 'foods', page, q],
-    queryFn: async () => (await apiClient.get(`/admin/foods?page=${page}&limit=25${q ? `&q=${encodeURIComponent(q)}` : ''}`)) as unknown as Paged<AdminFood>,
+    queryFn: () => api.get<Paged<AdminFood>>(`/admin/foods?page=${page}&limit=25${q ? `&q=${encodeURIComponent(q)}` : ''}`),
   });
 
 export const useSaveAdminFood = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (v: { id?: string; food: Omit<AdminFood, 'id'> }) =>
-      v.id ? apiClient.patch(`/admin/foods/${v.id}`, v.food) : apiClient.post('/admin/foods', v.food),
+      v.id ? api.patch(`/admin/foods/${v.id}`, v.food) : api.post('/admin/foods', v.food),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'foods'] }),
   });
 };
@@ -74,7 +74,7 @@ export const useSaveAdminFood = () => {
 export const useDeleteAdminFood = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (id: string) => apiClient.delete(`/admin/foods/${id}`),
+    mutationFn: async (id: string) => api.delete(`/admin/foods/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'foods'] }),
   });
 };

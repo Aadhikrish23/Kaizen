@@ -1,7 +1,7 @@
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 
 // The response interceptor unwraps { success, data }, so a call resolves to the payload (not an AxiosResponse)
-const post = <T>(url: string, body: unknown) => apiClient.post(url, body) as unknown as Promise<T>;
+const post = <T>(url: string, body: unknown) => api.post<T>(url, body);
 import { createIdbStore } from './idbStore';
 import { createQueueItem, hasQueueOwner, isNetworkFailure, processQueue, QueueItem, QueueKind, retryItem } from './queueCore';
 

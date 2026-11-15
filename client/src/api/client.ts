@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { clearApiCache } from '../offline/apiCache';
 
 // Kept here (not imported from offline/online.ts) so the API client has no dependency on React hooks
@@ -63,3 +63,18 @@ apiClient.interceptors.response.use(
     return Promise.reject(serverError && typeof serverError === 'object' ? { ...serverError, status: error.response.status } : error);
   }
 );
+
+/**
+ * Typed API helpers. The response interceptor above unwraps `{ success, data }` and returns `data`, so a call resolves
+ * to the payload `T`, not an AxiosResponse. `apiClient.get<T>()` still claims AxiosResponse<T>, which is why call
+ * sites used to cast; use these instead (the single cast lives here).
+ */
+const unwrap = <T>(p: Promise<unknown>): Promise<T> => p as Promise<T>;
+
+export const api = {
+  get: <T>(url: string, config?: AxiosRequestConfig) => unwrap<T>(apiClient.get(url, config)),
+  post: <T, B = unknown>(url: string, body?: B, config?: AxiosRequestConfig) => unwrap<T>(apiClient.post(url, body, config)),
+  put: <T, B = unknown>(url: string, body?: B, config?: AxiosRequestConfig) => unwrap<T>(apiClient.put(url, body, config)),
+  patch: <T, B = unknown>(url: string, body?: B, config?: AxiosRequestConfig) => unwrap<T>(apiClient.patch(url, body, config)),
+  delete: <T = null>(url: string, config?: AxiosRequestConfig) => unwrap<T>(apiClient.delete(url, config)),
+};

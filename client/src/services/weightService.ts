@@ -1,19 +1,20 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
+import { WeightLog } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { submitOrQueue } from '../offline/offlineQueue';
 
 export const useWeightLogs = (date: string) => {
   return useQuery({
     queryKey: ['weightLogs', date],
-    queryFn: () => apiClient.get(`/weight?date=${date}`),
+    queryFn: () => api.get<WeightLog | null>(`/weight?date=${date}`),
   });
 };
 
 export const useWeightHistory = () => {
   return useQuery({
     queryKey: ['weightHistory'],
-    queryFn: () => apiClient.get('/weight/history'),
+    queryFn: () => api.get<WeightLog[]>('/weight/history'),
   });
 };
 
