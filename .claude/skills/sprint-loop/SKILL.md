@@ -52,3 +52,13 @@ If the base branch lacks earlier work, merge that first. Never branch from stale
 - Give each agent a self-contained prompt: repo, task text, "done when", branch/PR number, what to report back.
 - Surface decisions the user must make (scope, provider choices) instead of guessing.
 - After each sprint, update the plan/status docs and summarize results to the user.
+
+## Lessons from the Kaizen run (sprints 1 to 5)
+
+- **Modular smoke tests.** Keep the post-merge smoke test as `scripts/smoke.sh` that sources `scripts/smoke.d/NN-name.sh`. Each PR adds its own new file with a free number, so PRs do not conflict in one big script. The replay or logout test stays last (`99-`). Smoke checks must be safe on a real database in production mode and leave harmless state on the shared smoke user. Use `! cmd || fail` and capture output before grepping, because of `set -e`.
+- **Rate-limit budget.** A smoke run makes many calls from one IP. Raise the limit (`API_RATE_LIMIT_MAX`) only in the smoke and e2e workflows, never in defaults, and count requests when you add checks.
+- **Mechanical conflict policy.** Parallel PRs always collide on the same few lines: the `test` script in `package.json`, router mounts in `server.ts`, docs tables. The developer agent resolves these by keeping both sides, then re-runs typecheck, tests and build. Generated files (for example an OpenAPI file) are regenerated, not hand-merged. Anything else that conflicts goes back to the coordinator.
+- **CI as tester.** Sandboxes often have no database and no browser. Use GitHub Actions as the tester: real MongoDB service, Playwright on chromium, firefox and webkit, then read job logs with the Actions tools and iterate on the branch. Save big logs to a file and parse them instead of printing them. Say clearly in each PR what could only be run in CI and what was never run.
+- **Do not trust stale tests or docs.** E2E specs and status docs drift. Fix specs to match the real UI, never delete or weaken a check to get green, and verify audit claims against the code before acting on them.
+- **Tool pitfalls.** Use the exact GitHub owner/repo spelling; a typo gives an access-denied error. Every PR body needs Summary, Done when, Testing (what was run and what was not) and Risks.
+- **Docs must not over-claim.** Status docs list verified items (test or run that proved it) separately from implemented-but-unverified items.
