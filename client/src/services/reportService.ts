@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 
 export type ReportPeriod = 'daily' | 'weekly' | 'monthly';
 
@@ -42,5 +42,5 @@ export interface Report {
 export const useReport = (period: ReportPeriod, date: string) =>
   useQuery<Report>({
     queryKey: ['report', period, date],
-    queryFn: async () => (await apiClient.get(`/reports?period=${period}&date=${encodeURIComponent(date)}`)) as unknown as Report,
+    queryFn: async () => api.get<Report>(`/reports?period=${period}&date=${encodeURIComponent(date)}`),
   });

@@ -1,13 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import { submitOrQueue } from '../offline/offlineQueue';
+import { api } from '../api/client';
 import { SleepLog, CircadianWindow } from '../types';
 
 export const useSleepLog = (date: string) => {
   return useQuery<SleepLog | null>({
     queryKey: ['sleepLog', date],
-    queryFn: () => apiClient.get(`/sleep?date=${date}`),
+    queryFn: () => api.get<SleepLog | null>(`/sleep?date=${date}`),
     enabled: !!date
   });
 };
@@ -20,7 +20,7 @@ export const useSleepHistory = (startDate?: string, endDate?: string) => {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
       const query = params.toString();
-      return apiClient.get(query ? `/sleep/history?${query}` : '/sleep/history');
+      return api.get<SleepLog[]>(query ? `/sleep/history?${query}` : '/sleep/history');
     }
   });
 };
@@ -28,7 +28,7 @@ export const useSleepHistory = (startDate?: string, endDate?: string) => {
 export const useCircadianWindows = (wakeTime: string = '07:00') => {
   return useQuery<CircadianWindow[]>({
     queryKey: ['circadianWindows', wakeTime],
-    queryFn: () => apiClient.get(`/sleep/circadian?wakeTime=${encodeURIComponent(wakeTime)}`),
+    queryFn: () => api.get<CircadianWindow[]>(`/sleep/circadian?wakeTime=${encodeURIComponent(wakeTime)}`),
     enabled: !!wakeTime
   });
 };
@@ -60,7 +60,7 @@ export const useSaveSleepLog = () => {
 export const useDeleteSleepLog = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/sleep/${id}`),
+    mutationFn: (id: string) => api.delete(`/sleep/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sleepLog'] });
       queryClient.invalidateQueries({ queryKey: ['sleepHistory'] });

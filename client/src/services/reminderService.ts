@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 import { pollInterval } from '../utils/reminderPolling';
 
 export type ReminderType = 'water' | 'meal' | 'weight' | 'workout' | 'sleep';
@@ -27,7 +27,7 @@ export interface DueReminder {
 export const useReminderPrefs = () =>
   useQuery<ReminderPrefs>({
     queryKey: ['reminderPrefs'],
-    queryFn: async () => (await apiClient.get('/reminders')) as unknown as ReminderPrefs,
+    queryFn: async () => api.get<ReminderPrefs>('/reminders'),
     // Fetched once and kept: saving in settings updates this cache directly (see useSaveReminderPrefs)
     staleTime: Infinity,
     refetchOnWindowFocus: false,
@@ -36,7 +36,7 @@ export const useReminderPrefs = () =>
 export const useSaveReminderPrefs = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (prefs: ReminderPrefs) => (await apiClient.put('/reminders', prefs)) as unknown as ReminderPrefs,
+    mutationFn: async (prefs: ReminderPrefs) => api.put<ReminderPrefs>('/reminders', prefs),
     onSuccess: (data) => {
       queryClient.setQueryData(['reminderPrefs'], data);
       queryClient.invalidateQueries({ queryKey: ['reminders', 'due'] });
@@ -51,7 +51,7 @@ export const useSaveReminderPrefs = () => {
 export const useDueReminders = (enabled: boolean) =>
   useQuery<DueReminder[]>({
     queryKey: ['reminders', 'due'],
-    queryFn: async () => ((await apiClient.get('/reminders/due')) as unknown as DueReminder[]) || [],
+    queryFn: async () => (await api.get<DueReminder[]>('/reminders/due')) || [],
     enabled,
     refetchInterval: () => pollInterval(typeof document !== 'undefined' ? document.visibilityState : undefined),
     refetchIntervalInBackground: false,
