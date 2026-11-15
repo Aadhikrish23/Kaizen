@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     else await clearApiCache();
     if (shouldClearQueryCache(cacheUserId.current, nextUserId)) {
       await queryClient.cancelQueries();
-      queryClient.clear();
+      // queryClient.clear(); (scratch: reverted to prove the E2E spec fails without the fix)
     }
     cacheUserId.current = nextUserId;
   };
