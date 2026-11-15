@@ -55,7 +55,7 @@ named here; nothing below has been verified on a real production environment.
 | Server unit tests (`npm test`) | `ci.yml` (server job) | Done |
 | Smoke test against real MongoDB 7 (`scripts/smoke.sh` + `scripts/smoke.d/*.sh`) | `smoke.yml` after merge to main | Done (post-merge, not a PR gate) |
 | Real browser E2E (Playwright: chromium, firefox, webkit) | `e2e.yml` on PRs and main | Done (runs against `vite preview`, not the nginx image) |
-| Docker image builds, nginx config, SPA fallback and security headers of the client image | `ci.yml` docker job | Added in this PR; see the PR for the run result |
+| Docker image builds, nginx config, SPA fallback and security headers of the client image | `ci.yml` docker job | Done |
 | `docker compose up` of the whole stack | none | **Not covered by CI** |
 | AI provider calls (Ollama/OpenAI/Anthropic) | none | **Never exercised against a real provider** |
 
@@ -63,7 +63,8 @@ named here; nothing below has been verified on a real production environment.
 - No deployment to a real host has been done; `docker compose up` was never run in CI or by the authors of these docs.
 - Real LLM providers, Spoonacular and Open Food Facts calls were never exercised end to end.
 - The offline queue and cache behaviour is covered by unit tests of the pure logic and (for the user-switch flow) one E2E spec; the service worker and IndexedDB were not tested in a real offline browser.
-- Seed scripts and the admin scripts were not run against a real MongoDB by these docs' authors (the admin API itself is covered by the smoke test).
+- **Admin:** smoke test `82-admin.sh` only checks that a normal user gets 403 on the admin routes and 401 without a token (and cannot make themselves admin). The admin success paths (stats, role change, deactivation, last-admin 409, global foods CRUD, audit writes) are covered by unit tests of the pure logic only and are **NOT verified against a real database**, nor are `makeAdmin` and `checkDefaultAdmin`.
+- The seed scripts were not run against a real MongoDB by these docs' authors.
 
 ## Before the first real deployment
 1. Provision HTTPS, set the env vars, generate the secrets, and decide the AI provider (or run with heuristic fallbacks only).

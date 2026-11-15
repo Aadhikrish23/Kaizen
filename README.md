@@ -48,8 +48,7 @@ server/src/
 ```
 
 Pure logic (date rules, nutrition scaling, streaks, reminders, reports, goal pace, parsing) is kept in side-effect-free modules with
-unit tests. All routes are under `/api/v1`; Swagger UI at `/api-docs` (on `main` it documents the auth routes only; a generated
-OpenAPI for every route, including admin, is in review in PR #22).
+unit tests. All routes are under `/api/v1`; Swagger UI at `/api-docs` (generated from the zod schemas and covering every route, including admin; tests fail if a route is missing or the file is stale: PR #22, `ecafef7`).
 
 ## Running locally
 
@@ -96,4 +95,4 @@ add a check by creating `scripts/smoke.d/NN-name.sh` (rules in the header of `sc
 Maintained in [docs/production_checklist.md](docs/production_checklist.md) and
 [docs/implementation/current_state.md](docs/implementation/current_state.md). Highlights: no email delivery (password reset is a mock),
 no reverse-proxy (`trust proxy`) setting, no backup or monitoring automation, `docker compose up` and AI providers never exercised in CI.
-Open pull requests at the time of writing: #22 (OpenAPI for every route, typed client) and #25 (clear the client query cache when the user changes).
+Sprint 5 work is merged: #20 `90b711d` (browser E2E in CI, nginx), #21 `40ec3cd` (admin panel), #23 `b6f852e` (offline), #22 `ecafef7` (OpenAPI, typed client), #25 `a4ebba3` (clear the client query cache when the user changes).

@@ -42,7 +42,7 @@ A daily-use web dashboard: users log meals, water, weight, sleep, and workouts t
 
 **Also built on `main` (sprint 5):** an admin panel (users and global foods, audited, no API way to become admin), offline support for simple logs (cached reads and a replay-safe write queue for meals, water, weight and sleep), real-browser E2E in CI and an nginx SPA fallback for the client image.
 
-**In review (open PRs):** OpenAPI for every route and a typed client API layer (#22), clearing the client query cache when the signed-in user changes (#25), launch docs (#24).
+**Also merged in sprint 5:** OpenAPI for every route generated from the zod schemas plus a typed client API layer (#22), and clearing the client query cache when the signed-in user changes (#25).
 
 **Removed:** the old stubs (mock food parsing, empty search, mock gamification claims) are gone; the features above are real implementations.
 

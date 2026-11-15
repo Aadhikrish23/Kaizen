@@ -1,6 +1,6 @@
 # Current State
 
-**Last reviewed:** 2026-11-15 (reflects `main` at `b6f852e`, which includes PRs #1 to #21 and #23, plus the open PRs listed below)
+**Last reviewed:** 2026-11-15 (reflects `main` at `a4ebba3`, which includes PRs #1 to #23 and #25; this docs PR #24 is the only open one)
 **Stage:** pre-launch: feature-complete against the requirement matrix except for items marked open; not yet deployed anywhere.
 
 Requirement-level status: [../product/requirement_traceability_matrix.md](../product/requirement_traceability_matrix.md).
@@ -25,10 +25,10 @@ The earlier version of this file listed stubs and security gaps. They were worke
   history/progress (#16), in-app reminders (#15), mass-assignment and ownership hardening of profile, routines, recipes and
   measurements (#17, #18), recipe privacy fix and configurable global limit (#19).
 - **Hardening and launch prep (sprint 5):** real-browser E2E in CI (chromium, firefox, webkit), nginx SPA fallback for the client image,
-  removal of the dead `InventoryModal.tsx` (#20); admin panel with audited user and global-food management, deactivation, a
-  `make-admin` script, last-admin protection and removal of the old default-admin creation in `migrateData.ts` (#21); offline support:
+  removal of the dead `InventoryModal.tsx` (#20, `90b711d`); admin panel with audited user and global-food management, deactivation, a
+  `make-admin` script, last-admin protection and removal of the old default-admin creation in `migrateData.ts` (#21, `40ec3cd`); offline support:
   cached reads, idempotent creates with `clientRequestId` and a replay-safe write queue for meals, water, weight and sleep, with a
-  per-user cache owner (#23). Docs: this launch checklist and deployment guide (PR #24).
+  per-user cache owner (#23, `b6f852e`); OpenAPI for every route generated from the zod schemas, with tests that fail on a missing route or a stale file, and a typed client API layer (#22, `ecafef7`); the client query cache is cleared when the signed-in user changes and a failed token refresh now signs the UI out (#25, `a4ebba3`). Docs: this launch checklist and deployment guide (PR #24).
 
 ## Verified state (what is actually exercised automatically)
 
@@ -44,13 +44,10 @@ The earlier version of this file listed stubs and security gaps. They were worke
   calls, the service worker and IndexedDB queue in a real offline browser (only the pure logic is unit tested), the seed scripts.
 - Nothing has been deployed to a production-like host from this repository.
 
-## Open pull requests at the time of writing
+## Open pull requests
 
-| PR | Content |
-| --- | --- |
-| #22 | OpenAPI for every route generated from zod schemas (admin included, with the 409 `LAST_ADMIN` response and `clientRequestId`), typed client API layer. In review: until it merges `/api-docs` documents the auth routes only |
-| #24 | These docs, Node 20 images, nginx security headers, the `docker` CI job, a unit test for `config/secrets.ts` |
-| #25 | Clear the React Query cache when the signed-in user changes (user B could briefly see user A's cached data in the same tab); forced logout now signs out the UI |
+Only #24 (these docs, Node 20 images, nginx security headers, the `docker` CI job, a unit test for `config/secrets.ts`). All other
+sprint 5 PRs are merged (see above).
 
 ## Known gaps and risks
 
@@ -82,7 +79,7 @@ The earlier version of this file listed stubs and security gaps. They were worke
 
 ## Suggested next steps
 
-1. Merge #22, #24 and #25; make the E2E and docker jobs required checks.
+1. Merge #24; make the E2E and docker jobs required checks.
 2. Add a configurable `trust proxy` setting, then deploy to a staging host behind HTTPS and run the smoke script and the browser suite against it.
 3. Decide on transactional email (password reset, verification) and on push/email reminders.
 4. Exercise the AI providers with real keys and review the prompts and parsing in practice.
