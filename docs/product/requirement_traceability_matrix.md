@@ -1,7 +1,7 @@
 ﻿# Requirement Traceability Matrix
 
 **Document Version:** 3.1
-**Last reviewed:** 2026-11-15 (code on `main` at `72a4788`)
+**Last reviewed:** 2026-11-15 (as of PR #27, `af0ed62`)
 
 Version 1.0 of this file was written at project start and marked nearly everything NOT IMPLEMENTED. This version reflects the code on `main`. Paths are relative to `server/src/` (server) and `client/src/` (client). Overall narrative: [../implementation/current_state.md](../implementation/current_state.md).
 

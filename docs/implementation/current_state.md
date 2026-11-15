@@ -1,6 +1,6 @@
 # Current State
 
-**Last reviewed:** 2026-11-15 (reflects `main` at `72a4788`, which includes every earlier PR (#1 to #26); the single-flight token refresh described below is the only change after it)
+**Last reviewed:** 2026-11-15 (as of PR #27, `af0ed62`; all sprint 5 PRs #20 to #27 are merged, nothing is open except the refresh-hardening follow-up described under "After sprint 5")
 **Stage:** pre-launch: feature-complete against the requirement matrix except for items marked open; not yet deployed anywhere.
 
 Requirement-level status: [../product/requirement_traceability_matrix.md](../product/requirement_traceability_matrix.md).
@@ -46,12 +46,19 @@ The earlier version of this file listed stubs and security gaps. They were worke
 
 ## After sprint 5
 
-All sprint 5 PRs are merged: #24 (launch docs, Node 20 images, nginx security headers, the `docker` CI job, a unit test for
-`config/secrets.ts`) and #26 (reminder-prefs user-switch E2E; wrong-password login no longer goes through the refresh flow). This
-change adds a single-flight access-token refresh: one shared refresh for all requests that hit a 401 at once, and a Web Lock so
-several tabs do not refresh simultaneously (refresh tokens are single-use, so concurrent refreshes used to sign the user out
-despite a valid session). The Web Locks path and the multi-tab case are unit tested with a simulated lock only; no real
-multi-tab browser test exists.
+Merged: #20 `90b711d`, #21 `40ec3cd`, #22 `ecafef7`, #23 `b6f852e`, #24 `5fe4aa8` (launch docs, Node 20 images, nginx security headers,
+the `docker` CI job, a unit test for `config/secrets.ts`), #25 `a4ebba3`, #26 `72a4788` (reminder-prefs user-switch E2E; a wrong-password
+login no longer goes through the refresh flow) and #27 `af0ed62` (single-flight access-token refresh: one shared refresh for all
+requests that hit a 401 at once, plus a Web Lock so several tabs do not refresh simultaneously; refresh tokens are single-use, so
+concurrent refreshes used to sign the user out despite a valid session). The Web Locks path and the multi-tab case are unit tested
+with a simulated lock only; no real multi-tab browser test exists.
+
+Follow-up (`sprint-5/refresh-hardening`): the refresh request has a 15 s timeout, and a timeout counts as a refresh failure so a hung
+refresh cannot hold the cross-tab lock; every step of the forced logout (token removal, cache clear, session-expired event) runs even if
+an earlier one throws, e.g. blocked localStorage.
+
+Known limitation: a slow request still in flight from the previous user when another user signs in in the same tab can still receive
+a 401 and join the shared refresh; this straggler case is not handled.
 
 ## Known gaps and risks
 
