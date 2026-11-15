@@ -33,7 +33,7 @@ export interface Report {
   calories: Adherence | null;
   protein: Adherence | null;
   water: Adherence | null;
-  workouts: { count: number; daysWithWorkout: number; totalVolumeKg: number };
+  workouts: { count: number; daysWithWorkout: number; totalVolumeKg: number } | null;
   weight: { firstKg: number; lastKg: number; changeKg: number } | null;
   sleep: { averageHours: number; loggedNights: number } | null;
   days: ReportDay[];

@@ -20,10 +20,6 @@ export interface IUser extends Document {
   proteinDailyTargetG?: number;
   waterDailyTargetMl?: number;
   isPrivateProfile: boolean;
-  healthScore: number;
-  xp: number;
-  level: number;
-  streakDays: number;
   // Preferences
   units?: 'metric' | 'imperial';
   timezone?: string;
@@ -58,11 +54,7 @@ const UserSchema = new Schema(
     // Privacy & Admin
     isPrivateProfile: { type: Boolean, default: true },
 
-    // Gamification
-    healthScore: { type: Number, default: 85, min: 0, max: 100 },
-    xp: { type: Number, default: 0, min: 0 },
-    level: { type: Number, default: 1, min: 1 },
-    streakDays: { type: Number, default: 0, min: 0 },
+    // XP, level and streaks live in UserProgress (features/gamification), not on the user
     // Preferences
     units: { type: String, enum: ['metric', 'imperial'], default: 'metric' },
     // IANA timezone; defines the user's calendar day (see docs/timezone.md)

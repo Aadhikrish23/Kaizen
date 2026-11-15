@@ -80,6 +80,32 @@ export const applyActivityToStreak = (state: StreakState, date: string): StreakS
   return { currentStreak: current, longestStreak: Math.max(state.longestStreak, current), lastActiveDate: date };
 };
 
+/**
+ * Streak derived from the set of dates that have at least one XP event (the ledger is the source of truth).
+ * Order and duplicates do not matter, so back-filled days and repeated recomputation give the same answer.
+ */
+export const streakFromDates = (dates: string[]): StreakState => {
+  const unique = [...new Set(dates)].sort();
+  if (unique.length === 0) return { currentStreak: 0, longestStreak: 0, lastActiveDate: null };
+  let longest = 1;
+  let run = 1;
+  for (let i = 1; i < unique.length; i++) {
+    run = addDaysTz(unique[i - 1], 1) === unique[i] ? run + 1 : 1;
+    if (run > longest) longest = run;
+  }
+  return { currentStreak: run, longestStreak: longest, lastActiveDate: unique[unique.length - 1] };
+};
+
+/** Run `fn`; if it fails with a duplicate-key error (concurrent upsert of the same unique row), run it once more. */
+export const retryOnceOnDuplicate = async <T>(fn: () => Promise<T>, isDuplicate: (err: unknown) => boolean): Promise<T> => {
+  try {
+    return await fn();
+  } catch (err) {
+    if (!isDuplicate(err)) throw err;
+    return fn();
+  }
+};
+
 /** The streak to show today: alive only if the last active day is today or yesterday (a missed day breaks it). */
 export const effectiveStreak = (state: StreakState, today: string): number => {
   if (!state.lastActiveDate) return 0;

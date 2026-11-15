@@ -27,6 +27,7 @@ test('nothing logged: explicit not-enough-data statement, no zero-filled numbers
   assert.equal(r.daysWithData, 0);
   assert.match(r.notEnoughData!, /Not enough data for a weekly report: you logged on 0 of 7 days \(at least 3 needed\)/);
   assert.equal(r.calories, null);
+  assert.equal(r.workouts, null);
   assert.equal(r.protein, null);
   assert.equal(r.water, null);
   assert.equal(r.sleep, null);
@@ -40,6 +41,7 @@ test('a thin week stays "not enough data" even if some numbers exist', () => {
   assert.equal(r.daysWithData, 2);
   assert.equal(r.sufficient, false);
   assert.equal(r.calories, null);
+  assert.equal(r.workouts, null); // even a logged workout is not summarised from a thin sample
 });
 
 test('weekly report: averages over logged days only and adherence vs targets', () => {
