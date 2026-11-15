@@ -1,6 +1,6 @@
 # Current State
 
-**Last reviewed:** 2026-11-15 (reflects `main` at `a4ebba3`, which includes PRs #1 to #23 and #25; this docs PR #24 is the only open one)
+**Last reviewed:** 2026-11-15 (reflects `main` at `72a4788`, which includes every earlier PR (#1 to #26); the single-flight token refresh described below is the only change after it)
 **Stage:** pre-launch: feature-complete against the requirement matrix except for items marked open; not yet deployed anywhere.
 
 Requirement-level status: [../product/requirement_traceability_matrix.md](../product/requirement_traceability_matrix.md).
@@ -33,7 +33,7 @@ The earlier version of this file listed stubs and security gaps. They were worke
 ## Verified state (what is actually exercised automatically)
 
 - `ci.yml`: server and client build, server `npm test` (unit tests, no database) on every PR and push to main; a `docker` job (added in
-  PR #24) builds both images and checks the client image's nginx config, SPA fallback and security headers.
+  #24) builds both images and checks the client image's nginx config, SPA fallback and security headers.
 - `e2e.yml`: Playwright specs on chromium, firefox and webkit against a real MongoDB 7 service, the built server and `vite preview`
   (not the nginx image) on every PR and push to main.
 - `smoke.yml`: after merging to main, a smoke run against real MongoDB 7 (`scripts/smoke.sh` plus `scripts/smoke.d/*.sh`: auth, validation,
@@ -44,10 +44,14 @@ The earlier version of this file listed stubs and security gaps. They were worke
   calls, the service worker and IndexedDB queue in a real offline browser (only the pure logic is unit tested), the seed scripts.
 - Nothing has been deployed to a production-like host from this repository.
 
-## Open pull requests
+## After sprint 5
 
-Only #24 (these docs, Node 20 images, nginx security headers, the `docker` CI job, a unit test for `config/secrets.ts`). All other
-sprint 5 PRs are merged (see above).
+All sprint 5 PRs are merged: #24 (launch docs, Node 20 images, nginx security headers, the `docker` CI job, a unit test for
+`config/secrets.ts`) and #26 (reminder-prefs user-switch E2E; wrong-password login no longer goes through the refresh flow). This
+change adds a single-flight access-token refresh: one shared refresh for all requests that hit a 401 at once, and a Web Lock so
+several tabs do not refresh simultaneously (refresh tokens are single-use, so concurrent refreshes used to sign the user out
+despite a valid session). The Web Locks path and the multi-tab case are unit tested with a simulated lock only; no real
+multi-tab browser test exists.
 
 ## Known gaps and risks
 
@@ -79,7 +83,7 @@ sprint 5 PRs are merged (see above).
 
 ## Suggested next steps
 
-1. Merge #24; make the E2E and docker jobs required checks.
+1. Make the E2E and docker jobs required checks.
 2. Add a configurable `trust proxy` setting, then deploy to a staging host behind HTTPS and run the smoke script and the browser suite against it.
 3. Decide on transactional email (password reset, verification) and on push/email reminders.
 4. Exercise the AI providers with real keys and review the prompts and parsing in practice.

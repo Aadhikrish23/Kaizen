@@ -95,4 +95,4 @@ add a check by creating `scripts/smoke.d/NN-name.sh` (rules in the header of `sc
 Maintained in [docs/production_checklist.md](docs/production_checklist.md) and
 [docs/implementation/current_state.md](docs/implementation/current_state.md). Highlights: no email delivery (password reset is a mock),
 no reverse-proxy (`trust proxy`) setting, no backup or monitoring automation, `docker compose up` and AI providers never exercised in CI.
-Sprint 5 work is merged: #20 `90b711d` (browser E2E in CI, nginx), #21 `40ec3cd` (admin panel), #23 `b6f852e` (offline), #22 `ecafef7` (OpenAPI, typed client), #25 `a4ebba3` (clear the client query cache when the user changes).
+Sprint 5 work is merged: #20 `90b711d` (browser E2E in CI, nginx), #21 `40ec3cd` (admin panel), #23 `b6f852e` (offline), #22 `ecafef7` (OpenAPI, typed client), #25 `a4ebba3` (clear the client query cache when the user changes), #24 (launch docs), #26 (user-switch E2E, login error path). Token refresh is single-flight (one shared refresh for parallel 401s, Web Lock across tabs).
