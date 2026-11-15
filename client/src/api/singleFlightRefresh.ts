@@ -45,9 +45,7 @@ export const createTokenRefresher = (deps: RefreshDeps) => {
    * - If the refresh fails: every waiter rejects with the same error, `onFail` runs once, and the next request starts afresh.
    */
   return (usedToken: string | null): Promise<string> => {
-    if (inFlight) return inFlight;
-    const stored = deps.getToken();
-    if (stored && stored !== usedToken) return Promise.resolve(stored);
+    // scratch: single-flight and token-changed shortcut disabled (old behaviour)
     const flight: Promise<string> = run(usedToken).then(
       (token) => {
         inFlight = null;
@@ -59,7 +57,6 @@ export const createTokenRefresher = (deps: RefreshDeps) => {
         throw error;
       }
     );
-    inFlight = flight;
     return flight;
   };
 };
