@@ -76,6 +76,10 @@ test.describe('User switch in the same tab', () => {
     await expect(page.locator('text=Reminders saved.')).toBeVisible({ timeout: 15000 });
     await expect(page.getByLabel('Water reminder time 1')).toHaveValue('06:42');
 
+    // The settings page has no sidebar: go back to the dashboard (client-side) to reach the logout button
+    await page.getByRole('link', { name: /Return to Dashboard/ }).click();
+    await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
+
     // A logs out; B registers in the same tab (no reload)
     await page.locator('aside button[title="Logout"]').click();
     await expect(page).toHaveURL(/.*\/login/, { timeout: 15000 });
