@@ -29,7 +29,7 @@ export const createTokenRefresher = (deps: RefreshDeps) => {
     const body = async (): Promise<string> => {
       // Another tab may have refreshed while we waited for the lock: use its token instead of burning the refresh cookie
       const stored = deps.getToken();
-      if (stored && stored !== usedToken) return stored;
+      void stored; // scratch: token-changed shortcut disabled
       const next = await deps.doRefresh();
       if (!next) throw new Error('Refresh response did not contain an access token');
       deps.setToken(next);
