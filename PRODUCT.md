@@ -29,10 +29,10 @@ A daily-use web dashboard: users log meals, water, weight, sleep, and workouts t
 
 ## Capabilities and Constraints
 
-**Built on `main` (status: pre-launch, not yet deployed; see docs/implementation/current_state.md for what is verified):**
+**Built on `main` (status: pre-launch, not yet deployed; see docs/implementation/current_state.md for what is verified and what is not):**
 - JWT auth (register/login/refresh with hashed single-use refresh tokens), user profile with timezone, onboarding flow.
 - Core tracking: meals (amount-scaled food logging, macro/calorie calculation, recipes), water, weight (daily log, history, goal progress), sleep, body measurements, workouts (set-by-set logging with RPE and volume).
-- Adaptive workout planner: equipment-aware exercise selection (new users start with an empty inventory), weekly movement-pattern balance, fatigue/recovery modeling, double progression, redundancy detection and decision explainability, covered by its own adversarial test suite (26 scenarios).
+- Adaptive workout planner: equipment-aware exercise selection (new users start with an empty inventory), weekly movement-pattern balance, fatigue/recovery modeling, double progression, redundancy detection and decision explainability, covered by its own adversarial test suite (26 scenarios; the engine is 14 files).
 - AI layer: a provider-neutral service (Ollama, OpenAI-compatible, Anthropic) behind the FastAPI microservice. Features: coach chat with the user's real daily context, natural-language food parsing (nutrition comes only from the food database, never from the model), deterministic meal recommendations for the remaining budget, daily and weekly insights. Every AI feature has a non-AI fallback, so the app works when the AI service is down. Real providers have not been exercised end to end.
 - Gamification: XP ledger, levels, streaks and 12 achievements, derived from logged activity (challenges are not built).
 - In-app reminders (water, meals, weight, workout) with quiet hours; shown while the app is open, no push or email.
@@ -40,7 +40,9 @@ A daily-use web dashboard: users log meals, water, weight, sleep, and workouts t
 - Grouped global search across foods, recipes, exercises and routines, scoped to the user.
 - Analytics dashboard, workout routines, "Kaizen Readiness" composite score.
 
-**Built in open pull requests, not on `main` yet:** admin panel (#21), full OpenAPI documentation and typed client (#22), offline support with an idempotent write queue (#23), CI browser tests and nginx SPA fallback (#20).
+**Also built on `main` (sprint 5):** an admin panel (users and global foods, audited, no API way to become admin), offline support for simple logs (cached reads and a replay-safe write queue for meals, water, weight and sleep), real-browser E2E in CI and an nginx SPA fallback for the client image.
+
+**In review (open PRs):** OpenAPI for every route and a typed client API layer (#22), clearing the client query cache when the signed-in user changes (#25), launch docs (#24).
 
 **Removed:** the old stubs (mock food parsing, empty search, mock gamification claims) are gone; the features above are real implementations.
 

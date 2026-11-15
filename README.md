@@ -5,7 +5,7 @@ adaptive workout planner, an AI coach, reminders, reports and gamification. Name
 (continuous improvement).
 
 **Status: pre-launch.** The core product works end to end and is covered by unit tests, a post-merge smoke test against MongoDB in
-CI and (in an open PR) a real-browser E2E workflow. It has **not** been deployed to a production environment from this repository.
+CI and a real-browser E2E workflow (chromium, firefox, webkit). It has **not** been deployed to a production environment from this repository.
 Read [docs/production_checklist.md](docs/production_checklist.md) before putting it in front of users. Details:
 [docs/implementation/current_state.md](docs/implementation/current_state.md), requirement status:
 [docs/product/requirement_traceability_matrix.md](docs/product/requirement_traceability_matrix.md), product context:
@@ -15,12 +15,14 @@ Read [docs/production_checklist.md](docs/production_checklist.md) before putting
 
 - **Tracking:** water, meals (foods, recipes, external recipe/food import with explicit per-100 g or per-serving basis), weight and
   goals (target date, history, pace), body measurements, sleep (estimated cycle bedtimes), workouts, routines, equipment inventory.
-- **Planner:** biomechanical workout engine (12 modules); new users start with an empty equipment inventory and choose a preset.
+- **Planner:** biomechanical workout engine (14 files in `server/src/features/planner/engine/`); new users start with an empty equipment inventory and choose a preset.
 - **AI:** provider-neutral LLM layer in `ai_services/` (Ollama, OpenAI-compatible, Anthropic) for coach chat, daily and weekly
   insights and food-text parsing; every AI feature has a deterministic fallback, and nutrition numbers always come from the food
   database, never from the model.
 - **Also:** meal suggestions that fit your remaining macros, grouped global search, in-app reminders, daily/weekly/monthly reports,
-  XP/levels/streaks/achievements, one timezone rule ([docs/timezone.md](docs/timezone.md), [docs/gamification.md](docs/gamification.md)).
+  XP/levels/streaks/achievements, an admin panel (users and global foods, audited; [docs/admin.md](docs/admin.md)), offline support
+  for simple logs (cached reads and a replay-safe write queue for meals, water, weight and sleep; [docs/offline.md](docs/offline.md)),
+  one timezone rule ([docs/timezone.md](docs/timezone.md), [docs/gamification.md](docs/gamification.md)).
 
 ## Stack
 
@@ -46,12 +48,12 @@ server/src/
 ```
 
 Pure logic (date rules, nutrition scaling, streaks, reminders, reports, goal pace, parsing) is kept in side-effect-free modules with
-unit tests. All routes are under `/api/v1`; Swagger UI at `/api-docs` (currently documents the auth routes only; a generated
-OpenAPI for every route is in an open PR).
+unit tests. All routes are under `/api/v1`; Swagger UI at `/api-docs` (on `main` it documents the auth routes only; a generated
+OpenAPI for every route, including admin, is in review in PR #22).
 
 ## Running locally
 
-Prerequisites: Node 20+, MongoDB, Python 3.10+ (AI service, optional) and, optionally, [Ollama](https://ollama.com).
+Prerequisites: Node 20 (CI and the Docker images use it), MongoDB, Python 3.10+ (AI service, optional) and, optionally, [Ollama](https://ollama.com).
 
 ```bash
 # 1. MongoDB
@@ -71,7 +73,7 @@ cd ai_services && pip install -r requirements.txt && uvicorn app.main:app --port
 ```
 
 Or the whole stack: `cp .env.example .env`, set the two JWT secrets, `docker compose up --build` (see
-[docs/deployment.md](docs/deployment.md)). Seed data: scripts in `server/src/scripts/`.
+[docs/deployment.md](docs/deployment.md)). Seed data: scripts in `server/src/scripts/` (read the warning about `seedFoods` in the deployment doc first).
 
 ## Testing
 
@@ -85,12 +87,13 @@ scripts/smoke.sh http://localhost:5000/api/v1              # against a running s
 cd e2e && npx playwright test --workers=1                  # needs the stack running, client on :5173
 ```
 
-CI: `ci.yml` (builds and server tests on PRs), `smoke.yml` (real MongoDB smoke after merge to main). The smoke script is modular:
+CI: `ci.yml` (builds and server tests on PRs, plus a Docker image build and nginx check), `e2e.yml` (Playwright on three browsers against a real
+MongoDB), `smoke.yml` (real MongoDB smoke after merge to main). The smoke script is modular:
 add a check by creating `scripts/smoke.d/NN-name.sh` (rules in the header of `scripts/smoke.sh`).
 
 ## Known gaps
 
 Maintained in [docs/production_checklist.md](docs/production_checklist.md) and
 [docs/implementation/current_state.md](docs/implementation/current_state.md). Highlights: no email delivery (password reset is a mock),
-no reverse-proxy (`trust proxy`) setting, no backup or monitoring automation, Docker images and AI providers never exercised in CI,
-admin panel, offline support and the browser E2E workflow are in open PRs.
+no reverse-proxy (`trust proxy`) setting, no backup or monitoring automation, `docker compose up` and AI providers never exercised in CI.
+Open pull requests at the time of writing: #22 (OpenAPI for every route, typed client) and #25 (clear the client query cache when the user changes).

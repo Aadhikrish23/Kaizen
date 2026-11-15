@@ -1,8 +1,10 @@
 # Deployment
 
 How to run Kaizen with Docker Compose, every environment variable in one place, and what an operator still has to do.
-Status of each claim is stated plainly: things below were **not** exercised on a real production host from this repository's
-CI (CI runs the server against MongoDB 7 and a smoke script; the Docker images and compose file are only YAML-parsed there).
+Status of each claim is stated plainly: nothing below was exercised on a real production host. What CI does cover: the server
+against MongoDB 7 (post-merge smoke script), the real-browser E2E suite (against `vite preview`, not nginx), and, from the docker
+job added with this document, a build of both images plus an nginx config, SPA-fallback and security-header check of the client
+image. `docker compose up` itself is not run by CI.
 
 ## Services
 
@@ -12,8 +14,8 @@ CI (CI runs the server against MongoDB 7 and a smoke script; the Docker images a
 | --- | --- | --- | --- |
 | `mongodb` | `mongo:7` | 27017 (published) | `mongosh` ping |
 | `ai_services` | `./ai_services` (python:3.11-slim, uvicorn) | 8000 (internal) | `GET /api/health` (200 while the process is up, even if the LLM provider is down) |
-| `server` | `./server` (node:18-alpine, multi-stage) | 5000 | `GET /api/v1/health` must report `"db":"up"` |
-| `client` | `./client` (vite build, then nginx) | 80 | none |
+| `server` | `./server` (node:20-alpine, multi-stage) | 5000 | `GET /api/v1/health` must report `"db":"up"` |
+| `client` | `./client` (vite build on node:20-alpine, then `nginx:alpine` with `client/nginx.conf`) | 80 | none |
 
 `server` waits for a healthy MongoDB; `client` waits for a healthy server.
 
@@ -35,7 +37,7 @@ origin of the client) and `VITE_API_URL` (baked into the client bundle at build 
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `NODE_ENV` | unset | `production` makes the refresh cookie `Secure`, requires the JWT secrets, and lowers the global rate limit to 100. `development`/`test`/unset allow insecure dev-only secret fallbacks. |
+| `NODE_ENV` | unset | **Always set `NODE_ENV=production` outside compose.** `production` makes the refresh cookie `Secure`, requires the JWT secrets, lowers the global rate limit to 100 and hides internal error messages. An unset value is treated as development: insecure fallback secrets (public in the source), a non-`Secure` cookie and a 5000 rate limit. Compose sets it for the server. |
 | `PORT` | `5000` | HTTP port |
 | `MONGODB_URI` (also `MONGO_URI`) | `mongodb://localhost:27017/kaizen_db` | MongoDB connection string. Compose sets `mongodb://mongodb:27017/kaizen` (no authentication). |
 | `JWT_SECRET` | none in production | Signs access tokens (15 min). At least 16 characters; the server exits at startup without it when `NODE_ENV` is not development/test. |
@@ -47,6 +49,7 @@ origin of the client) and `VITE_API_URL` (baked into the client bundle at build 
 | `AI_RATE_LIMIT_PER_MIN` | 30 | Per-user limit per minute for LLM-backed routes (chat, parse-food, insights). |
 | `AI_LIGHT_RATE_LIMIT_PER_MIN` | 60 | Per-user limit per minute for search and recommendations. |
 | `REMINDERS_RATE_LIMIT_PER_USER` / `_PER_IP` | 120 / 3000 | Limits per 15 minutes for the reminders router, which is exempt from the global limiter. |
+| `ADMIN_RATE_LIMIT_PER_15MIN` | 300 | Per-admin limit per 15 minutes for `/api/v1/admin/*` (applied after authentication and the admin role check). |
 
 ### AI service (`ai_services/`)
 
@@ -92,9 +95,11 @@ everyone out. Refresh tokens are stored only as SHA-256 hashes and are single-us
 - **Reverse proxy and client IPs:** the server does not currently set Express `trust proxy`. Behind a proxy every request appears
   to come from the proxy's IP, so the per-IP rate limits would be shared by all users. Until a configurable `trust proxy` setting
   exists (see the production checklist), run the server so that it sees real client addresses or raise `API_RATE_LIMIT_MAX`.
-- The bundled nginx (client image) on `main` has no SPA fallback, so a page refresh on a deep link such as `/settings/profile`
-  returns 404 behind it. This is fixed in an open PR (sprint-5/e2e-ci-and-cleanup); until it merges, put the SPA fallback in your own
-  proxy.
+- The client image serves the SPA with `client/nginx.conf`: deep links and refreshes fall back to `index.html`, hashed `/assets/`
+  are cached for a year, and `index.html`, `sw.js`, `registerSW.js` and the manifest are never cached (so a new deploy is picked up).
+  It also sends `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: strict-origin-when-cross-origin`
+  (`client/security-headers.conf`). There is deliberately **no Content-Security-Policy**: a strict one could break the app and
+  has not been tested; add one at your proxy only after testing it. Add HSTS at the TLS-terminating proxy.
 
 ## MongoDB
 
@@ -124,8 +129,38 @@ Rolling back the code does not roll back data. Schema changes so far are additiv
 backup before upgrading. Notable data-affecting changes: refresh tokens are stored hashed (existing sessions were invalidated once),
 new users start with an empty equipment inventory, and the gamification `UserProgress` documents are derived data that is rebuilt from the `XpEvent` ledger.
 
+## Admin accounts
+
+There is no API to become an admin; an operator promotes an existing, registered user. The production image has no `ts-node`
+(production dependencies only), so use the compiled scripts, not `npm run make-admin`:
+
+```bash
+docker compose exec server node dist/scripts/makeAdmin.js someone@example.com
+docker compose exec server node dist/scripts/checkDefaultAdmin.js   # exit code 3 = legacy default admin found
+```
+
+**Upgrade note (action required if the database ever ran the old `migrateData.ts`):** that script used to create an admin
+account `admin@kaizen.com` with a publicly known password. Delete it or demote and deactivate it (and delete its refresh tokens)
+before exposing the admin panel; the server logs a `[Kaizen SECURITY]` warning at startup while such an active admin exists. Details:
+[admin.md](admin.md). The last active admin cannot be demoted or deactivated.
+
 ## Seed data
 
-Exercise catalog, foods and demo videos come from the scripts in `server/src/scripts/` (for example
-`npx ts-node --transpile-only src/scripts/seedComprehensiveExercises.ts` and `seedFoods.ts`), run against the target database.
-The planner also syncs its catalog into the database when a plan is generated.
+Seeding is an operator task run from a **checkout with dev dependencies** (`cd server && npm ci`), because the server image has no
+`ts-node`. All three seed scripts read `MONGODB_URI`, falling back to `MONGO_URI`, then to a localhost default, so point one of
+them at the target database:
+
+```bash
+cd server
+MONGODB_URI=mongodb://<host>:27017/<db> npx ts-node --transpile-only src/scripts/seedComprehensiveExercises.ts
+MONGODB_URI=mongodb://<host>:27017/<db> npx ts-node --transpile-only src/scripts/seedFoods.ts      # DESTRUCTIVE, see below
+MONGODB_URI=mongodb://<host>:27017/<db> npx ts-node --transpile-only src/scripts/seedVideos.ts
+```
+
+(Inside the production image the compiled equivalents are `node dist/scripts/seedFoods.js` and so on, with the same variables.)
+
+**`seedFoods` deletes every global food (`isCustom: false`) before re-seeding.** That includes cached Open Food Facts foods and
+any foods created by admins. Run it once on an empty database; do not re-run it on a live one without a backup. Users' own custom
+foods are not touched. The planner also syncs its exercise catalog into the database when a plan is generated.
+
+The seed scripts were not run as part of writing this document.

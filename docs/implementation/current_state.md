@@ -1,6 +1,6 @@
 # Current State
 
-**Last reviewed:** 2026-11-15 (reflects `main` at `6b7bd03`, plus the open PRs listed below)
+**Last reviewed:** 2026-11-15 (reflects `main` at `b6f852e`, which includes PRs #1 to #21 and #23, plus the open PRs listed below)
 **Stage:** pre-launch: feature-complete against the requirement matrix except for items marked open; not yet deployed anywhere.
 
 Requirement-level status: [../product/requirement_traceability_matrix.md](../product/requirement_traceability_matrix.md).
@@ -24,47 +24,57 @@ The earlier version of this file listed stubs and security gaps. They were worke
 - **Engagement and reporting (sprint 4, #14 to #19):** gamification ([../gamification.md](../gamification.md)) (#14, #17), reports and goal
   history/progress (#16), in-app reminders (#15), mass-assignment and ownership hardening of profile, routines, recipes and
   measurements (#17, #18), recipe privacy fix and configurable global limit (#19).
+- **Hardening and launch prep (sprint 5):** real-browser E2E in CI (chromium, firefox, webkit), nginx SPA fallback for the client image,
+  removal of the dead `InventoryModal.tsx` (#20); admin panel with audited user and global-food management, deactivation, a
+  `make-admin` script, last-admin protection and removal of the old default-admin creation in `migrateData.ts` (#21); offline support:
+  cached reads, idempotent creates with `clientRequestId` and a replay-safe write queue for meals, water, weight and sleep, with a
+  per-user cache owner (#23). Docs: this launch checklist and deployment guide (PR #24).
 
 ## Verified state (what is actually exercised automatically)
 
-- `ci.yml`: server and client build, server `npm test` (unit tests, no database) on every PR and push to main.
+- `ci.yml`: server and client build, server `npm test` (unit tests, no database) on every PR and push to main; a `docker` job (added in
+  PR #24) builds both images and checks the client image's nginx config, SPA fallback and security headers.
+- `e2e.yml`: Playwright specs on chromium, firefox and webkit against a real MongoDB 7 service, the built server and `vite preview`
+  (not the nginx image) on every PR and push to main.
 - `smoke.yml`: after merging to main, a smoke run against real MongoDB 7 (`scripts/smoke.sh` plus `scripts/smoke.d/*.sh`: auth, validation,
-  inventory, recipes, timezone, gamification, reminders, reports/goals, ownership, recipe privacy, search, insight, refresh-token replay).
+  inventory, recipes, timezone, gamification, reminders, reports/goals, ownership, recipe privacy, search, admin, idempotency, insight,
+  refresh-token replay).
 - Planner engine and adversarial suites (11 + 15) are run by hand with `ts-node`; AI service tests with `python -m unittest`.
-- **Not exercised automatically on `main`:** a real browser (the Playwright specs exist; the CI workflow is in an open PR), Docker image builds
-  and `docker compose up`, any real LLM provider call, Spoonacular and Open Food Facts calls.
-- The previous note that the e2e suite was only verified on chromium is superseded: it is being moved into CI (open PR below).
+- **Not exercised automatically:** `docker compose up` of the whole stack, any real LLM provider call, Spoonacular and Open Food Facts
+  calls, the service worker and IndexedDB queue in a real offline browser (only the pure logic is unit tested), the seed scripts.
+- Nothing has been deployed to a production-like host from this repository.
 
 ## Open pull requests at the time of writing
 
 | PR | Content |
 | --- | --- |
-| #20 | Playwright E2E workflow for chromium/firefox/webkit, nginx SPA fallback for the client image, removal of dead `InventoryModal.tsx`, OFF-cache scoping |
-| #21 | Admin panel: guarded `/admin` API, deactivation, audit log, `make-admin` script, admin tab |
-| #22 | OpenAPI for every route generated from zod schemas, typed client API layer |
-| #23 | Offline support: cached reads, idempotent write queue for meals/water/weight/sleep, offline UI |
+| #22 | OpenAPI for every route generated from zod schemas (admin included, with the 409 `LAST_ADMIN` response and `clientRequestId`), typed client API layer. In review: until it merges `/api-docs` documents the auth routes only |
+| #24 | These docs, Node 20 images, nginx security headers, the `docker` CI job, a unit test for `config/secrets.ts` |
+| #25 | Clear the React Query cache when the signed-in user changes (user B could briefly see user A's cached data in the same tab); forced logout now signs out the UI |
 
 ## Known gaps and risks
 
-**Security and operations (see the production checklist for status of each item)**
+**Security and operations (see the production checklist for the status of each item)**
 - No `trust proxy` setting: behind a reverse proxy all users share one IP rate-limit bucket.
 - Password reset is a mock (logs a link); no email delivery, verification or 2FA.
 - Compose runs MongoDB without authentication; no backup, monitoring or alerting automation; logs are plain console output.
 - No account export/deletion endpoints.
-- No admin role in use on `main` until #21 merges.
+- Databases that ever ran the old `migrateData.ts` may contain an `admin@kaizen.com` admin with a publicly known password: run
+  `node dist/scripts/checkDefaultAdmin.js` and remove or demote it (see [../admin.md](../admin.md)).
+- `NODE_ENV` must be set to `production` explicitly; unset is treated as development (insecure fallback secrets).
+- `RefreshToken.tokenHash` has a normal, non-unique index.
 
 **Product**
 - AI quality is unproven against real providers; only the fallback paths and validation logic are tested.
-- Food database coverage (including Indian foods) is as good as the seed data; not audited.
+- Food database coverage (including Indian foods) is as good as the seed data; not audited. `seedFoods` deletes all global foods first.
 - Reminders are in-app only (shown while the app is open); there is no email or push delivery.
-- Swagger on `main` documents only the auth routes (#22).
-- No offline support on `main` (#23).
+- Gamification challenges are not built.
+- Offline: only meals, water, weight and sleep can be added offline; weight/sleep per-day replays are last-write-wins ([../offline.md](../offline.md)).
 
 **Code health**
 - Types are duplicated between `client/` and `server/`; the planned shared packages were never created.
-- `apiClient` call sites still cast response types on `main` (#22 introduces typed helpers).
 - No guard (test or lint) against a new query missing a `userId` filter; the audit in #19 was manual.
-- Client has no unit-test runner; pure client modules are tested from `server/test` through a small transpile helper.
+- The client has no unit-test runner; pure client modules are tested from `server/test` through a small transpile helper.
 
 **Planner behaviour (by design, see `planner/__tests__/inspection_report.txt`)**
 - Unfillable blueprint slots mark the plan `NEEDS_REPAIR` rather than picking a random exercise.
@@ -72,7 +82,7 @@ The earlier version of this file listed stubs and security gaps. They were worke
 
 ## Suggested next steps
 
-1. Merge the open PRs after review; make the E2E workflow a required check.
+1. Merge #22, #24 and #25; make the E2E and docker jobs required checks.
 2. Add a configurable `trust proxy` setting, then deploy to a staging host behind HTTPS and run the smoke script and the browser suite against it.
 3. Decide on transactional email (password reset, verification) and on push/email reminders.
 4. Exercise the AI providers with real keys and review the prompts and parsing in practice.
