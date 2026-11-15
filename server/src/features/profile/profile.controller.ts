@@ -1,6 +1,7 @@
 ﻿import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import * as profileService from './profile.service';
+import { ONBOARDING_KEYS, PROFILE_UPDATE_KEYS, pickAllowed } from './profile.schema';
 import { getGoalHistory as getGoalHistoryEntries, getGoalProgress } from '../goals/goals.service';
 import { SuccessResponse } from '../../types/api';
 
@@ -16,7 +17,7 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
-  const user = await profileService.updateProfile(getUserId(req), req.body);
+  const user = await profileService.updateProfile(getUserId(req), pickAllowed(req.body, PROFILE_UPDATE_KEYS));
   const response: SuccessResponse<typeof user> = { success: true, data: user };
   res.json(response);
 });
@@ -33,7 +34,7 @@ export const getGoalProgressSummary = asyncHandler(async (req: Request, res: Res
 });
 
 export const completeOnboarding = asyncHandler(async (req: Request, res: Response) => {
-  const data = await profileService.completeOnboarding(getUserId(req), req.body);
+  const data = await profileService.completeOnboarding(getUserId(req), pickAllowed(req.body, ONBOARDING_KEYS));
   const response: SuccessResponse<typeof data> = { success: true, data };
   res.json(response);
 });

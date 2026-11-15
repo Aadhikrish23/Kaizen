@@ -35,7 +35,7 @@ export interface Report {
   calories: Adherence | null;
   protein: Adherence | null;
   water: Adherence | null;
-  workouts: { count: number; daysWithWorkout: number; totalVolumeKg: number };
+  workouts: { count: number; daysWithWorkout: number; totalVolumeKg: number } | null;
   weight: { firstKg: number; lastKg: number; changeKg: number } | null;
   sleep: { averageHours: number; loggedNights: number } | null;
   /** Per-day rows for charts; days without a log have null values (never zero-filled). */
@@ -79,7 +79,7 @@ export const buildReport = (period: ReportPeriod, a: WeeklyAggregate): Report =>
       calories: null,
       protein: null,
       water: null,
-      workouts: { count: 0, daysWithWorkout: 0, totalVolumeKg: 0 },
+      workouts: null, // not computed: never zero-filled
       weight: null,
       sleep: null,
     };

@@ -71,7 +71,11 @@ export const ReportsPage: React.FC<{ currentDate: string }> = ({ currentDate }) 
                 {adherence('Calories (avg)', data.calories, 'kcal')}
                 {adherence('Protein (avg)', data.protein, 'g')}
                 {adherence('Water (avg)', data.water, 'ml')}
-                <Stat label="Workouts" value={String(data.workouts.count)} sub={`${data.workouts.daysWithWorkout} day(s), ${data.workouts.totalVolumeKg} kg volume`} />
+                {data.workouts ? (
+                  <Stat label="Workouts" value={String(data.workouts.count)} sub={`${data.workouts.daysWithWorkout} day(s), ${data.workouts.totalVolumeKg} kg volume`} />
+                ) : (
+                  <Stat label="Workouts" value="No data" />
+                )}
                 <Stat label="Sleep (avg)" value={data.sleep ? `${data.sleep.averageHours} h` : 'No data'} sub={data.sleep ? `${data.sleep.loggedNights} logged night(s)` : undefined} />
                 <Stat
                   label="Weight change"

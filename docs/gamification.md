@@ -1,7 +1,8 @@
 # Gamification: XP, levels, streaks, achievements
 
-Source of truth: `UserProgress` (one row per user) and the `XpEvent` ledger. The legacy `User.xp`, `User.level` and
-`User.streakDays` fields are not used. Rules live in `server/src/features/gamification/gamification.logic.ts` (pure, tested).
+Source of truth: the `XpEvent` ledger. `UserProgress` (one row per user) is derived from it. The old placeholder fields
+`User.xp`, `level`, `streakDays` and `healthScore` (never updated, always the defaults) were removed from the model and from
+`/auth/me`. Rules live in `server/src/features/gamification/gamification.logic.ts` (pure, tested).
 
 ## Data
 - `UserProgress { userId (unique), xp, level, currentStreak, longestStreak, lastActiveDate (YYYY-MM-DD, user's tz), achievements[{key, unlockedAt}] }`
@@ -42,3 +43,11 @@ XP events by type, longest streak, level). Unlocks are persisted (with `unlocked
 `GET /api/v1/gamification` returns `{ progress: {level, xp, xpIntoLevel, xpForNextLevel, percentToNext}, streak: {current, longest,
 lastActiveDate, activeToday}, streakAtRisk, achievements: [{key, title, description, target, progress, unlocked, unlockedAt}] }`.
 A user with no activity gets zeros and all achievements locked (no fake data).
+
+## Consistency
+- After an XP event is inserted, `recomputeProgress` rebuilds `UserProgress` (xp, level, streak, achievements) **from the ledger**.
+  It is idempotent and independent of event order, so a failed progress write loses nothing: the next award, or the next
+  `GET /gamification` (which compares progress with the ledger and repairs it), restores the correct values. The streak comes
+  from the set of dates with at least one event (`streakFromDates`), so back-filling yesterday after today works too.
+- The progress upsert has no `$setOnInsert` on the unique `userId` key (which would stop the server from retrying a racing
+  upsert) and is retried once on a duplicate-key error, so two concurrent first awards for a new user both succeed.

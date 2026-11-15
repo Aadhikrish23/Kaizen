@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   XP_VALUES, DAILY_CAPS, dedupeKeys, isRewardableDate, levelForXp, xpForLevel, levelProgress, applyActivityToStreak,
-  effectiveStreak, evaluateAchievements, newlyUnlocked, ACHIEVEMENTS, ProgressStats, StreakState,
+  effectiveStreak, streakFromDates, retryOnceOnDuplicate, evaluateAchievements, newlyUnlocked, ACHIEVEMENTS, ProgressStats, StreakState,
 } from '../src/features/gamification/gamification.logic';
 import { todayInTz, dateStringInTz } from '../src/utils/dates';
 
@@ -164,4 +164,35 @@ test('newlyUnlocked returns only achievements satisfied and not yet persisted', 
   assert.deepEqual(newlyUnlocked(stats, []).sort(), ['first_meal', 'first_workout']);
   assert.deepEqual(newlyUnlocked(stats, ['first_meal']), ['first_workout']);
   assert.deepEqual(newlyUnlocked(stats, ['first_meal', 'first_workout']), []);
+});
+
+test('streakFromDates rebuilds the streak from the ledger regardless of order, duplicates or back-filling', () => {
+  assert.deepEqual(streakFromDates([]), { currentStreak: 0, longestStreak: 0, lastActiveDate: null });
+  assert.deepEqual(streakFromDates(['2026-03-08']), { currentStreak: 1, longestStreak: 1, lastActiveDate: '2026-03-08' });
+  const run = ['2026-03-07', '2026-03-05', '2026-03-06', '2026-03-06', '2026-03-08'];
+  assert.deepEqual(streakFromDates(run), { currentStreak: 4, longestStreak: 4, lastActiveDate: '2026-03-08' });
+  // a gap ends the current streak but the longest one is kept; a late back-fill of the gap joins them
+  assert.deepEqual(streakFromDates(['2026-03-01', '2026-03-02', '2026-03-03', '2026-03-06', '2026-03-07']), { currentStreak: 2, longestStreak: 3, lastActiveDate: '2026-03-07' });
+  assert.deepEqual(streakFromDates(['2026-03-01', '2026-03-02', '2026-03-03', '2026-03-04', '2026-03-05', '2026-03-06', '2026-03-07']).currentStreak, 7);
+  // DST days and month/year ends are just calendar days
+  assert.equal(streakFromDates(['2026-03-07', '2026-03-08', '2026-03-09']).currentStreak, 3);
+  assert.equal(streakFromDates(['2025-12-31', '2026-01-01']).currentStreak, 2);
+  assert.equal(streakFromDates(['2028-02-28', '2028-02-29', '2028-03-01']).currentStreak, 3);
+  // recomputation is idempotent
+  assert.deepEqual(streakFromDates(run), streakFromDates([...run, ...run]));
+});
+
+test('retryOnceOnDuplicate retries exactly once, and only for duplicate-key errors', async () => {
+  const dup = { code: 11000 };
+  const isDup = (e: any) => e?.code === 11000;
+  let calls = 0;
+  assert.equal(await retryOnceOnDuplicate(async () => { calls++; if (calls === 1) throw dup; return 'ok'; }, isDup), 'ok');
+  assert.equal(calls, 2);
+  calls = 0;
+  await assert.rejects(retryOnceOnDuplicate(async () => { calls++; throw dup; }, isDup)); // second failure propagates
+  assert.equal(calls, 2);
+  calls = 0;
+  await assert.rejects(retryOnceOnDuplicate(async () => { calls++; throw new Error('boom'); }, isDup), /boom/);
+  assert.equal(calls, 1);
+  assert.equal(await retryOnceOnDuplicate(async () => 7, isDup), 7);
 });

@@ -6,27 +6,67 @@ import WaterLog from '../water/WaterLog';
 import { addDaysTz, todayInTz } from '../../utils/dates';
 import { getUserTimezone } from '../../utils/userTimezone';
 import {
-  ActivityType, XP_VALUES, applyActivityToStreak, dedupeKeys, effectiveStreak, evaluateAchievements, isRewardableDate,
+  ActivityType, XP_VALUES, retryOnceOnDuplicate, streakFromDates, dedupeKeys, effectiveStreak, evaluateAchievements, isRewardableDate,
   levelForXp, levelProgress, newlyUnlocked, ProgressStats,
 } from './gamification.logic';
 
 const isDuplicateKey = (err: any) => err?.code === 11000;
 
-const loadStats = async (userId: any, progress: { longestStreak: number; level: number }): Promise<ProgressStats> => {
-  const rows: Array<{ _id: string; n: number }> = await XpEvent.aggregate([
-    { $match: { userId: new mongoose.Types.ObjectId(String(userId)) } },
-    { $group: { _id: '$type', n: { $sum: 1 } } },
+interface Ledger {
+  xp: number;
+  counts: Record<string, number>;
+  dates: string[];
+}
+
+/** Everything progress is derived from: one pass over the user's XP ledger. */
+const readLedger = async (userId: any): Promise<Ledger> => {
+  const uid = new mongoose.Types.ObjectId(String(userId));
+  const [rows, dates]: [Array<{ _id: string; n: number; xp: number }>, string[]] = await Promise.all([
+    XpEvent.aggregate([{ $match: { userId: uid } }, { $group: { _id: '$type', n: { $sum: 1 }, xp: { $sum: '$xp' } } }]),
+    XpEvent.distinct('date', { userId: uid }),
   ]);
-  const n = (t: ActivityType) => rows.find((r) => r._id === t)?.n ?? 0;
   return {
-    mealDays: n('meal'),
-    workoutDays: n('workout'),
-    weightDays: n('weight'),
-    sleepDays: n('sleep'),
-    waterGoalDays: n('water_goal'),
-    longestStreak: progress.longestStreak,
-    level: progress.level,
+    xp: rows.reduce((s, r) => s + r.xp, 0),
+    counts: Object.fromEntries(rows.map((r) => [r._id, r.n])),
+    dates,
   };
+};
+
+const statsFrom = (ledger: Ledger, longestStreak: number, level: number): ProgressStats => ({
+  mealDays: ledger.counts.meal ?? 0,
+  workoutDays: ledger.counts.workout ?? 0,
+  weightDays: ledger.counts.weight ?? 0,
+  sleepDays: ledger.counts.sleep ?? 0,
+  waterGoalDays: ledger.counts.water_goal ?? 0,
+  longestStreak,
+  level,
+});
+
+/**
+ * Rebuild UserProgress from the XpEvent ledger (xp, level, streak, achievements). It is idempotent and order
+ * independent, so it can run after every award and again whenever a read finds the two out of sync: if a progress
+ * write ever fails after its event was inserted, the next recompute repairs it instead of losing the award.
+ */
+export const recomputeProgress = async (userId: string) => {
+  const ledger = await readLedger(userId);
+  const streak = streakFromDates(ledger.dates);
+  const level = levelForXp(ledger.xp);
+
+  // No $setOnInsert on the unique key: with an equality filter on it the server can retry a racing upsert itself;
+  // we also retry once on E11000 for drivers/servers that do not.
+  const progress = await retryOnceOnDuplicate(
+    () => UserProgress.findOneAndUpdate({ userId }, { $set: { xp: ledger.xp, level, ...streak } }, { upsert: true, new: true }),
+    isDuplicateKey
+  );
+
+  const fresh = newlyUnlocked(statsFrom(ledger, streak.longestStreak, level), progress.achievements.map((a) => a.key));
+  if (fresh.length) {
+    await UserProgress.updateOne(
+      { userId, 'achievements.key': { $nin: fresh } },
+      { $push: { achievements: { $each: fresh.map((key) => ({ key, unlockedAt: new Date() })) } } }
+    );
+  }
+  return { ledger, streak, level };
 };
 
 /**
@@ -50,30 +90,8 @@ export const awardActivity = async (userId: string, type: ActivityType, date: st
   }
   if (!granted) return 0;
 
-  // XP is exact (an atomic $inc per unique event); the streak is updated with an optimistic guard on lastActiveDate.
-  let progress = await UserProgress.findOneAndUpdate({ userId }, { $inc: { xp: XP_VALUES[type] }, $setOnInsert: { userId } }, { upsert: true, new: true });
-  const next = applyActivityToStreak(
-    { currentStreak: progress.currentStreak, longestStreak: progress.longestStreak, lastActiveDate: progress.lastActiveDate },
-    date
-  );
-  const level = levelForXp(progress.xp);
-  const updated = await UserProgress.findOneAndUpdate(
-    { userId, lastActiveDate: progress.lastActiveDate },
-    { $set: { ...next, level } },
-    { new: true }
-  );
-  if (updated) progress = updated;
-  else await UserProgress.updateOne({ userId }, { $set: { level } }); // someone else advanced the streak: keep it, fix level
-
-  // Persist newly earned achievements
-  const stats = await loadStats(userId, { longestStreak: Math.max(progress.longestStreak, next.longestStreak), level });
-  const fresh = newlyUnlocked(stats, progress.achievements.map((a) => a.key));
-  if (fresh.length) {
-    await UserProgress.updateOne(
-      { userId, 'achievements.key': { $nin: fresh } },
-      { $push: { achievements: { $each: fresh.map((key) => ({ key, unlockedAt: new Date() })) } } }
-    );
-  }
+  // The ledger now holds the award; progress is derived from it (and self-heals on read if this write fails).
+  await recomputeProgress(userId);
   return XP_VALUES[type];
 };
 
@@ -102,10 +120,17 @@ export const recordActivity = (userId: unknown, type: ActivityType, date: string
 export const getGamification = async (userId: string) => {
   const tz = await getUserTimezone(userId);
   const today = todayInTz(tz);
-  const progress = await UserProgress.findOne({ userId }).lean();
+
+  const ledger = await readLedger(userId);
+  let progress = await UserProgress.findOne({ userId }).lean();
+  // Self-heal: if progress is missing or out of sync with the ledger (e.g. a failed write), rebuild it from the ledger
+  if (ledger.xp > 0 && (!progress || progress.xp !== ledger.xp)) {
+    await recomputeProgress(userId);
+    progress = await UserProgress.findOne({ userId }).lean();
+  }
   const base = progress ?? { xp: 0, level: 1, currentStreak: 0, longestStreak: 0, lastActiveDate: null, achievements: [] as any[] };
 
-  const stats = await loadStats(userId, { longestStreak: base.longestStreak, level: levelForXp(base.xp) });
+  const stats = statsFrom(ledger, base.longestStreak, levelForXp(base.xp));
   const state = { currentStreak: base.currentStreak, longestStreak: base.longestStreak, lastActiveDate: base.lastActiveDate };
   return {
     progress: levelProgress(base.xp),
