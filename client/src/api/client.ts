@@ -2,6 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { clearApiCache } from '../offline/apiCache';
 import { SESSION_EXPIRED_EVENT } from '../contexts/sessionCache';
 import { shouldAttemptRefresh } from './refreshPolicy';
+import { bearerToken, createTokenRefresher } from './singleFlightRefresh';
 
 // Kept here (not imported from offline/online.ts) so the API client has no dependency on React hooks
 export const NEEDS_CONNECTION_MESSAGE = 'You are offline. This action needs a connection; please try again when you are back online.';
@@ -33,6 +34,29 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+const ACCESS_TOKEN_KEY = 'kaizen_access_token'; // where the access token lives (unchanged)
+
+// Web Locks serialise refreshes across tabs; without them (older browsers) each tab still single-flights on its own
+const withLock = typeof navigator !== 'undefined' && (navigator as any).locks?.request
+  ? <T,>(fn: () => Promise<T>): Promise<T> => (navigator as any).locks.request('kaizen-refresh', fn) as Promise<T>
+  : undefined;
+
+const refreshAccessToken = createTokenRefresher({
+  getToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
+  setToken: (t) => localStorage.setItem(ACCESS_TOKEN_KEY, t),
+  doRefresh: async () => {
+    const res = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
+    return res.data?.data?.accessToken;
+  },
+  onFail: () => {
+    // Forced logout: the session is gone, so are the cached responses that belonged to it
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    void clearApiCache();
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT)); // AuthProvider signs the user out
+  },
+  withLock,
+});
+
 // Interceptor for handling global errors seamlessly
 apiClient.interceptors.response.use(
   (response) => {
@@ -45,21 +69,11 @@ apiClient.interceptors.response.use(
     // answer (e.g. wrong password) and must reach the caller untouched, without signing anyone out
     if (shouldAttemptRefresh({ status: error.response?.status, url: originalRequest?.url, alreadyRetried: originalRequest?._retry })) {
       originalRequest._retry = true;
-      try {
-        const refreshRes = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
-        const newToken = refreshRes.data?.data?.accessToken;
-        if (newToken) {
-          localStorage.setItem('kaizen_access_token', newToken);
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return apiClient(originalRequest);
-        }
-      } catch (refreshError) {
-        // Forced logout: the session is gone, so are the cached responses that belonged to it
-        localStorage.removeItem('kaizen_access_token');
-        void clearApiCache();
-        if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT)); // AuthProvider signs the user out
-        return Promise.reject(refreshError);
-      }
+      // One shared refresh for every request that hit a 401 (see singleFlightRefresh.ts); the retry uses the NEW token
+      const usedToken = bearerToken(originalRequest.headers?.Authorization);
+      const newToken = await refreshAccessToken(usedToken); // rejects (once per failed refresh) after the forced logout ran
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      return apiClient(originalRequest);
     }
     console.error('API Error:', error.response?.data || error.message);
     // Server errors are rejected as their {code, message, details} object plus the HTTP status (so callers can tell a
