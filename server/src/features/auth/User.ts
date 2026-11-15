@@ -6,6 +6,7 @@ export interface IUser extends Document {
   passwordHash: string;
   name: string;
   role: 'user' | 'admin';
+  isActive: boolean; // false = deactivated by an admin: cannot log in, refresh or use existing tokens
   // Profile
   dob?: Date;
   gender?: 'male' | 'female' | 'other';
@@ -35,6 +36,8 @@ const UserSchema = new Schema(
     passwordHash: { type: String, required: true },
     name: { type: String, required: true, trim: true },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    // Legacy documents have no value and count as active (see isAccountActive)
+    isActive: { type: Boolean, default: true },
     // Profile fields
     dob: Date,
     gender: { type: String, enum: ['male', 'female', 'other'] },
