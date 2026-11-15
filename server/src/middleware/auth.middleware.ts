@@ -5,6 +5,9 @@ import { AppError } from './errorHandler';
 import { getJwtSecret } from '../config/secrets';
 
 
+/** Legacy users (no isActive field) are active; only an explicit false deactivates. */
+export const isAccountActive = (user: { isActive?: boolean | null } | null | undefined): boolean => !!user && user.isActive !== false;
+
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   let token;
   
@@ -22,6 +25,11 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
     
     if (!user) {
       return next(new AppError(401, 'UNAUTHORIZED', 'User belonging to token no longer exists'));
+    }
+
+    // A deactivated account stops working immediately, even with a still-valid access token
+    if (!isAccountActive(user)) {
+      return next(new AppError(401, 'ACCOUNT_DISABLED', 'This account has been deactivated'));
     }
 
     // @ts-ignore
