@@ -49,4 +49,44 @@ test.describe('User switch in the same tab', () => {
     await expect(page.locator('text=71.3')).toHaveCount(0);
     await expect(page.locator('text=Alice')).toHaveCount(0);
   });
+
+  test('user B sees default reminder settings, not user A saved ones (useReminderPrefs has staleTime: Infinity)', async ({ page }) => {
+    test.setTimeout(120000);
+    const stamp = Date.now();
+    const openReminderSettings = async () => {
+      await page.locator('aside a[title="Profile Settings"]').click(); // client-side navigation, no reload
+      await expect(page.getByRole('button', { name: 'Save reminders' })).toBeVisible({ timeout: 15000 });
+    };
+
+    // User A enables the water reminder at a distinctive time and saves it
+    await page.goto('http://localhost:5173/register');
+    await page.fill('input[placeholder="John"]', 'Alice');
+    await page.fill('input[placeholder="Doe"]', 'Reminder');
+    await page.fill('input[placeholder="Enter your email"]', `switch_rem_a_${stamp}@kaizen.com`);
+    await page.fill('input[placeholder="Create a password"]', password);
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL(/.*\/onboarding/, { timeout: 15000 });
+    await page.locator('button:has-text("Skip for now")').first().click();
+    await expect(page).toHaveURL(/.*\/dashboard/, { timeout: 15000 });
+
+    await openReminderSettings();
+    await page.getByLabel('Water', { exact: true }).check();
+    await page.getByLabel('Water reminder time 1').fill('06:42');
+    await page.getByRole('button', { name: 'Save reminders' }).click();
+    await expect(page.locator('text=Reminders saved.')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByLabel('Water reminder time 1')).toHaveValue('06:42');
+
+    // A logs out; B registers in the same tab (no reload)
+    await page.locator('aside button[title="Logout"]').click();
+    await expect(page).toHaveURL(/.*\/login/, { timeout: 15000 });
+    await registerFromLogin(page, 'Bob', `switch_rem_b_${stamp}@kaizen.com`);
+
+    // B's settings UI must show the defaults: water reminder off, so no time inputs and none of A's 06:42
+    await openReminderSettings();
+    await expect(page.getByLabel('Water', { exact: true })).not.toBeChecked();
+    await expect(page.getByLabel('Water reminder time 1')).toHaveCount(0);
+    await expect(page.locator('input[type="time"][value="06:42"]')).toHaveCount(0);
+    await expect(page.locator('text=Reminders saved.')).toHaveCount(0);
+  });
 });
+
