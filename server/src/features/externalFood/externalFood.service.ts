@@ -232,7 +232,7 @@ export const searchUnifiedFoods = async (
   // Auto-cache unique external results to MongoDB in background
   for (const item of offResults) {
     if (item.calories > 0 || item.protein > 0) {
-      FoodItem.findOne({ name: item.name, brand: item.brand })
+      FoodItem.findOne({ name: item.name, brand: item.brand, isCustom: false }) // never match a user's custom food
         .then((existing) => {
           if (!existing) {
             FoodItem.create({

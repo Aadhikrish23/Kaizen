@@ -1,4 +1,5 @@
 import MealLog from './MealLog';
+import { createIdempotent } from '../../utils/idempotency';
 import { recordActivity } from '../gamification/gamification.service';
 
 export const getLogsByDate = async (date: string, userId: string) => {
@@ -21,11 +22,16 @@ export const createLog = async (data: {
   time: string; 
   date: string; 
   userId: string; 
+  clientRequestId?: string;
 }) => {
-  const meal = new MealLog(data);
-  const saved = await meal.save();
-  recordActivity(data.userId, 'meal', data.date, saved._id);
-  return saved;
+  // A replayed request (same clientRequestId) returns the original document: no duplicate meal, no second XP award
+  const { doc, replayed } = await createIdempotent(
+    data.clientRequestId,
+    () => MealLog.findOne({ userId: data.userId, clientRequestId: data.clientRequestId }),
+    () => new MealLog(data).save()
+  );
+  if (!replayed) recordActivity(data.userId, 'meal', data.date, doc._id);
+  return doc;
 };
 
 export const deleteLog = async (id: string, userId: string) => {
