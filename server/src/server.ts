@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import { connectDB } from './config/db';
 import { assertSecretsConfigured } from './config/secrets';
+import { apiRateLimitMax } from './middleware/globalRateLimit';
 
 // 1. Load environment variables
 dotenv.config();
@@ -35,7 +36,7 @@ app.get('/api/v1/health', (req: Request, res: Response) => {
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 100 : 5000,
+  max: apiRateLimitMax(),
   standardHeaders: true,
   legacyHeaders: false,
   // The reminders router is polled by every open tab, so it must not drain the IP budget shared by everyone behind
