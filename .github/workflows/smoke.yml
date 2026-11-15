@@ -31,6 +31,8 @@ jobs:
         working-directory: server
         env:
           NODE_ENV: production
+          # The smoke run makes many requests from one IP; raise the global limiter here only (default stays 100)
+          API_RATE_LIMIT_MAX: 100000
         run: nohup npm start > ../server.log 2>&1 &
       - run: ./scripts/smoke.sh
       - name: Server log

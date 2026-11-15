@@ -1,5 +1,20 @@
 import { z } from 'zod';
 
+const searchQuery = z.string().trim().max(100, 'q must be at most 100 characters');
+
+// GET /external/recipes and /external/foods: plain strings only (rejects q[$ne]=x style objects and arrays), bounded length
+export const externalRecipesQuerySchema = z.object({
+  query: z.object({
+    q: searchQuery.optional(),
+    diet: z.string().trim().max(50).optional(),
+    cuisine: z.string().trim().max(50).optional(),
+  }),
+});
+
+export const externalFoodsQuerySchema = z.object({
+  query: z.object({ q: searchQuery.optional() }),
+});
+
 const nonNegative = z.number().finite().min(0);
 
 const importIngredient = z.object({
@@ -20,9 +35,10 @@ export const importRecipeSchema = z.object({
     description: z.string().max(2000).nullish(),
     imageUrl: z.string().max(2000).nullish(),
     sourceUrl: z.string().max(2000).nullish(),
-    servings: z.number().finite().min(1).max(1000).nullish(),
+    servings: z.number().finite().gt(0).max(1000).nullish(), // fractional servings are valid imports
     prepTimeMinutes: z.number().finite().min(0).max(100000).nullish(),
-    instructions: z.array(z.string().max(5000)).max(200).nullish(),
+    // Steps may be long raw text (Spoonacular fallback); the service splits/truncates them instead of rejecting
+    instructions: z.array(z.string()).max(500).nullish(),
     calories: nonNegative,
     protein: nonNegative,
     carbs: nonNegative,

@@ -6,8 +6,10 @@ export const getRecipes = async (req: Request, res: Response, next: NextFunction
     const q = (req.query.q as string) || 'chicken';
     const diet = req.query.diet as string | undefined;
     const cuisine = req.query.cuisine as string | undefined;
+    // @ts-ignore
+    const userId = req.user?._id?.toString();
 
-    const recipes = await externalFoodService.searchRecipes(q, diet, cuisine);
+    const recipes = await externalFoodService.searchRecipes(q, diet, cuisine, userId);
 
     res.status(200).json({
       success: true,

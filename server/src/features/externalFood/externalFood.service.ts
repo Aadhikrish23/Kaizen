@@ -2,6 +2,7 @@
 import FoodItem, { IFoodItem } from '../foods/FoodItem';
 import Recipe, { IRecipe } from '../recipes/Recipe';
 import mongoose from 'mongoose';
+import { localFoodFilter, normalizeInstructions, ownRecipeFallbackFilter } from './externalFood.query';
 import { parseServingSize, per100gFromOff, perServingFrom100g, Macros, NutritionBasis } from './nutrition';
 
 export interface ExternalRecipeResult {
@@ -55,7 +56,8 @@ const SPOONACULAR_KEY = process.env.SPOONACULAR_API_KEY || '';
 export const searchRecipes = async (
   query: string,
   diet?: string,
-  cuisine?: string
+  cuisine?: string,
+  userId?: string
 ): Promise<ExternalRecipeResult[]> => {
   if (SPOONACULAR_KEY) {
     try {
@@ -109,10 +111,10 @@ export const searchRecipes = async (
     }
   }
 
-  // Fallback: search local/system recipes
-  const localRecipes = await Recipe.find({
-    name: { $regex: query, $options: 'i' },
-  }).limit(8);
+  // Fallback: the caller's OWN saved recipes only (recipes are private; there are no public/system recipes), with the
+  // query matched literally. Without a user there is nothing safe to search.
+  const filter = ownRecipeFallbackFilter(userId, query);
+  const localRecipes = filter ? await Recipe.find(filter).limit(8) : [];
 
   return localRecipes.map((r) => ({
     externalId: String(r._id),
@@ -199,14 +201,9 @@ export const searchUnifiedFoods = async (
   if (!cleanQuery) return [];
 
   // 1. Local Database
-  const localQuery: any = {
-    $or: [{ name: { $regex: cleanQuery, $options: 'i' } }, { brand: { $regex: cleanQuery, $options: 'i' } }],
-  };
-  if (userId) {
-    localQuery.$and = [{ $or: [{ userId: null }, { userId: new mongoose.Types.ObjectId(userId) }] }];
-  }
-
-  const localItems = await FoodItem.find(localQuery).limit(8);
+  // Global foods plus the caller's own custom foods; the user is mandatory so another user's custom foods can never match
+  const localQuery = localFoodFilter(userId, cleanQuery);
+  const localItems = localQuery ? await FoodItem.find(localQuery).limit(8) : [];
   const localResults: ExternalFoodResult[] = localItems.map((item) => ({
     name: item.name,
     brand: item.brand,
@@ -290,7 +287,7 @@ export const importExternalRecipe = async (
     sourceUrl: recipe.sourceUrl,
     servings: recipe.servings || 1,
     prepTimeMinutes: recipe.prepTimeMinutes || 30,
-    instructions: recipe.instructions,
+    instructions: normalizeInstructions(recipe.instructions),
     totalCalories: recipe.calories,
     totalProtein: recipe.protein,
     totalCarbs: recipe.carbs,
