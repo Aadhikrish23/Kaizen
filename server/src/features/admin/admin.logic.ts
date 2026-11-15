@@ -31,6 +31,34 @@ export const selfModificationError = (actorId: string, targetId: string, patch: 
   return null;
 };
 
+export interface AdminCountInput {
+  /** Active admins other than the target (counted in the same operation as the write). */
+  otherActiveAdmins: number;
+  targetIsActiveAdmin: boolean;
+}
+
+/**
+ * The last remaining active admin cannot be demoted or deactivated. Returns an error message or null.
+ * Residual race: two admins demoting each other at the same instant can both pass this check (no transaction).
+ */
+export const lastAdminError = (patch: AdminUserPatch, c: AdminCountInput): string | null => {
+  if (!c.targetIsActiveAdmin || c.otherActiveAdmins > 0) return null;
+  const demotes = patch.role !== undefined && patch.role !== 'admin';
+  const deactivates = patch.isActive === false;
+  return demotes || deactivates ? 'At least one active admin must remain' : null;
+};
+
+/** The e-mail of the account an old migration script used to create with a publicly known password. */
+export const LEGACY_DEFAULT_ADMIN_EMAIL = 'admin@kaizen.com';
+
+/** Operator-facing warning (never includes secrets), or null when no such admin exists. */
+export const defaultAdminWarning = (users: Array<{ email?: string; role?: string; isActive?: boolean }>): string | null => {
+  const hit = users.filter((u) => (u.email || '').toLowerCase() === LEGACY_DEFAULT_ADMIN_EMAIL && u.role === 'admin' && u.isActive !== false);
+  return hit.length
+    ? `SECURITY: an active admin account with the legacy default e-mail ${LEGACY_DEFAULT_ADMIN_EMAIL} exists. It may have a publicly known password. Demote or delete it and rotate its refresh tokens (see docs/admin.md).`
+    : null;
+};
+
 /** Fields that may be returned for a user. passwordHash, tokens and other internals are never included. */
 export const USER_PUBLIC_FIELDS = ['email', 'name', 'role', 'isActive', 'onboardingComplete', 'timezone', 'createdAt', 'updatedAt'] as const;
 

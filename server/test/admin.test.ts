@@ -10,7 +10,7 @@ import { adminRateLimitMax } from '../src/middleware/adminRateLimit';
 import { getJwtSecret } from '../src/config/secrets';
 import * as authService from '../src/features/auth/auth.service';
 import {
-  selfModificationError, toPublicUser, toPublicFood, buildAuditEntry, changedFields, buildStats, userSearchFilter, foodSearchFilter, USER_PUBLIC_FIELDS,
+  selfModificationError, lastAdminError, defaultAdminWarning, toPublicUser, toPublicFood, buildAuditEntry, changedFields, buildStats, userSearchFilter, foodSearchFilter, USER_PUBLIC_FIELDS,
 } from '../src/features/admin/admin.logic';
 import {
   updateUserSchema, createFoodSchema, updateFoodSchema, listUsersSchema, listFoodsSchema, foodIdSchema, FOOD_WRITE_KEYS, USER_PATCH_KEYS,
@@ -180,4 +180,31 @@ test('admin rate limit is configurable with a safe default; 429 uses the standar
   assert.equal(adminRateLimitMax({ ADMIN_RATE_LIMIT_PER_15MIN: '50' } as any), 50);
   assert.equal(adminRateLimitMax({ ADMIN_RATE_LIMIT_PER_15MIN: 'x' } as any), 300);
   assert.equal(rateLimitedResponse().error.code, 'RATE_LIMITED');
+});
+
+test('last-admin protection: the only active admin cannot be demoted or deactivated', () => {
+  const only = { otherActiveAdmins: 0, targetIsActiveAdmin: true };
+  assert.match(lastAdminError({ role: 'user' }, only)!, /At least one/);
+  assert.match(lastAdminError({ isActive: false }, only)!, /At least one/);
+  assert.match(lastAdminError({ role: 'user', isActive: false }, only)!, /At least one/);
+  assert.equal(lastAdminError({ role: 'admin' }, only), null);
+  assert.equal(lastAdminError({ isActive: true }, only), null);
+  assert.equal(lastAdminError({ role: 'user' }, { otherActiveAdmins: 1, targetIsActiveAdmin: true }), null);
+  assert.equal(lastAdminError({ role: 'user' }, { otherActiveAdmins: 0, targetIsActiveAdmin: false }), null);
+});
+
+test('default admin warning only for an active admin with the legacy e-mail and never leaks secrets', () => {
+  assert.equal(defaultAdminWarning([]), null);
+  assert.equal(defaultAdminWarning([{ email: 'admin@kaizen.com', role: 'user' }]), null);
+  assert.equal(defaultAdminWarning([{ email: 'admin@kaizen.com', role: 'admin', isActive: false }]), null);
+  assert.equal(defaultAdminWarning([{ email: 'someone@x.io', role: 'admin' }]), null);
+  const w = defaultAdminWarning([{ email: 'Admin@Kaizen.com', role: 'admin' }])!;
+  assert.match(w, /SECURITY/);
+  assert.ok(!new RegExp('admin' + '123').test(w));
+});
+
+test('the old migration script no longer creates any user or default credentials', () => {
+  const src = require('fs').readFileSync(require('path').join(__dirname, '../src/scripts/migrateData.ts'), 'utf8');
+  assert.ok(!new RegExp('admin' + '123').test(src));
+  assert.ok(!/User\.create/.test(src));
 });

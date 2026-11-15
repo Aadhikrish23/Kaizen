@@ -10,7 +10,7 @@ import AdminAuditLog from './AdminAuditLog';
 import { AppError } from '../../middleware/errorHandler';
 import { pickAllowed } from '../../utils/pickAllowed';
 import {
-  buildAuditEntry, buildStats, changedFields, foodSearchFilter, globalFoodFilter, userSearchFilter, selfModificationError, toPublicFood, toPublicUser, AdminUserPatch, AuditAction,
+  buildAuditEntry, buildStats, changedFields, foodSearchFilter, globalFoodFilter, userSearchFilter, selfModificationError, lastAdminError, toPublicFood, toPublicUser, AdminUserPatch, AuditAction,
 } from './admin.logic';
 import { FOOD_WRITE_KEYS, USER_PATCH_KEYS } from './admin.schema';
 
@@ -55,6 +55,13 @@ export const updateUser = async (actorId: string, targetId: string, patchInput: 
 
   const before: any = await User.findById(targetId).select('email name role isActive').lean();
   if (!before) throw new AppError(404, 'NOT_FOUND', 'User not found');
+
+  const targetIsActiveAdmin = before.role === 'admin' && before.isActive !== false;
+  const otherActiveAdmins = targetIsActiveAdmin
+    ? await User.countDocuments({ _id: { $ne: targetId }, role: 'admin', isActive: { $ne: false } })
+    : 0;
+  const lastAdmin = lastAdminError(patch, { otherActiveAdmins, targetIsActiveAdmin });
+  if (lastAdmin) throw new AppError(409, 'LAST_ADMIN', lastAdmin);
 
   const updated: any = await User.findByIdAndUpdate(targetId, { $set: patch }, { new: true, runValidators: true })
     .select('email name role isActive onboardingComplete timezone createdAt updatedAt').lean();
