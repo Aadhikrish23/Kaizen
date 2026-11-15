@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
+import { clearApiCache } from '../offline/apiCache';
 import { browserTimezone } from '../utils/date';
 
 export interface User {
@@ -77,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (data: any) => {
+    void clearApiCache(); // never show a previous user's cached responses
     const token = data.accessToken;
     const userData = data.user || data;
     if (token) {
@@ -116,6 +118,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // ignore
     } finally {
+      // Cached API responses belong to this user: drop them. (Queued offline writes stay tagged with their user id
+      // and are only replayed when that same user is signed in again.)
+      void clearApiCache();
       setAccessToken(null);
       localStorage.removeItem('kaizen_access_token');
       setUser(null);

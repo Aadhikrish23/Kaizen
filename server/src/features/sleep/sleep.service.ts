@@ -1,3 +1,4 @@
+import { createIdempotent } from '../../utils/idempotency';
 import { recordActivity } from '../gamification/gamification.service';
 import SleepLog, { ISleepLog } from './SleepLog';
 
@@ -92,6 +93,7 @@ export interface UpsertSleepData {
   awakeMinutes?: number;
   notes?: string;
   userId: string;
+  clientRequestId?: string;
 }
 
 export const upsertSleepLog = async (data: UpsertSleepData): Promise<ISleepLog> => {
@@ -131,16 +133,18 @@ export const upsertSleepLog = async (data: UpsertSleepData): Promise<ISleepLog> 
     lightSleepMinutes,
     awakeMinutes,
     recoveryScore,
-    notes: data.notes || ''
+    notes: data.notes || '',
+    ...(data.clientRequestId ? { clientRequestId: data.clientRequestId } : {})
   };
 
-  const log = await SleepLog.findOneAndUpdate(
-    { userId: data.userId, date: data.date },
-    updateDoc,
-    { new: true, upsert: true, runValidators: true }
+  // A replay of the same request returns the stored log instead of re-applying it (and awards nothing twice)
+  const { doc: log, replayed } = await createIdempotent<ISleepLog>(
+    data.clientRequestId,
+    () => SleepLog.findOne({ userId: data.userId, clientRequestId: data.clientRequestId }),
+    () => SleepLog.findOneAndUpdate({ userId: data.userId, date: data.date }, updateDoc, { new: true, upsert: true, runValidators: true }) as Promise<ISleepLog>
   );
 
-  recordActivity(data.userId, 'sleep', data.date, log?._id); // deduped per day
+  if (!replayed) recordActivity(data.userId, 'sleep', data.date, log?._id); // deduped per day
   return log;
 };
 

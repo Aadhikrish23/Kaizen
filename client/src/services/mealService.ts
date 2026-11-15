@@ -1,6 +1,8 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { MealLog } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { submitOrQueue } from '../offline/offlineQueue';
 
 export const useMealLogs = (date: string) => {
   return useQuery({
@@ -11,8 +13,11 @@ export const useMealLogs = (date: string) => {
 
 export const useAddMealLog = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
-    mutationFn: (data: Omit<MealLog, '_id' | 'createdAt' | 'updatedAt'>) => apiClient.post('/meals', data),
+    // Queued with a clientRequestId when offline; replays are idempotent on the server
+    mutationFn: (data: Omit<MealLog, '_id' | 'createdAt' | 'updatedAt'>) =>
+      submitOrQueue<MealLog>(user?.id ?? '', 'meal', '/meals', data as unknown as Record<string, unknown>),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['mealLogs', variables.date] });
       queryClient.invalidateQueries({ queryKey: ['summary', variables.date] });

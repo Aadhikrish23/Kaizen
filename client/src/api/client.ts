@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+// Kept here (not imported from offline/online.ts) so the API client has no dependency on React hooks
+export const NEEDS_CONNECTION_MESSAGE = 'You are offline. This action needs a connection; please try again when you are back online.';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
 
 export const apiClient = axios.create({
@@ -12,6 +15,14 @@ export const apiClient = axios.create({
 
 // Request interceptor to attach Bearer token
 apiClient.interceptors.request.use((config) => {
+  // Only the simple add-only logs (meals, water, weight, sleep) can be queued offline (via submitOrQueue, which never
+  // reaches here while offline). Every other write needs a connection: fail fast with a clear message.
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    const method = (config.method || 'get').toLowerCase();
+    if (method !== 'get' && !(config.url || '').startsWith('/auth/')) {
+      return Promise.reject(new Error(NEEDS_CONNECTION_MESSAGE));
+    }
+  }
   const token = localStorage.getItem('kaizen_access_token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -43,6 +54,9 @@ apiClient.interceptors.response.use(
       }
     }
     console.error('API Error:', error.response?.data || error.message);
-    return Promise.reject(error.response?.data?.error || error);
+    // Server errors are rejected as their {code, message, details} object plus the HTTP status (so callers can tell a
+    // rejected request from a transient failure); anything without a response (offline, DNS, timeout) is the raw axios error.
+    const serverError = error.response?.data?.error;
+    return Promise.reject(serverError && typeof serverError === 'object' ? { ...serverError, status: error.response.status } : error);
   }
 );
