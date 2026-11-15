@@ -117,6 +117,63 @@ test('works without a lock (navigator.locks missing)', async () => {
   assert.equal(await refresh('old'), 'n');
 });
 
+test('a hung refresh times out, counts as a failure (logout once), releases the lock and a later request can refresh', async () => {
+  const store = makeStore('old');
+  const lock = makeLock();
+  let fails = 0, refreshCalls = 0;
+  const refresh = m.createTokenRefresher({
+    ...store,
+    withLock: lock,
+    timeoutMs: 30,
+    doRefresh: () => {
+      refreshCalls++;
+      return refreshCalls === 1 ? new Promise<string>(() => {}) /* never settles */ : Promise.resolve('fresh');
+    },
+    onFail: () => { fails++; store.clear(); },
+  });
+  const settled = await Promise.allSettled([refresh('old'), refresh('old'), refresh('old')]);
+  assert.equal(settled.every((s) => s.status === 'rejected'), true);
+  assert.ok((settled[0] as PromiseRejectedResult).reason instanceof m.RefreshTimeoutError);
+  assert.match(String((settled[0] as PromiseRejectedResult).reason.message), /timed out/);
+  assert.equal(fails, 1);
+  assert.equal(refreshCalls, 1);
+  // the lock was released by the timeout: the next refresh (even from another tab sharing the lock) runs and succeeds
+  const other = m.createTokenRefresher({ ...store, withLock: lock, timeoutMs: 30, doRefresh: async () => 'fresh', onFail: () => assert.fail('no logout') });
+  assert.equal(await other(null), 'fresh');
+  assert.equal(await refresh(null), 'fresh');
+});
+
+test('a refresh that finishes before the timeout is unaffected and leaves no pending timer behind', async () => {
+  const store = makeStore('old');
+  const refresh = m.createTokenRefresher({ ...store, timeoutMs: 5000, doRefresh: async () => 'ok', onFail: () => assert.fail('no logout') });
+  assert.equal(await refresh('old'), 'ok'); // would hang the test process for 5 s if the timer were not cleared
+});
+
+test('a throwing token setter is a refresh failure: onFail runs once and every waiter rejects', async () => {
+  let fails = 0;
+  const refresh = m.createTokenRefresher({
+    getToken: () => 'old',
+    setToken: () => { throw new Error('localStorage blocked'); },
+    doRefresh: async () => 'new',
+    onFail: () => { fails++; },
+  });
+  const settled = await Promise.allSettled([refresh('old'), refresh('old')]);
+  assert.equal(settled.every((s) => s.status === 'rejected'), true);
+  assert.equal(fails, 1);
+});
+
+test('runAllSteps runs every cleanup step even when one throws and reports the errors', () => {
+  const ran: string[] = [];
+  const errors = m.runAllSteps([
+    () => { throw new Error('removeItem blocked'); },
+    () => { ran.push('clearCache'); },
+    () => { ran.push('event'); },
+  ]);
+  assert.deepEqual(ran, ['clearCache', 'event']);
+  assert.equal(errors.length, 1);
+  assert.deepEqual(m.runAllSteps([() => {}]), []);
+});
+
 test('no unhandled rejections were produced by any scenario', async () => {
   await tick();
   assert.deepEqual(unhandled, []);

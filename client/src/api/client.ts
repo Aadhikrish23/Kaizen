@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { clearApiCache } from '../offline/apiCache';
 import { SESSION_EXPIRED_EVENT } from '../contexts/sessionCache';
 import { shouldAttemptRefresh } from './refreshPolicy';
-import { bearerToken, createTokenRefresher } from './singleFlightRefresh';
+import { bearerToken, createTokenRefresher, runAllSteps } from './singleFlightRefresh';
 
 // Kept here (not imported from offline/online.ts) so the API client has no dependency on React hooks
 export const NEEDS_CONNECTION_MESSAGE = 'You are offline. This action needs a connection; please try again when you are back online.';
@@ -35,6 +35,7 @@ apiClient.interceptors.request.use((config) => {
 });
 
 const ACCESS_TOKEN_KEY = 'kaizen_access_token'; // where the access token lives (unchanged)
+const REFRESH_TIMEOUT_MS = 15000; // a hung refresh must not hold the cross-tab lock forever
 
 // Web Locks serialise refreshes across tabs; without them (older browsers) each tab still single-flights on its own
 const withLock = typeof navigator !== 'undefined' && (navigator as any).locks?.request
@@ -42,17 +43,21 @@ const withLock = typeof navigator !== 'undefined' && (navigator as any).locks?.r
   : undefined;
 
 const refreshAccessToken = createTokenRefresher({
-  getToken: () => localStorage.getItem(ACCESS_TOKEN_KEY),
+  getToken: () => { try { return localStorage.getItem(ACCESS_TOKEN_KEY); } catch { return null; } }, // blocked storage reads as no token
   setToken: (t) => localStorage.setItem(ACCESS_TOKEN_KEY, t),
   doRefresh: async () => {
-    const res = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
+    const res = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true, timeout: REFRESH_TIMEOUT_MS });
     return res.data?.data?.accessToken;
   },
+  timeoutMs: REFRESH_TIMEOUT_MS + 1000, // backstop in case the HTTP-level timeout does not fire
   onFail: () => {
-    // Forced logout: the session is gone, so are the cached responses that belonged to it
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    void clearApiCache();
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT)); // AuthProvider signs the user out
+    // Forced logout: the session is gone, so are the cached responses that belonged to it. Every step runs even if an earlier one
+    // throws (localStorage can be blocked), so the UI is always signed out.
+    runAllSteps([
+      () => localStorage.removeItem(ACCESS_TOKEN_KEY),
+      () => { void clearApiCache(); },
+      () => { if (typeof window !== 'undefined') window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT)); }, // AuthProvider signs the user out
+    ]);
   },
   withLock,
 });

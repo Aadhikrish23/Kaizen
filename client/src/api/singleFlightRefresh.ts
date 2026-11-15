@@ -11,9 +11,39 @@ export interface RefreshDeps {
   doRefresh: () => Promise<string | null | undefined>;
   /** Forced logout side effects (remove token, clear caches, session-expired event). Called exactly once per failed refresh. */
   onFail: (error: unknown) => void;
+  /** Give up on a refresh that takes longer than this (ms) and treat it as a failure, so a hung request cannot hold the cross-tab lock. */
+  timeoutMs?: number;
   /** Cross-tab mutual exclusion (navigator.locks); when absent the refresh runs without a lock. */
   withLock?: <T>(fn: () => Promise<T>) => Promise<T>;
 }
+
+export class RefreshTimeoutError extends Error {
+  constructor(ms: number) {
+    super(`Token refresh timed out after ${ms} ms`);
+    this.name = 'RefreshTimeoutError';
+  }
+}
+
+/** Runs every cleanup step even if an earlier one throws (e.g. localStorage blocked); returns the errors that were swallowed. */
+export const runAllSteps = (steps: Array<() => void>): unknown[] => {
+  const errors: unknown[] = [];
+  for (const step of steps) {
+    try { step(); } catch (e) { errors.push(e); }
+  }
+  return errors;
+};
+
+/** Rejects with RefreshTimeoutError if `p` has not settled after `ms`; the timer is always cleared and a late result is ignored. */
+const withTimeout = <T,>(p: Promise<T>, ms: number | undefined): Promise<T> => {
+  if (!ms || ms <= 0) return p;
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new RefreshTimeoutError(ms)), ms);
+    p.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+};
 
 /** "Bearer abc" -> "abc" (null for anything else). */
 export const bearerToken = (header: unknown): string | null => {
@@ -30,7 +60,7 @@ export const createTokenRefresher = (deps: RefreshDeps) => {
       // Another tab may have refreshed while we waited for the lock: use its token instead of burning the refresh cookie
       const stored = deps.getToken();
       if (stored && stored !== usedToken) return stored;
-      const next = await deps.doRefresh();
+      const next = await withTimeout(deps.doRefresh(), deps.timeoutMs);
       if (!next) throw new Error('Refresh response did not contain an access token');
       deps.setToken(next);
       return next;
