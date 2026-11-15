@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import { clearApiCache } from '../offline/apiCache';
 import { SESSION_EXPIRED_EVENT } from '../contexts/sessionCache';
+import { shouldAttemptRefresh } from './refreshPolicy';
 
 // Kept here (not imported from offline/online.ts) so the API client has no dependency on React hooks
 export const NEEDS_CONNECTION_MESSAGE = 'You are offline. This action needs a connection; please try again when you are back online.';
@@ -40,7 +41,9 @@ apiClient.interceptors.response.use(
   },
   async (error) => {
     const originalRequest = error.config;
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Login, register, refresh, logout and forgot-password never trigger a refresh (see refreshPolicy.ts): their 401 is the real
+    // answer (e.g. wrong password) and must reach the caller untouched, without signing anyone out
+    if (shouldAttemptRefresh({ status: error.response?.status, url: originalRequest?.url, alreadyRetried: originalRequest?._retry })) {
       originalRequest._retry = true;
       try {
         const refreshRes = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true });
