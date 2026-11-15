@@ -1,4 +1,4 @@
-﻿FROM node:18-alpine AS builder
+﻿FROM node:20-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -13,5 +13,6 @@ FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html
 # SPA fallback (try_files -> index.html), long cache for hashed assets, no cache for index.html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY security-headers.conf /etc/nginx/security-headers.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
