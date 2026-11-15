@@ -9,14 +9,16 @@ export const routineExerciseSchema = z.object({
   targetMuscle: z.string().min(1, 'Target muscle is required'),
   sets: z.number().int().min(1, 'Must have at least 1 set'),
   targetReps: z.string().min(1, 'Target reps are required')
-});
+}).strict();
 
 export const workoutRoutineSchema = z.object({
   body: z.object({
     name: z.string().min(1, 'Routine name is required').trim(),
     description: z.string().trim().optional(),
     exercises: z.array(routineExerciseSchema).optional()
-  }),
+  }).strict(), // unknown keys (userId, _id, createdAt, ...) are rejected, not stored
 });
+
+export const ROUTINE_KEYS = Object.keys(workoutRoutineSchema.shape.body.shape);
 
 export type WorkoutRoutineInput = z.infer<typeof workoutRoutineSchema>;

@@ -1,4 +1,6 @@
 import mongoose from 'mongoose';
+import { pickAllowed } from '../../utils/pickAllowed';
+import { MEASUREMENT_FIELDS } from './measurement.schema';
 import MeasurementLog, { IMeasurementLog } from './MeasurementLog';
 
 export const getMeasurementsByUser = async (userId: string | mongoose.Types.ObjectId): Promise<IMeasurementLog[]> => {
@@ -23,7 +25,7 @@ export const upsertMeasurement = async (
 ): Promise<IMeasurementLog> => {
   return await MeasurementLog.findOneAndUpdate(
     { userId, date },
-    { $set: data },
+    { $set: pickAllowed(data, MEASUREMENT_FIELDS) }, // never userId/date/_id from the client
     { new: true, upsert: true, runValidators: true }
   );
 };

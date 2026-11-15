@@ -16,6 +16,8 @@ export const createExerciseSchema = z.object({
   })
 });
 
+export const EXERCISE_CREATE_KEYS = Object.keys(createExerciseSchema.shape.body.shape);
+
 export const deleteExerciseSchema = z.object({
   params: z.object({
     id: z.string().min(1, 'ID is required')

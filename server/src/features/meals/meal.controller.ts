@@ -1,3 +1,5 @@
+import { pickAllowed } from '../../utils/pickAllowed';
+import { MEAL_CREATE_KEYS } from './meal.schema';
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import * as mealService from './meal.service';
@@ -20,7 +22,7 @@ export const getMealLogs = asyncHandler(async (req: Request, res: Response) => {
 export const createMealLog = asyncHandler(async (req: Request, res: Response) => {
   // @ts-ignore
   const userId = req.user.id;
-  const data = await mealService.createLog({ ...req.body, userId });
+  const data = await mealService.createLog({ ...pickAllowed(req.body, MEAL_CREATE_KEYS), userId } as any);
   
   const response: SuccessResponse<typeof data> = {
     success: true,

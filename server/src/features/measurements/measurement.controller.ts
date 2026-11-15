@@ -1,4 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
+import { pickAllowed } from '../../utils/pickAllowed';
+import { MEASUREMENT_KEYS } from './measurement.schema';
 import * as measurementService from './measurement.service';
 
 export const getMeasurements = async (req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +34,7 @@ export const upsertMeasurement = async (req: Request, res: Response, next: NextF
   try {
     // @ts-ignore
     const userId = req.user._id;
-    const { date, ...data } = req.body;
+    const { date, ...data } = pickAllowed(req.body, MEASUREMENT_KEYS) as { date: string } & Record<string, unknown>;
 
     const measurement = await measurementService.upsertMeasurement(userId, date, data);
 

@@ -1,5 +1,7 @@
 ﻿import { AppError } from '../../middleware/errorHandler';
 import Recipe from './Recipe';
+import { pickAllowed } from '../../utils/pickAllowed';
+import { RECIPE_CREATE_KEYS, RECIPE_UPDATE_KEYS } from './recipe.schema';
 
 // Returns null when any ingredient lacks macros (imported recipes), so existing totals are not overwritten.
 export const calculateTotals = (ingredients: any[]) => {
@@ -19,17 +21,26 @@ export const getRecipes = async (userId: string) => {
   return Recipe.find({ userId }).sort({ name: 1 });
 };
 
-export const createRecipe = async (userId: string, data: any) => {
+/** The document written on create: whitelisted client fields first, then the server-owned ones (userId, totals). */
+export const buildRecipeDoc = (userId: string, data: any) => {
   const totals = calculateTotals(data.ingredients);
   if (!totals) {
     // Manual recipes must carry macros on every ingredient (the route's zod schema enforces this too).
     throw new AppError(400, 'VALIDATION_ERROR', 'Every ingredient needs calories to create a recipe');
   }
-  return Recipe.create({
-    ...data,
-    userId,
-    ...totals
-  });
+  return { ...pickAllowed(data, RECIPE_CREATE_KEYS), userId, ...totals };
+};
+
+export const createRecipe = async (userId: string, data: any) => Recipe.create(buildRecipeDoc(userId, data));
+
+/** The $set written on update: whitelisted fields, plus recomputed totals when every ingredient has macros. */
+export const buildRecipeUpdate = (data: any): Record<string, unknown> => {
+  const updateData: Record<string, unknown> = pickAllowed(data, RECIPE_UPDATE_KEYS);
+  if (data.ingredients) {
+    const totals = calculateTotals(data.ingredients);
+    if (totals) Object.assign(updateData, totals);
+  }
+  return updateData;
 };
 
 export const getRecipeById = async (userId: string, recipeId: string) => {
@@ -39,12 +50,7 @@ export const getRecipeById = async (userId: string, recipeId: string) => {
 };
 
 export const updateRecipe = async (userId: string, recipeId: string, data: any) => {
-  const updateData = { ...data };
-  if (data.ingredients) {
-    const totals = calculateTotals(data.ingredients);
-    if (totals) Object.assign(updateData, totals);
-  }
-  const recipe = await Recipe.findOneAndUpdate({ _id: recipeId, userId }, updateData, { new: true });
+  const recipe = await Recipe.findOneAndUpdate({ _id: recipeId, userId }, buildRecipeUpdate(data), { new: true });
   if (!recipe) throw new Error('Recipe not found');
   return recipe;
 };
