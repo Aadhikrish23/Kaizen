@@ -1,16 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
+import { DailyWater, WaterLog } from '../types';
 
 const getWaterLogs = async (date: string) => {
-  return apiClient.get(`/water?date=${date}`);
+  return api.get<DailyWater>(`/water?date=${date}`);
 };
 
 const addWaterLog = async (data: { amount: number; time: string; date: string }) => {
-  return apiClient.post('/water', data);
+  return api.post<WaterLog>('/water', data);
 };
 
 const deleteWaterLog = async (id: string) => {
-  return apiClient.delete(`/water/${id}`);
+  return api.delete(`/water/${id}`);
 };
 
 export const useWaterLogs = (date: string) => {

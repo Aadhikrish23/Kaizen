@@ -7,7 +7,8 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc && node -e \"require('fs').cpSync('src/docs','dist/docs',{recursive:true})\"",
     "start": "node dist/server.js",
-    "test": "node -r ts-node/register/transpile-only --test test/refreshToken.test.ts test/ai.schema.test.ts test/dates.test.ts test/nutrition.test.ts test/planner.test.ts test/foodParsing.test.ts test/recommendations.test.ts test/search.test.ts test/weeklyInsight.test.ts test/aiRateLimit.test.ts test/gamification.test.ts test/reports.test.ts test/goals.test.ts test/profile.test.ts test/reminders.test.ts test/ownership.test.ts test/privacy.test.ts"
+    "docs:generate": "ts-node --transpile-only src/scripts/generateSwagger.ts",
+    "test": "node -r ts-node/register/transpile-only --test test/refreshToken.test.ts test/ai.schema.test.ts test/dates.test.ts test/nutrition.test.ts test/planner.test.ts test/foodParsing.test.ts test/recommendations.test.ts test/search.test.ts test/weeklyInsight.test.ts test/aiRateLimit.test.ts test/gamification.test.ts test/reports.test.ts test/goals.test.ts test/profile.test.ts test/reminders.test.ts test/ownership.test.ts test/privacy.test.ts test/openapi.test.ts"
   },
   "dependencies": {
     "axios": "^1.20.0",
@@ -28,6 +29,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^13.1.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",

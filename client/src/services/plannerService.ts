@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 import { UserWorkoutPlan, PlannerPreferences, WorkoutLog, PlannedDay, PlannedExercise } from '../types';
 
 export const useUserPlan = () => {
   return useQuery<UserWorkoutPlan>({
     queryKey: ['workoutPlan'],
-    queryFn: () => apiClient.get('/planner'),
+    queryFn: () => api.get<UserWorkoutPlan>('/planner'),
   });
 };
 
@@ -13,7 +13,7 @@ export const useConfigurePlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (preferences: PlannerPreferences) =>
-      apiClient.post<UserWorkoutPlan>('/planner/configure', preferences),
+      api.post<UserWorkoutPlan>('/planner/configure', preferences),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
     },
@@ -27,7 +27,7 @@ export const useSaveCustomPlan = () => {
       programName?: string;
       daysPerWeek?: number;
       schedule: PlannedDay[];
-    }) => apiClient.put<UserWorkoutPlan>('/planner/custom', data),
+    }) => api.put<UserWorkoutPlan>('/planner/custom', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
     },
@@ -38,7 +38,7 @@ export const useAddExerciseToPlanDay = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { dayNumber: number; exercise: PlannedExercise }) =>
-      apiClient.post<UserWorkoutPlan>('/planner/exercise', data),
+      api.post<UserWorkoutPlan>('/planner/exercise', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
     },
@@ -49,7 +49,7 @@ export const useRemoveExerciseFromPlanDay = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { dayNumber: number; exerciseIndex: number }) =>
-      apiClient.delete<UserWorkoutPlan>('/planner/exercise', { data }),
+      api.delete<UserWorkoutPlan>('/planner/exercise', { data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
     },
@@ -59,7 +59,7 @@ export const useRemoveExerciseFromPlanDay = () => {
 export const useDeletePlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: () => apiClient.delete<UserWorkoutPlan>('/planner'),
+    mutationFn: () => api.delete<UserWorkoutPlan>('/planner'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
       queryClient.invalidateQueries({ queryKey: ['splitSchedule'] });
@@ -73,7 +73,7 @@ export const useAdaptPlan = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data?: { date?: string; force?: boolean }) =>
-      apiClient.post<UserWorkoutPlan>('/planner/adapt', data || {}),
+      api.post<UserWorkoutPlan>('/planner/adapt', data || {}),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
@@ -85,7 +85,7 @@ export const useActivatePlannedDay = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { dayNumber: number; date?: string; force?: boolean }) =>
-      apiClient.post<WorkoutLog>('/planner/activate', data),
+      api.post<WorkoutLog>('/planner/activate', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutLogs'] });
       queryClient.invalidateQueries({ queryKey: ['splitSchedule'] });
@@ -99,7 +99,7 @@ export const useSwapPlannedExercise = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: { dayNumber: number; exerciseIndex: number; newExerciseId: string }) =>
-      apiClient.post<UserWorkoutPlan>('/planner/swap', data),
+      api.post<UserWorkoutPlan>('/planner/swap', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workoutPlan'] });
     },

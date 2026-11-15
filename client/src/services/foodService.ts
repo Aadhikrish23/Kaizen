@@ -1,5 +1,5 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 import { FoodItem } from '../types';
 
 export const useSearchFoods = (query: string) => {
@@ -7,8 +7,7 @@ export const useSearchFoods = (query: string) => {
     queryKey: ['foods', 'search', query],
     queryFn: async () => {
       if (!query || query.length < 2) return [];
-      const response = await apiClient.get(`/foods/search?q=${encodeURIComponent(query)}`);
-      return response as unknown as FoodItem[];
+      return api.get<FoodItem[]>(`/foods/search?q=${encodeURIComponent(query)}`);
     },
     enabled: query.length >= 2,
     staleTime: 5 * 60 * 1000 // 5 mins
@@ -20,7 +19,7 @@ export const useCreateCustomFood = () => {
   
   return useMutation({
     mutationFn: async (foodData: Partial<FoodItem>) => {
-      return apiClient.post('/foods', foodData);
+      return api.post<FoodItem, Partial<FoodItem>>('/foods', foodData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['foods'] });

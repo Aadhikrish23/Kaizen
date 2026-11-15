@@ -349,3 +349,57 @@ export interface CircadianWindow {
 }
 
 
+
+// --- API response shapes (the client `api` helpers resolve to these payloads) ---
+export interface DailyMeals {
+  date: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  meals: MealLog[];
+}
+
+export interface DailyWater {
+  date: string;
+  totalAmount: number;
+  logs: WaterLog[];
+}
+
+export interface MeasurementLog {
+  _id: string;
+  date: string;
+  weight?: number;
+  bodyFatPercentage?: number;
+  chestCm?: number;
+  waistCm?: number;
+  hipsCm?: number;
+  armsCm?: number;
+  legsCm?: number;
+}
+
+export interface WorkoutRoutine {
+  _id: string;
+  name: string;
+  description?: string;
+  exercises: Array<{ exerciseId?: string; exerciseName: string; targetMuscle: string; sets: number; targetReps: string }>;
+}
+
+export interface AnalyticsDailyStat {
+  date: string;
+  waterAmount: number;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  weight: number | null;
+  workoutVolume: number;
+}
+
+export interface AnalyticsData {
+  timeRange: string;
+  avgCalories: number;
+  avgProtein: number;
+  totalWorkouts: number;
+  dailyStats: AnalyticsDailyStat[];
+}

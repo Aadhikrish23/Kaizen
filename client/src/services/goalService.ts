@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
 
 export type GoalProgressStatus = 'no_target' | 'not_enough_data' | 'reached' | 'moving_away' | 'flat' | 'ok';
 
@@ -31,11 +31,11 @@ export interface GoalHistoryEntry {
 export const useGoalProgress = () =>
   useQuery<GoalProgress>({
     queryKey: ['goalProgress'],
-    queryFn: async () => (await apiClient.get('/profile/goal-progress')) as unknown as GoalProgress,
+    queryFn: async () => api.get<GoalProgress>('/profile/goal-progress'),
   });
 
 export const useGoalHistory = () =>
   useQuery<GoalHistoryEntry[]>({
     queryKey: ['goalHistory'],
-    queryFn: async () => (await apiClient.get('/profile/goal-history')) as unknown as GoalHistoryEntry[],
+    queryFn: async () => api.get<GoalHistoryEntry[]>('/profile/goal-history'),
   });
