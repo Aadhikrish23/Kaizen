@@ -24,3 +24,29 @@ jobs:
       - run: npm run build
       - run: npm test
         if: matrix.package == 'server'
+  docker:
+    name: docker images (build + nginx check)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build server image
+        run: docker build -t kaizen-server ./server
+      - name: Build client image
+        run: docker build -t kaizen-client ./client
+      - name: nginx config is valid, SPA fallback and security headers work
+        run: |
+          docker run --rm kaizen-client nginx -t
+          docker run -d --name kaizen-web -p 8081:80 kaizen-client
+          for i in $(seq 1 20); do curl -fs -o /dev/null http://localhost:8081/ && break; sleep 1; done
+          # a deep link (no such file) must return index.html with 200
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/settings/profile)
+          [ "$code" = 200 ] || { echo "deep link returned $code"; exit 1; }
+          for path in / /settings/profile /index.html; do
+            h=$(curl -sI "http://localhost:8081$path")
+            echo "$h" | grep -qi '^x-content-type-options: nosniff' || { echo "missing nosniff on $path"; exit 1; }
+            echo "$h" | grep -qi '^x-frame-options: DENY' || { echo "missing X-Frame-Options on $path"; exit 1; }
+            echo "$h" | grep -qi '^referrer-policy:' || { echo "missing Referrer-Policy on $path"; exit 1; }
+          done
+          curl -sI http://localhost:8081/index.html | grep -qi '^cache-control: no-cache' || { echo "index.html must not be cached"; exit 1; }

@@ -29,7 +29,7 @@ const globalFoods = [
 
 const seedFoods = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/kaizen_db');
+    await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/kaizen_db');
     console.log('Connected to MongoDB');
 
     // Remove existing global foods

@@ -4,7 +4,7 @@ import Exercise from '../features/exercises/Exercise';
 
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/kaizen_db';
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/kaizen_db';
 
 export const COMPREHENSIVE_EXERCISES = [
   // --- CHEST ---

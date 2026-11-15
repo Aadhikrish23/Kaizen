@@ -29,19 +29,26 @@ A daily-use web dashboard: users log meals, water, weight, sleep, and workouts t
 
 ## Capabilities and Constraints
 
-**Built and functional:**
-- JWT auth (register/login/refresh), user profile, onboarding flow.
-- Core tracking: meals (with macro/calorie calculation), water, weight (daily log + history trend), sleep, body measurements, workouts (set-by-set logging with RPE and volume).
-- Adaptive workout planner: equipment-aware exercise selection, weekly movement-pattern balance, fatigue/recovery modeling, double progression, redundancy detection, and decision explainability — covered by its own adversarial test suite (26 scenarios).
-- AI coach: calls a self-hosted Ollama model via a FastAPI microservice, with the user's real daily nutrition/hydration/workout context injected; falls back to a heuristic reply using the user's logged stats if the AI service is unreachable, so the app never breaks when AI is down.
-- Analytics dashboard (calorie/weight/workout-volume/macro trend charts), recipes/saved meals, workout routines.
+**Built on `main` (status: pre-launch, not yet deployed; see docs/implementation/current_state.md for what is verified and what is not):**
+- JWT auth (register/login/refresh with hashed single-use refresh tokens), user profile with timezone, onboarding flow.
+- Core tracking: meals (amount-scaled food logging, macro/calorie calculation, recipes), water, weight (daily log, history, goal progress), sleep, body measurements, workouts (set-by-set logging with RPE and volume).
+- Adaptive workout planner: equipment-aware exercise selection (new users start with an empty inventory), weekly movement-pattern balance, fatigue/recovery modeling, double progression, redundancy detection and decision explainability, covered by its own adversarial test suite (26 scenarios; the engine is 14 files).
+- AI layer: a provider-neutral service (Ollama, OpenAI-compatible, Anthropic) behind the FastAPI microservice. Features: coach chat with the user's real daily context, natural-language food parsing (nutrition comes only from the food database, never from the model), deterministic meal recommendations for the remaining budget, daily and weekly insights. Every AI feature has a non-AI fallback, so the app works when the AI service is down. Real providers have not been exercised end to end.
+- Gamification: XP ledger, levels, streaks and 12 achievements, derived from logged activity (challenges are not built).
+- In-app reminders (water, meals, weight, workout) with quiet hours; shown while the app is open, no push or email.
+- Reports (daily, weekly, monthly, logged days only) and goal history.
+- Grouped global search across foods, recipes, exercises and routines, scoped to the user.
+- Analytics dashboard, workout routines, "Kaizen Readiness" composite score.
 
-**Confirmed temporary constraint:** AI coaching currently runs on a self-hosted Ollama model rather than a cloud LLM. This is a stopgap, not a durable design decision — moving to a cloud AI provider (e.g. OpenAI) is the actual plan, so the AI integration should stay provider-agnostic rather than being designed specifically around local-model quirks or being treated as permanently cost/privacy-driven.
+**Also built on `main` (sprint 5):** an admin panel (users and global foods, audited, no API way to become admin), offline support for simple logs (cached reads and a replay-safe write queue for meals, water, weight and sleep), real-browser E2E in CI and an nginx SPA fallback for the client image.
 
-**Confirmed planned but not yet built** (commit history describes these as shipped; the code only has stubs — real work remains):
-- Gamification: XP, levels, streaks, achievements. No model, service, or UI component exists yet beyond a "Kaizen Readiness" composite score card, which is a different, already-working feature (not gamification).
-- AI food-text parsing: natural-language meal logging currently returns a hardcoded mock response regardless of input.
-- Global cross-platform search: the endpoint exists but always returns empty results.
+**Also merged in sprint 5:** OpenAPI for every route generated from the zod schemas plus a typed client API layer (#22), and clearing the client query cache when the signed-in user changes (#25).
+
+**Removed:** the old stubs (mock food parsing, empty search, mock gamification claims) are gone; the features above are real implementations.
+
+**Not built:** gamification challenges, email/push delivery of reminders and password reset, account export and deletion, two-factor auth.
+
+**Provider note:** the AI layer stays provider-agnostic. Ollama remains the default for local use; a cloud provider is selected by environment variable (`AI_PROVIDER`).
 
 **Terminology:** the four/five core tracking areas are called "pillars" in the UI (Strength & Training, Nutrition & Energy, Hydration Level, Sleep & Circadian, Scale Weight). The composite daily score shown on the dashboard is "Kaizen Readiness."
 
@@ -59,4 +66,4 @@ No real testimonials, case studies, press, or confirmed paying customers exist y
 - Adaptive over generic: recommendations (the workout planner, AI coaching) should be computed from the user's actual logged data and constraints, not generic advice.
 - AI can fail safely, the product can't: core tracking and planning must keep working even when the AI layer is slow, wrong, or unreachable (the AI coach's heuristic fallback is the model to follow for any future AI-dependent feature).
 - Small, consistent improvement over big-program energy: features should help users build daily habits, matching the Kaizen philosophy the product is named for.
-- Say what's real: don't let shipped-looking UI or commit messages imply a capability (gamification, AI parsing, search) is real when it's a stub — this has already caused confusion once in this project.
+- Say what's real: don't let shipped-looking UI or commit messages imply a capability is real when it is a stub, and do not call something verified unless a test or a real run showed it. This caused confusion once in this project; the stubs have since been replaced.
