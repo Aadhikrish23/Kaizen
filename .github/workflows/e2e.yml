@@ -1,0 +1,88 @@
+name: E2E (Playwright)
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: e2e (${{ matrix.browser }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [ chromium, firefox, webkit ]
+    services:
+      mongo:
+        image: mongo:7
+        ports: [ '27017:27017' ]
+    env:
+      # CI-only values; NODE_ENV=test keeps the refresh cookie non-Secure so it works over plain http
+      NODE_ENV: test
+      PORT: 5000
+      MONGODB_URI: mongodb://localhost:27017/kaizen_e2e
+      JWT_SECRET: ci-only-jwt-secret-0123456789
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-0123456789
+      CORS_ORIGIN: http://localhost:5173
+      API_RATE_LIMIT_MAX: 100000
+      VITE_API_URL: http://localhost:5000/api/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+            e2e/package-lock.json
+
+      - name: Install and build server
+        working-directory: server
+        run: |
+          npm ci
+          npm run build
+      - name: Install and build client
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Start server
+        working-directory: server
+        run: nohup npm start > ../server.log 2>&1 &
+      - name: Serve built client
+        working-directory: client
+        run: nohup npx vite preview --host --port 5173 --strictPort > ../client.log 2>&1 &
+      - name: Wait for the stack
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:5000/api/v1/health | grep -q '"db":"up"' && curl -sf http://localhost:5173/ > /dev/null && exit 0
+            sleep 1
+          done
+          echo "stack did not become ready"; tail -n 50 server.log client.log; exit 1
+
+      - name: Install Playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run Playwright
+        working-directory: e2e
+        run: npx playwright test --project=${{ matrix.browser }} --workers=1 --trace off
+
+      - name: Upload report and screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.browser }}
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            e2e/screenshots/
+          retention-days: 7
+      - name: Server log
+        if: always()
+        run: tail -n 100 server.log
