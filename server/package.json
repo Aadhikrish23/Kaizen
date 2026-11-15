@@ -9,7 +9,7 @@
     "start": "node dist/server.js",
     "make-admin": "ts-node --transpile-only src/scripts/makeAdmin.ts",
     "check-default-admin": "ts-node --transpile-only src/scripts/checkDefaultAdmin.ts",
-    "test": "node -r ts-node/register/transpile-only --test test/refreshToken.test.ts test/ai.schema.test.ts test/dates.test.ts test/nutrition.test.ts test/planner.test.ts test/foodParsing.test.ts test/recommendations.test.ts test/search.test.ts test/weeklyInsight.test.ts test/aiRateLimit.test.ts test/gamification.test.ts test/reports.test.ts test/goals.test.ts test/profile.test.ts test/reminders.test.ts test/ownership.test.ts test/privacy.test.ts test/admin.test.ts test/idempotency.test.ts test/offlineQueue.test.ts"
+    "test": "node -r ts-node/register/transpile-only --test test/refreshToken.test.ts test/ai.schema.test.ts test/dates.test.ts test/nutrition.test.ts test/planner.test.ts test/foodParsing.test.ts test/recommendations.test.ts test/search.test.ts test/weeklyInsight.test.ts test/aiRateLimit.test.ts test/gamification.test.ts test/reports.test.ts test/goals.test.ts test/profile.test.ts test/reminders.test.ts test/ownership.test.ts test/privacy.test.ts test/admin.test.ts test/idempotency.test.ts test/offlineQueue.test.ts test/secrets.test.ts"
   },
   "dependencies": {
     "axios": "^1.20.0",
