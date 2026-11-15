@@ -1,7 +1,9 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
 import { clearApiCache, claimApiCache } from '../offline/apiCache';
 import { browserTimezone } from '../utils/date';
+import { SESSION_EXPIRED_EVENT, shouldClearQueryCache } from './sessionCache';
 
 export interface User {
   id: string;
@@ -28,8 +30,8 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (userData: any) => void;
-  register: (userData: any) => void;
+  login: (userData: any) => Promise<void>;
+  register: (userData: any) => Promise<void>;
   updateUser: (partial: Partial<User>) => void;
   logout: () => void;
 }
@@ -43,6 +45,33 @@ export const setAccessToken = (token: string | null) => { accessToken = token; }
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const cacheUserId = useRef<string | null>(null); // the user the in-memory query cache was filled for
+
+  // Order matters: first make the offline (service worker) cache belong to the new user, then drop the in-memory
+  // query cache, and only then expose the user, so no screen can render or refetch the previous user's data.
+  const switchCaches = async (nextUserId: string | null) => {
+    if (nextUserId) await claimApiCache(nextUserId);
+    else await clearApiCache();
+    if (shouldClearQueryCache(cacheUserId.current, nextUserId)) {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+    }
+    cacheUserId.current = nextUserId;
+  };
+
+  // Forced logout: the API client could not renew the session
+  useEffect(() => {
+    const onExpired = () => {
+      void switchCaches(null).then(() => {
+        setAccessToken(null);
+        setUser(null);
+      });
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -59,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (userData && !userData.id && userData._id) {
           userData.id = userData._id;
         }
-        await claimApiCache(userData?.id); // cache left by another user (or unknown owner) is dropped before any screen reads it
+        await switchCaches(userData?.id ?? null); // cache left by another user (or unknown owner) is dropped before any screen reads it
         setUser(userData as User);
         // Adopt the browser timezone while the account is still on the server default.
         const tz = browserTimezone();
@@ -71,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         setUser(null);
         localStorage.removeItem('kaizen_access_token');
-        await clearApiCache();
+        await switchCaches(null);
       } finally {
         setIsLoading(false);
       }
@@ -79,37 +108,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     restoreSession();
   }, []);
 
-  const login = (data: any) => {
+  const startSession = async (data: any) => {
     const token = data.accessToken;
     const userData = data.user || data;
-    void claimApiCache(userData?.id ?? userData?._id); // never show a previous user's cached responses
+    if (userData && !userData.id && userData._id) {
+      userData.id = userData._id;
+    }
+    // Callers await this before navigating, so the caches are already switched when the first screen mounts
+    await switchCaches(userData?.id ?? null);
     if (token) {
       setAccessToken(token);
       localStorage.setItem('kaizen_access_token', token);
     }
-    if (userData) {
-      if (!userData.id && userData._id) {
-        userData.id = userData._id;
-      }
-      setUser(userData as User);
-    }
+    if (userData) setUser(userData as User);
   };
 
-  const register = (data: any) => {
-    const token = data.accessToken;
-    const userData = data.user || data;
-    void claimApiCache(userData?.id ?? userData?._id); // a new account must not see a previous user's cached responses
-    if (token) {
-      setAccessToken(token);
-      localStorage.setItem('kaizen_access_token', token);
-    }
-    if (userData) {
-      if (!userData.id && userData._id) {
-        userData.id = userData._id;
-      }
-      setUser(userData as User);
-    }
-  };
+  const login = (data: any) => startSession(data);
+  const register = (data: any) => startSession(data);
 
   const updateUser = (partial: Partial<User>) => {
     setUser((prev) => (prev ? { ...prev, ...partial } : prev));
@@ -123,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       // Cached API responses belong to this user: drop them. (Queued offline writes stay tagged with their user id
       // and are only replayed when that same user is signed in again.)
-      void clearApiCache();
+      await switchCaches(null);
       setAccessToken(null);
       localStorage.removeItem('kaizen_access_token');
       setUser(null);
