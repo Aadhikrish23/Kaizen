@@ -42,6 +42,21 @@ export const describeItem = (kind: QueueKind, body: Record<string, unknown>): st
   }
 };
 
+/** localStorage key holding the id of the user who owns the cached API responses. */
+export const CACHE_OWNER_KEY = 'kaizen-cache-owner';
+
+/**
+ * Should the cached API responses be dropped? They are keyed by URL only, so they must belong to the signed-in user.
+ * Clear when nobody is signed in, when no owner was recorded, or when the recorded owner is someone else.
+ */
+export const cacheOwnerAction = (storedOwner: string | null | undefined, currentUserId: string | null | undefined): 'keep' | 'clear' => {
+  if (!currentUserId) return 'clear';
+  return storedOwner && storedOwner === currentUserId ? 'keep' : 'clear';
+};
+
+/** A queued item must always belong to a user (items are only replayed for their owner). */
+export const hasQueueOwner = (userId: unknown): userId is string => typeof userId === 'string' && userId.trim().length > 0;
+
 export const createQueueItem = (
   userId: string,
   kind: QueueKind,
@@ -49,6 +64,7 @@ export const createQueueItem = (
   clientRequestId: string = newClientRequestId(),
   now: number = Date.now()
 ): QueueItem => {
+  if (!hasQueueOwner(userId)) throw new Error('Cannot queue an offline entry without a signed-in user');
   const body = { ...data, clientRequestId };
   return { clientRequestId, userId, kind, url: KIND_URL[kind], body, label: describeItem(kind, body), createdAt: now, attempts: 0, status: 'pending' };
 };

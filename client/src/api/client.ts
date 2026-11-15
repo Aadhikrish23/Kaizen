@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearApiCache } from '../offline/apiCache';
 
 // Kept here (not imported from offline/online.ts) so the API client has no dependency on React hooks
 export const NEEDS_CONNECTION_MESSAGE = 'You are offline. This action needs a connection; please try again when you are back online.';
@@ -49,7 +50,9 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
+        // Forced logout: the session is gone, so are the cached responses that belonged to it
         localStorage.removeItem('kaizen_access_token');
+        void clearApiCache();
         return Promise.reject(refreshError);
       }
     }

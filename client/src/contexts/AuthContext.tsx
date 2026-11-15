@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '../api/client';
-import { clearApiCache } from '../offline/apiCache';
+import { clearApiCache, claimApiCache } from '../offline/apiCache';
 import { browserTimezone } from '../utils/date';
 
 export interface User {
@@ -59,6 +59,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (userData && !userData.id && userData._id) {
           userData.id = userData._id;
         }
+        await claimApiCache(userData?.id); // cache left by another user (or unknown owner) is dropped before any screen reads it
         setUser(userData as User);
         // Adopt the browser timezone while the account is still on the server default.
         const tz = browserTimezone();
@@ -70,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         setUser(null);
         localStorage.removeItem('kaizen_access_token');
+        await clearApiCache();
       } finally {
         setIsLoading(false);
       }
@@ -78,9 +80,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (data: any) => {
-    void clearApiCache(); // never show a previous user's cached responses
     const token = data.accessToken;
     const userData = data.user || data;
+    void claimApiCache(userData?.id ?? userData?._id); // never show a previous user's cached responses
     if (token) {
       setAccessToken(token);
       localStorage.setItem('kaizen_access_token', token);
@@ -96,6 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = (data: any) => {
     const token = data.accessToken;
     const userData = data.user || data;
+    void claimApiCache(userData?.id ?? userData?._id); // a new account must not see a previous user's cached responses
     if (token) {
       setAccessToken(token);
       localStorage.setItem('kaizen_access_token', token);

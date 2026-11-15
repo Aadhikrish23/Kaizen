@@ -3,7 +3,7 @@ import { apiClient } from '../api/client';
 // The response interceptor unwraps { success, data }, so a call resolves to the payload (not an AxiosResponse)
 const post = <T>(url: string, body: unknown) => apiClient.post(url, body) as unknown as Promise<T>;
 import { createIdbStore } from './idbStore';
-import { createQueueItem, isNetworkFailure, processQueue, QueueItem, QueueKind, retryItem } from './queueCore';
+import { createQueueItem, hasQueueOwner, isNetworkFailure, processQueue, QueueItem, QueueKind, retryItem } from './queueCore';
 
 const store = createIdbStore();
 const listeners = new Set<() => void>();
@@ -61,6 +61,12 @@ export const flushQueue = async (userId: string): Promise<number> => {
 export type QueuedResult = { queued: true; clientRequestId: string };
 
 export const submitOrQueue = async <T>(userId: string, kind: QueueKind, url: string, data: Record<string, unknown>): Promise<T | QueuedResult> => {
+  // Without a signed-in user an entry could never be replayed (items are only replayed for their owner): refuse to queue it
+  const noUser = new Error('You need to be signed in to save entries offline. Sign in again and retry.');
+  if (!hasQueueOwner(userId)) {
+    if (!isOnline()) throw noUser;
+    try { return await post<T>(url, data); } catch (err) { if (isNetworkFailure(err)) throw noUser; throw err; }
+  }
   const item = createQueueItem(userId, kind, data);
   if (!isOnline()) {
     await store.put(item);

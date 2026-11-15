@@ -122,3 +122,23 @@ test('service worker caching rule never caches auth, admin, health or the remind
   assert.match(cfg, /maxEntries: 60/);
   assert.match(cfg, /networkTimeoutSeconds: 4/);
 });
+
+test('cache owner: keep only when the recorded owner is the signed-in user', () => {
+  assert.equal(q.cacheOwnerAction('u1', 'u1'), 'keep');
+  assert.equal(q.cacheOwnerAction('u1', 'u2'), 'clear'); // another user signed in on this browser
+  assert.equal(q.cacheOwnerAction(null, 'u1'), 'clear'); // unknown owner (e.g. cache from before this fix, or after a forced logout)
+  assert.equal(q.cacheOwnerAction(undefined, 'u1'), 'clear');
+  assert.equal(q.cacheOwnerAction('', 'u1'), 'clear');
+  assert.equal(q.cacheOwnerAction('u1', null), 'clear'); // nobody signed in
+  assert.equal(q.cacheOwnerAction('u1', ''), 'clear');
+  assert.equal(q.CACHE_OWNER_KEY, 'kaizen-cache-owner');
+});
+
+test('a queued item is never created without a user id', () => {
+  for (const bad of ['', '   ', undefined, null, 5]) {
+    assert.throws(() => q.createQueueItem(bad, 'water', { amount: 250 }), /signed-in user/);
+    assert.equal(q.hasQueueOwner(bad), false);
+  }
+  assert.equal(q.hasQueueOwner('u1'), true);
+  assert.equal(q.createQueueItem('u1', 'water', { amount: 250 }).userId, 'u1');
+});
