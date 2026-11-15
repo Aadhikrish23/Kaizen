@@ -34,9 +34,8 @@ test.describe('Sleep Cycle Tracker & Scale Weight UI Restructuring', () => {
     const sidebar = page.locator('aside');
     await expect(sidebar.getByRole('button', { name: 'Sleep Cycle' })).toBeVisible({ timeout: 10000 });
     
-    // Ensure "Scale Weight" is NOT in the sidebar navigation
-    const scaleWeightInSidebar = sidebar.locator('button:has-text("Scale Weight")');
-    expect(await scaleWeightInSidebar.count()).toBe(0);
+    // "Scale Weight" is a sidebar tab alongside Sleep Cycle
+    await expect(sidebar.locator('button:has-text("Scale Weight")')).toHaveCount(1);
 
     // 3. Test Sleep Cycle Tracker Module
     console.log('[3/6] Navigating to Sleep Cycle tracker...');

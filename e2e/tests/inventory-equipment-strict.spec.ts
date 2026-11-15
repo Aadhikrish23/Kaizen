@@ -57,15 +57,20 @@ test.describe('Strict Inventory Equipment Matching & Exercise Swap Verification'
     await page.locator('button:has-text("Equipment & Inventory")').first().click();
     await expect(page.getByRole('heading', { name: 'Gym & Equipment Inventory' })).toBeVisible({ timeout: 15000 });
 
+    // New users start with no equipment: start from the Home Dumbbell Starter preset, then adjust it
+    // New users start with an empty, unconfirmed inventory: choose the Home Dumbbell Starter preset explicitly
+    await page.locator('div:has(> div > h4:has-text("Home Dumbbell Starter")) > button').click();
+    await page.waitForTimeout(1000);
+
     // Remove the bench so user has NO bench
-    const removeBenchBtn = page.locator('button[aria-label="Remove Adjustable Incline/Flat Bench"]');
+    const removeBenchBtn = page.locator('button[aria-label="Remove Adjustable Incline / Flat Bench"]');
     if (await removeBenchBtn.isVisible()) {
       await removeBenchBtn.click();
       await page.waitForTimeout(300);
     }
 
     // Remove the resistance bands
-    const removeBandsBtn = page.locator('button[aria-label="Remove Loop & Tube Resistance Bands"]');
+    const removeBandsBtn = page.locator('button[aria-label="Remove Resistance Bands Loop Set"]');
     if (await removeBandsBtn.isVisible()) {
       await removeBandsBtn.click();
       await page.waitForTimeout(300);
