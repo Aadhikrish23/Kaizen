@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../api/client';
+import { pollInterval } from '../utils/reminderPolling';
 
 export type ReminderType = 'water' | 'meal' | 'weight' | 'workout' | 'sleep';
 
@@ -27,6 +28,9 @@ export const useReminderPrefs = () =>
   useQuery<ReminderPrefs>({
     queryKey: ['reminderPrefs'],
     queryFn: async () => (await apiClient.get('/reminders')) as unknown as ReminderPrefs,
+    // Fetched once and kept: saving in settings updates this cache directly (see useSaveReminderPrefs)
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
   });
 
 export const useSaveReminderPrefs = () => {
@@ -40,12 +44,17 @@ export const useSaveReminderPrefs = () => {
   });
 };
 
-// Polled every 60 s while the app is open; the server decides what is due and already satisfied.
-export const useDueReminders = () =>
+/**
+ * Polled every 60 s, but only when `enabled` (the saved prefs have a reminder on) and never while the tab is hidden:
+ * the interval returns false when hidden, and coming back to the tab triggers a refetch (focus) before polling resumes.
+ */
+export const useDueReminders = (enabled: boolean) =>
   useQuery<DueReminder[]>({
     queryKey: ['reminders', 'due'],
     queryFn: async () => ((await apiClient.get('/reminders/due')) as unknown as DueReminder[]) || [],
-    refetchInterval: 60 * 1000,
+    enabled,
+    refetchInterval: () => pollInterval(typeof document !== 'undefined' ? document.visibilityState : undefined),
     refetchIntervalInBackground: false,
+    refetchOnWindowFocus: true,
     staleTime: 30 * 1000,
   });

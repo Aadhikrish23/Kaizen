@@ -40,6 +40,7 @@ export const ProfileSettings: React.FC = () => {
     currentWeightKg: user?.currentWeightKg ? String(user.currentWeightKg) : '',
     targetWeightKg: user?.targetWeightKg ? String(user.targetWeightKg) : '',
     goal: user?.goal || '',
+    targetDate: user?.targetDate ? user.targetDate.substring(0, 10) : '',
     activityLevel: user?.activityLevel || '',
     calorieDailyTarget: user?.calorieDailyTarget ? String(user.calorieDailyTarget) : '2000',
     proteinDailyTargetG: user?.proteinDailyTargetG ? String(user.proteinDailyTargetG) : '150',
@@ -94,6 +95,7 @@ export const ProfileSettings: React.FC = () => {
         currentWeightKg: form.currentWeightKg ? Number(form.currentWeightKg) : undefined,
         targetWeightKg: form.targetWeightKg ? Number(form.targetWeightKg) : undefined,
         goal: form.goal || undefined,
+        targetDate: form.targetDate || undefined,
         activityLevel: form.activityLevel || undefined,
         calorieDailyTarget: Number(form.calorieDailyTarget),
         proteinDailyTargetG: Number(form.proteinDailyTargetG),
@@ -104,7 +106,7 @@ export const ProfileSettings: React.FC = () => {
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch {
-      setError('Failed to save profile. Please try again.');
+      setError('Failed to save profile. Check that the target date is in the future and the target weight is realistic, then try again.');
     } finally {
       setIsSaving(false);
     }
@@ -224,6 +226,9 @@ export const ProfileSettings: React.FC = () => {
             <Input label="Height (cm)" type="number" value={form.heightCm} onChange={(e) => set('heightCm', e.target.value)} placeholder="175" />
             <Input label="Current Weight (kg)" type="number" step="0.1" value={form.currentWeightKg} onChange={(e) => set('currentWeightKg', e.target.value)} placeholder="75.5" />
             <Input label="Target Weight (kg)" type="number" step="0.1" value={form.targetWeightKg} onChange={(e) => set('targetWeightKg', e.target.value)} placeholder="70.0" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Input label="Target Date (future)" type="date" value={form.targetDate} onChange={(e) => set('targetDate', e.target.value)} />
           </div>
 
           {form.heightCm && form.currentWeightKg && (

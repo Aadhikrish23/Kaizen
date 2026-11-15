@@ -1,3 +1,4 @@
+import { recordActivity } from '../gamification/gamification.service';
 import SleepLog, { ISleepLog } from './SleepLog';
 
 /**
@@ -139,6 +140,7 @@ export const upsertSleepLog = async (data: UpsertSleepData): Promise<ISleepLog> 
     { new: true, upsert: true, runValidators: true }
   );
 
+  recordActivity(data.userId, 'sleep', data.date, log?._id); // deduped per day
   return log;
 };
 

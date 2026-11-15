@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { WeightLog } from '../../types';
 import { ArrowUpRight, ArrowDownRight, Minus, TrendingUp } from 'lucide-react';
 import { MeasurementTracker } from './MeasurementTracker';
+import { GoalProgressCard } from './GoalProgressCard';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface WeightTrackerProps {
@@ -108,6 +109,8 @@ export const WeightTracker: React.FC<WeightTrackerProps> = ({ currentDate }) => 
           {(error as Error).message || 'Failed to load data'}
         </div>
       )}
+
+      {activeTab === 'weight' && <GoalProgressCard />}
 
       {activeTab === 'weight' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

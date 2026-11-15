@@ -186,3 +186,49 @@ test('client dismissals degrade gracefully when storage is blocked or corrupted'
   s.setItem(DISMISSED_PREFIX + 'd', JSON.stringify([1, 'ok', null]));
   assert.deepEqual(loadIds(s, DISMISSED_PREFIX, 'd'), ['ok']);
 });
+
+import express from 'express';
+import http from 'http';
+import { AddressInfo } from 'net';
+import { remindersLimits } from '../src/middleware/remindersRateLimit';
+import { createAiLimiter } from '../src/middleware/aiRateLimit';
+
+test('reminders limits: per user 120 and per IP 3000 per 15 minutes by default, overridable', () => {
+  delete process.env.REMINDERS_RATE_LIMIT_PER_USER;
+  delete process.env.REMINDERS_RATE_LIMIT_PER_IP;
+  assert.deepEqual(remindersLimits(), { user: { windowMs: 900000, max: 120 }, ip: { windowMs: 900000, max: 3000 } });
+  process.env.REMINDERS_RATE_LIMIT_PER_USER = '7';
+  process.env.REMINDERS_RATE_LIMIT_PER_IP = 'x';
+  assert.deepEqual(remindersLimits(), { user: { windowMs: 900000, max: 7 }, ip: { windowMs: 900000, max: 3000 } });
+  delete process.env.REMINDERS_RATE_LIMIT_PER_USER;
+  delete process.env.REMINDERS_RATE_LIMIT_PER_IP;
+});
+
+test('a polling user is limited per user, not by sharing an IP with others', async () => {
+  const app = express();
+  app.use((req, _res, next) => { (req as any).user = { _id: req.header('x-user') }; next(); });
+  app.get('/due', createAiLimiter({ windowMs: 60000, max: 3 }), (_req, res) => res.json({ ok: true }));
+  const server = http.createServer(app).listen(0);
+  const port = (server.address() as AddressInfo).port;
+  const hit = async (user: string) => (await fetch(`http://127.0.0.1:${port}/due`, { headers: { 'x-user': user } })).status;
+  try {
+    assert.deepEqual([await hit('a'), await hit('a'), await hit('a'), await hit('a')], [200, 200, 200, 429]);
+    assert.equal(await hit('b'), 200); // same IP, different user: unaffected
+  } finally {
+    server.close();
+  }
+});
+
+const { hasEnabledReminders, pollInterval, DUE_POLL_MS } = loadClientModule('client/src/utils/reminderPolling.ts');
+
+test('client polls only when a reminder is enabled and pauses while the tab is hidden', () => {
+  const r = (enabled: boolean, times: string[]) => ({ type: 'water', enabled, times });
+  assert.equal(hasEnabledReminders(undefined), false);
+  assert.equal(hasEnabledReminders({ reminders: [] }), false);
+  assert.equal(hasEnabledReminders({ reminders: [r(false, ['09:00']), r(true, [])] }), false); // on but no times
+  assert.equal(hasEnabledReminders({ reminders: [r(false, ['09:00']), r(true, ['09:00'])] }), true);
+  assert.equal(DUE_POLL_MS, 60000);
+  assert.equal(pollInterval('visible'), 60000);
+  assert.equal(pollInterval(undefined), 60000);
+  assert.equal(pollInterval('hidden'), false);
+});

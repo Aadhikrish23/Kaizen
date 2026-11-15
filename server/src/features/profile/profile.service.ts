@@ -1,4 +1,8 @@
-﻿import User from '../auth/User';
+﻿import { AppError } from '../../middleware/errorHandler';
+import { todayInTz } from '../../utils/dates';
+import { detectGoalChange, isFutureDate, normalizeDate } from '../goals/goals.logic';
+import { recordGoalChange } from '../goals/goals.service';
+import User from '../auth/User';
 
 // Activity multipliers for Mifflin-St Jeor TDEE
 const ACTIVITY_MULTIPLIERS = {
@@ -51,7 +55,27 @@ export const getProfile = async (userId: string) => {
 };
 
 export const updateProfile = async (userId: string, data: any) => {
+  const before: any = await User.findById(userId).select('goal targetWeightKg targetDate currentWeightKg timezone').lean();
+  const snapshotBefore = { goal: before?.goal, targetWeightKg: before?.targetWeightKg, targetDate: normalizeDate(before?.targetDate) };
+  const changed = detectGoalChange(snapshotBefore, data);
+
+  // A changed target date must be a real date in the future (in the user's timezone)
+  if (changed.includes('targetDate') && data.targetDate) {
+    const today = todayInTz(data.timezone ?? before?.timezone);
+    if (!isFutureDate(normalizeDate(data.targetDate) as string, today)) {
+      throw new AppError(400, 'VALIDATION_ERROR', 'Target date must be in the future');
+    }
+  }
+
   const user = await User.findByIdAndUpdate(userId, data, { new: true, runValidators: true }).select('-passwordHash');
+  if (user && changed.length) {
+    await recordGoalChange(
+      userId,
+      { goal: user.goal, targetWeightKg: user.targetWeightKg, targetDate: normalizeDate(user.targetDate) },
+      changed,
+      data.currentWeightKg ?? before?.currentWeightKg ?? null
+    );
+  }
   return user;
 };
 
@@ -66,6 +90,11 @@ export const completeOnboarding = async (userId: string, data: any) => {
     onboardingComplete: true
   };
 
+  const before: any = await User.findById(userId).select('goal targetWeightKg targetDate').lean();
+  const changed = detectGoalChange({ goal: before?.goal, targetWeightKg: before?.targetWeightKg, targetDate: normalizeDate(before?.targetDate) }, updateData);
   const user = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-passwordHash');
+  if (user && changed.length) {
+    await recordGoalChange(userId, { goal: user.goal, targetWeightKg: user.targetWeightKg, targetDate: normalizeDate(user.targetDate) }, changed, user.currentWeightKg ?? null);
+  }
   return { user, tdeeData };
 };

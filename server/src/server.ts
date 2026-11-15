@@ -38,6 +38,10 @@ const limiter = rateLimit({
   max: process.env.NODE_ENV === 'production' ? 100 : 5000,
   standardHeaders: true,
   legacyHeaders: false,
+  // The reminders router is polled by every open tab, so it must not drain the IP budget shared by everyone behind
+  // one address. It is exempt here ONLY because it carries its own limits (see reminders.routes.ts): a generous IP
+  // ceiling before `protect` and a per-user limiter after it. All other routes keep this global limiter.
+  skip: (req) => req.originalUrl.split('?')[0].startsWith('/api/v1/reminders'),
 });
 app.use('/api', limiter);
 
@@ -67,6 +71,8 @@ import analyticsRouter from './features/analytics/analytics.routes';
 import aiRouter from './features/ai/ai.routes';
 import searchRouter from './features/search/search.routes';
 import remindersRouter from './features/reminders/reminders.routes';
+import reportsRouter from './features/reports/reports.routes';
+import gamificationRouter from './features/gamification/gamification.routes';
 import externalFoodRouter from './features/externalFood/externalFood.routes';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
@@ -86,6 +92,8 @@ app.use('/api/v1/analytics', analyticsRouter);
 app.use('/api/v1/ai', aiRouter);
 app.use('/api/v1/search', searchRouter);
 app.use('/api/v1/reminders', remindersRouter);
+app.use('/api/v1/reports', reportsRouter);
+app.use('/api/v1/gamification', gamificationRouter);
 app.use('/api/v1/external', externalFoodRouter);
 app.use('/api/v1/water', waterRouter);
 app.use('/api/v1/meals', mealsRouter);

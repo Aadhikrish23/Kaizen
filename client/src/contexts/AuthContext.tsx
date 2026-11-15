@@ -15,6 +15,7 @@ export interface User {
   activityLevel?: string;
   goal?: string;
   targetWeightKg?: number;
+  targetDate?: string;
   calorieDailyTarget?: number;
   proteinDailyTargetG?: number;
   waterDailyTargetMl?: number;

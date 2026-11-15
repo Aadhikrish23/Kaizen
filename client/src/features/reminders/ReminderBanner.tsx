@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Bell, X } from 'lucide-react';
-import { useDueReminders } from '../../services/reminderService';
+import { useDueReminders, useReminderPrefs } from '../../services/reminderService';
+import { hasEnabledReminders } from '../../utils/reminderPolling';
 import { addId, DISMISSED_PREFIX, loadIds, NOTIFIED_PREFIX } from '../../utils/reminderDismissals';
 import { showBrowserNotification } from './browserNotifications';
 
@@ -14,7 +15,11 @@ const store = (): Storage | null => {
 
 // Dismissible in-app reminders (no alert()). Dismissals are remembered per reminder per day in localStorage.
 export const ReminderBanner: React.FC = () => {
-  const { data: due = [] } = useDueReminders();
+  // Prefs are fetched once; the due list is only polled when at least one reminder is enabled
+  const { data: prefs } = useReminderPrefs();
+  const polling = hasEnabledReminders(prefs);
+  const { data: polled = [] } = useDueReminders(polling);
+  const due = polling ? polled : []; // never show stale items after everything was switched off
   const [dismissedByDate, setDismissedByDate] = useState<Record<string, string[]>>({});
 
   const dismissedFor = (date: string) => dismissedByDate[date] ?? loadIds(store(), DISMISSED_PREFIX, date);
