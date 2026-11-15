@@ -34,9 +34,8 @@ test.describe('Sleep Cycle Tracker & Scale Weight UI Restructuring', () => {
     const sidebar = page.locator('aside');
     await expect(sidebar.getByRole('button', { name: 'Sleep Cycle' })).toBeVisible({ timeout: 10000 });
     
-    // Ensure "Scale Weight" is NOT in the sidebar navigation
-    const scaleWeightInSidebar = sidebar.locator('button:has-text("Scale Weight")');
-    expect(await scaleWeightInSidebar.count()).toBe(0);
+    // "Scale Weight" is a sidebar tab alongside Sleep Cycle
+    await expect(sidebar.locator('button:has-text("Scale Weight")')).toHaveCount(1);
 
     // 3. Test Sleep Cycle Tracker Module
     console.log('[3/6] Navigating to Sleep Cycle tracker...');
@@ -74,7 +73,7 @@ test.describe('Sleep Cycle Tracker & Scale Weight UI Restructuring', () => {
     const circadianWakeInput = page.locator('input[type="time"]').nth(2);
     await circadianWakeInput.fill('06:00');
     await page.waitForTimeout(600);
-    await expect(page.locator('text=Optimal Window')).toBeVisible();
+    await expect(page.locator('text=Typical Target').first()).toBeVisible();
 
     // Take screenshot 23_sleep_cycle_tracker
     const sleepShot = path.join(screenshotsDir, '23_sleep_cycle_tracker.png');
@@ -90,11 +89,11 @@ test.describe('Sleep Cycle Tracker & Scale Weight UI Restructuring', () => {
     await page.waitForTimeout(600);
 
     // Verify Sleep & Circadian card shows duration
-    await expect(page.locator('text=Sleep & Circadian')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Sleep & Circadian').first()).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=8h 0m').first()).toBeVisible();
 
     // Verify Scale Weight tile exists on dashboard
-    await expect(page.locator('text=Scale Weight')).toBeVisible();
+    await expect(page.locator('text=Scale Weight').first()).toBeVisible();
 
     const dashShot = path.join(screenshotsDir, '24_dashboard_sleep_and_weight_tiles.png');
     await page.screenshot({ path: dashShot, fullPage: true });

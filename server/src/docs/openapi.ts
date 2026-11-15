@@ -6,8 +6,9 @@ import { parseFoodSchema, recommendationsSchema, chatSchema } from '../features/
 import { registerSchema, loginSchema, resetPasswordSchema } from '../features/auth/auth.schema';
 import { getExercisesSchema, createExerciseSchema } from '../features/exercises/exercise.schema';
 import { externalRecipesQuerySchema, externalFoodsQuerySchema, importRecipeSchema } from '../features/externalFood/externalFood.schema';
-import { createFoodSchema, searchFoodSchema } from '../features/foods/food.schema';
+import { createFoodSchema as createCustomFoodSchema, searchFoodSchema } from '../features/foods/food.schema';
 import { updateInventorySchema, recordWorkingWeightSchema } from '../features/inventory/inventory.schema';
+import { createFoodSchema as createAdminFoodSchema, listFoodsSchema, listUsersSchema, updateFoodSchema, updateUserSchema, foodIdSchema } from '../features/admin/admin.schema';
 import { getMealLogsSchema, createMealLogSchema } from '../features/meals/meal.schema';
 import { measurementLogSchema } from '../features/measurements/measurement.schema';
 import {
@@ -40,6 +41,8 @@ interface RouteDef {
   status?: '200' | '201';
   limited?: boolean; // has a dedicated per-user rate limiter (documented in 429)
   notes?: string;
+  /** Additional documented error responses, status code to description. */
+  extraResponses?: Record<string, string>;
 }
 
 const toJson = (schema: z.ZodType): Record<string, any> => {
@@ -50,21 +53,6 @@ const toJson = (schema: z.ZodType): Record<string, any> => {
 
 const R = (method: RouteDef['method'], path: string, tag: string, summary: string, rest: Partial<RouteDef> = {}): RouteDef =>
   ({ method, path, tag, summary, auth: 'user', ...rest });
-
-// Admin bodies mirror features/admin/admin.schema.ts (strict; unknown keys are rejected).
-const adminFoodBody = {
-  type: 'object', additionalProperties: false, required: ['name', 'servingSize', 'calories'],
-  properties: {
-    name: { type: 'string', minLength: 2, maxLength: 100 }, brand: { type: 'string', maxLength: 100 }, servingSize: { type: 'string', minLength: 1, maxLength: 50 },
-    calories: { type: 'number', minimum: 0, maximum: 10000 }, protein: { type: 'number', minimum: 0, maximum: 1000, default: 0 },
-    carbs: { type: 'number', minimum: 0, maximum: 1000, default: 0 }, fat: { type: 'number', minimum: 0, maximum: 1000, default: 0 },
-    basis: { enum: ['per_100g', 'per_serving'] }, servingQty: { type: 'number', exclusiveMinimum: 0, maximum: 10000 }, servingUnit: { enum: ['g', 'ml'] },
-  },
-};
-const adminPaging = [
-  { name: 'page', description: 'Page number (default 1)' }, { name: 'limit', description: 'Page size 1..100 (default 25)' },
-  { name: 'q', description: 'Search text (max 100 chars, matched literally)' },
-];
 
 export const ROUTES: RouteDef[] = [
   R('get', '/health', 'System', 'Liveness and database status', { auth: 'none', notes: 'Not rate limited. Returns {status:"ok", db:"up"|"down"}.' }),
@@ -84,7 +72,7 @@ export const ROUTES: RouteDef[] = [
   R('post', '/profile/tdee', 'Profile', 'Compute TDEE for the given body data', { body: { type: 'object' } }),
 
   R('get', '/foods/search', 'Foods', 'Search global foods and your custom foods', { schema: searchFoodSchema }),
-  R('post', '/foods', 'Foods', 'Create a custom food', { schema: createFoodSchema, status: '201' }),
+  R('post', '/foods', 'Foods', 'Create a custom food', { schema: createCustomFoodSchema, status: '201' }),
   R('delete', '/foods/{id}', 'Foods', 'Delete one of your custom foods'),
 
   R('get', '/recipes', 'Recipes', 'Your recipes'),
@@ -160,14 +148,16 @@ export const ROUTES: RouteDef[] = [
   R('post', '/planner/swap', 'Planner', 'Swap an exercise (your own or catalog exercises only)', { schema: swapExerciseSchema }),
 
   R('get', '/admin/stats', 'Admin', 'Usage statistics', { auth: 'admin' }),
-  R('get', '/admin/users', 'Admin', 'Paged users (public fields only)', { auth: 'admin', query: adminPaging }),
-  R('patch', '/admin/users/{id}', 'Admin', 'Change role and/or isActive (an admin cannot change themselves)', {
-    auth: 'admin', body: { type: 'object', additionalProperties: false, minProperties: 1, properties: { role: { enum: ['user', 'admin'] }, isActive: { type: 'boolean' } } },
+  R('get', '/admin/users', 'Admin', 'Paged users (public fields only)', { auth: 'admin', schema: listUsersSchema }),
+  R('patch', '/admin/users/{id}', 'Admin', 'Change role and/or isActive', {
+    auth: 'admin', schema: updateUserSchema,
+    notes: 'An admin cannot demote or deactivate themselves (400 SELF_MODIFICATION_FORBIDDEN). The last remaining active admin cannot be demoted or deactivated (409 LAST_ADMIN). Deactivation revokes the user\'s refresh tokens.',
+    extraResponses: { '409': 'The last remaining active admin cannot be demoted or deactivated (LAST_ADMIN)' },
   }),
-  R('get', '/admin/foods', 'Admin', 'Paged global foods', { auth: 'admin', query: adminPaging }),
-  R('post', '/admin/foods', 'Admin', 'Create a global food', { auth: 'admin', body: adminFoodBody, status: '201' }),
-  R('patch', '/admin/foods/{id}', 'Admin', 'Update a global food', { auth: 'admin', body: (({ required, ...rest }) => ({ ...rest, minProperties: 1 }))(adminFoodBody) }),
-  R('delete', '/admin/foods/{id}', 'Admin', 'Delete a global food', { auth: 'admin' }),
+  R('get', '/admin/foods', 'Admin', 'Paged global foods', { auth: 'admin', schema: listFoodsSchema }),
+  R('post', '/admin/foods', 'Admin', 'Create a global food', { auth: 'admin', schema: createAdminFoodSchema, status: '201' }),
+  R('patch', '/admin/foods/{id}', 'Admin', 'Update a global food', { auth: 'admin', schema: updateFoodSchema }),
+  R('delete', '/admin/foods/{id}', 'Admin', 'Delete a global food', { auth: 'admin', schema: foodIdSchema }),
 ];
 
 const errorRef = (description: string) => ({ description, content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } });
@@ -203,6 +193,7 @@ const buildOperation = (r: RouteDef) => {
   if (r.auth !== 'none') op.responses['401'] = errorRef('Missing, invalid or expired access token, or a deactivated account');
   if (r.auth === 'admin') op.responses['403'] = errorRef('Not an admin (FORBIDDEN)');
   if (r.path.includes('{id}')) op.responses['404'] = errorRef('Not found (or not yours)');
+  for (const [code, d] of Object.entries(r.extraResponses ?? {})) op.responses[code] = errorRef(d);
   op.responses['429'] = errorRef(
     r.limited ? 'Rate limit exceeded: per-user limit for this endpoint group (RATE_LIMITED)' : 'Rate limit exceeded (RATE_LIMITED): global per-IP limit'
   );

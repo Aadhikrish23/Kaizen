@@ -1,4 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../contexts/AuthContext';
+import { submitOrQueue } from '../offline/offlineQueue';
 import { api } from '../api/client';
 import { SleepLog, CircadianWindow } from '../types';
 
@@ -33,6 +35,7 @@ export const useCircadianWindows = (wakeTime: string = '07:00') => {
 
 export const useSaveSleepLog = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
     mutationFn: (data: {
       date: string;
@@ -45,7 +48,7 @@ export const useSaveSleepLog = () => {
       lightSleepMinutes?: number;
       awakeMinutes?: number;
       notes?: string;
-    }) => api.post<SleepLog>('/sleep', data),
+    }) => submitOrQueue<SleepLog>(user?.id ?? '', 'sleep', '/sleep', data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['sleepLog', variables.date] });
       queryClient.invalidateQueries({ queryKey: ['sleepHistory'] });

@@ -1,3 +1,4 @@
+import { clientRequestIdIndex } from '../../utils/idempotency';
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IMealLog extends Document {
@@ -10,6 +11,7 @@ export interface IMealLog extends Document {
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   time: string;   // e.g. "12:45 PM"
   date: string;   // format "YYYY-MM-DD"
+  clientRequestId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,9 +29,13 @@ const MealLogSchema: Schema = new Schema({
     enum: ['breakfast', 'lunch', 'dinner', 'snack'] 
   },
   time: { type: String, required: true },
-  date: { type: String, required: true, index: true }
+  date: { type: String, required: true, index: true },
+  clientRequestId: { type: String }, // idempotency key for offline replays (see utils/idempotency.ts)
 }, {
   timestamps: true
 });
+
+
+MealLogSchema.index(...clientRequestIdIndex as unknown as [any, any]);
 
 export default mongoose.model<IMealLog>('MealLog', MealLogSchema);

@@ -80,6 +80,10 @@ export const login = async (data: any) => {
   if (!isMatch) {
     throw new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password');
   }
+  // Checked after the password so account state is not revealed to someone who does not know it
+  if (user.isActive === false) {
+    throw new AppError(403, 'ACCOUNT_DISABLED', 'This account has been deactivated');
+  }
 
   // Adopt the browser timezone only while the account is still on the default.
   if (isValidTimezone(data.timezone) && (!user.timezone || user.timezone === 'UTC') && data.timezone !== 'UTC') {
@@ -107,7 +111,7 @@ export const refresh = async (token: string) => {
 
   // Single atomic delete: a replayed or concurrent request finds nothing and gets 401.
   const userId = await consumeRefreshToken(RefreshToken, token);
-  if (!userId || !(await User.exists({ _id: userId }))) {
+  if (!userId || !(await User.exists({ _id: userId, isActive: { $ne: false } }))) {
     throw invalid();
   }
 

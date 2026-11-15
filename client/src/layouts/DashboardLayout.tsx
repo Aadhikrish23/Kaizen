@@ -1,7 +1,7 @@
 import { localDateString } from '../utils/date';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight, Scale, FileText } from 'lucide-react';
+import { LayoutDashboard, Dumbbell, Utensils, Droplets, Moon, Calendar, LogOut, Settings, BarChart3, Package, ChevronLeft, ChevronRight, Scale, FileText, ShieldCheck } from 'lucide-react';
 import { DashboardOverview } from '../features/dashboard/DashboardOverview';
 import { WorkoutTracker } from '../features/workouts/WorkoutTracker';
 import { AdaptivePlannerView } from '../features/planner/AdaptivePlannerView';
@@ -14,15 +14,19 @@ import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
 import { GlobalSearch } from '../components/GlobalSearch';
 import { ReminderBanner } from '../features/reminders/ReminderBanner';
+import { OfflineBanner } from '../offline/OfflineBanner';
+import { useOnlineStatus } from '../offline/online';
 import { ReportsPage } from '../features/reports/ReportsPage';
+import { AdminPanel } from '../features/admin/AdminPanel';
 
-type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight' | 'reports';
+type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight' | 'reports' | 'admin';
 type WorkoutSubTab = 'tracker' | 'planner' | 'inventory';
 
 export const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [workoutSubTab, setWorkoutSubTab] = useState<WorkoutSubTab>('tracker');
   const { logout, user } = useAuth();
+  const online = useOnlineStatus();
   
   // Today's date as YYYY-MM-DD in the browser's local timezone
   const getTodayString = () => localDateString();
@@ -56,6 +60,8 @@ export const DashboardLayout = () => {
     { id: 'weight' as const, label: 'Scale Weight', icon: Scale, accent: 'text-violet-400' },
     { id: 'analytics' as const, label: 'Analytics', icon: BarChart3, accent: 'text-emerald-400' },
     { id: 'reports' as const, label: 'Reports', icon: FileText, accent: 'text-sky-400' },
+    // Admin tab only for admins; the server enforces the role on every /admin route regardless
+    ...(user?.role === 'admin' ? [{ id: 'admin' as const, label: 'Admin', icon: ShieldCheck, accent: 'text-rose-400' }] : []),
   ];
 
   return (
@@ -255,6 +261,7 @@ export const DashboardLayout = () => {
 
       {/* Main Content Workspace */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full pb-24 md:pb-8">
+        <OfflineBanner />
         <ReminderBanner />
         <div className="mb-5">
           <GlobalSearch
@@ -272,6 +279,11 @@ export const DashboardLayout = () => {
               if (tab === 'workouts') setWorkoutSubTab('tracker');
             }}
           />
+        )}
+        {activeTab === 'workouts' && !online && (
+          <div className="p-3 mb-4 rounded-control bg-kaizen-surface border border-kaizen-border text-sm text-kaizen-muted" role="status">
+            Needs connection: logging workouts and using the planner are not available offline. Your other data stays visible.
+          </div>
         )}
         {activeTab === 'workouts' && (
           <div className="space-y-6">
@@ -346,6 +358,9 @@ export const DashboardLayout = () => {
         )}
         {activeTab === 'analytics' && (
           <AnalyticsDashboard />
+        )}
+        {activeTab === 'admin' && user?.role === 'admin' && (
+          <AdminPanel />
         )}
         {activeTab === 'reports' && (
           <ReportsPage currentDate={currentDate} />

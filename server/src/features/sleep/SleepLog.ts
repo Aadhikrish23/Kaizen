@@ -1,8 +1,10 @@
+import { clientRequestIdIndex } from '../../utils/idempotency';
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ISleepLog extends Document {
   userId: mongoose.Types.ObjectId;
   date: string; // format "YYYY-MM-DD"
+  clientRequestId?: string;
   bedtime: string; // e.g. "23:00"
   wakeTime: string; // e.g. "07:00"
   durationMinutes: number; // e.g. 480
@@ -22,6 +24,7 @@ const SleepLogSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     date: { type: String, required: true },
+    clientRequestId: { type: String },
     bedtime: { type: String, required: true },
     wakeTime: { type: String, required: true },
     durationMinutes: { type: Number, required: true, min: 0 },
@@ -38,5 +41,8 @@ const SleepLogSchema = new Schema(
 );
 
 SleepLogSchema.index({ userId: 1, date: 1 }, { unique: true });
+
+
+SleepLogSchema.index(...clientRequestIdIndex as unknown as [any, any]);
 
 export default mongoose.model<ISleepLog>('SleepLog', SleepLogSchema);

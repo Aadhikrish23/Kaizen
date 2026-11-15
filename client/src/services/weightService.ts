@@ -1,6 +1,8 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 import { WeightLog } from '../types';
+import { useAuth } from '../contexts/AuthContext';
+import { submitOrQueue } from '../offline/offlineQueue';
 
 export const useWeightLogs = (date: string) => {
   return useQuery({
@@ -18,8 +20,9 @@ export const useWeightHistory = () => {
 
 export const useAddWeightLog = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   return useMutation({
-    mutationFn: (data: { weight: number; date: string }) => api.post<WeightLog>('/weight', data),
+    mutationFn: (data: { weight: number; date: string }) => submitOrQueue<unknown>(user?.id ?? '', 'weight', '/weight', data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['weightLogs', variables.date] });
       queryClient.invalidateQueries({ queryKey: ['weightHistory'] });

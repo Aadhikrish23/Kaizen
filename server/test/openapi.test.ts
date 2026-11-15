@@ -31,12 +31,12 @@ test('every Express route is documented (method and path)', () => {
   assert.deepEqual(missing, [], `routes missing from swagger.yml: ${missing.join(', ')}`);
 });
 
-test('documented operations exist as Express routes (admin routes may be documented before their router is mounted)', () => {
+test('documented operations exist as Express routes', () => {
   const have = new Set(listExpressRoutes().map((r) => `${r.method} ${r.path}`));
   const stale: string[] = [];
   for (const [p, ops] of Object.entries<any>(doc.paths)) {
     for (const method of Object.keys(ops)) {
-      if (!have.has(`${method} ${p}`) && !p.startsWith('/admin')) stale.push(`${method.toUpperCase()} ${p}`);
+      if (!have.has(`${method} ${p}`)) stale.push(`${method.toUpperCase()} ${p}`);
     }
   }
   assert.deepEqual(stale, []);
@@ -100,4 +100,27 @@ test('the route table has no duplicates', () => {
   const keys = ROUTES.map((r) => `${r.method} ${r.path}`);
   assert.equal(new Set(keys).size, keys.length);
   assert.equal(Object.keys(buildOpenApi().paths).length, Object.keys(doc.paths).length);
+});
+
+test('admin routes are documented from the real zod schemas, with the LAST_ADMIN 409', () => {
+  const patch = doc.paths['/admin/users/{id}'].patch;
+  const body = patch.requestBody.content['application/json'].schema;
+  assert.equal(body.additionalProperties, false);
+  assert.deepEqual(Object.keys(body.properties).sort(), ['isActive', 'role']);
+  assert.deepEqual(body.properties.role.enum, ['user', 'admin']);
+  assert.ok(patch.responses['409'], 'PATCH /admin/users/{id} documents 409 LAST_ADMIN');
+  assert.match(patch.responses['409'].description, /LAST_ADMIN/);
+  const food = doc.paths['/admin/foods'].post.requestBody.content['application/json'].schema;
+  assert.equal(food.additionalProperties, false);
+  assert.equal(food.properties.name.minLength, 2); // from admin.schema.ts, not a hand-written copy
+  assert.ok(doc.paths['/admin/users'].get.parameters.some((p: any) => p.name === 'limit' && p.schema.maximum === 100));
+});
+
+test('the four idempotent create bodies document clientRequestId', () => {
+  for (const p of ['/meals', '/water', '/weight', '/sleep']) {
+    const body = doc.paths[p].post.requestBody.content['application/json'].schema;
+    assert.ok(body.properties.clientRequestId, `${p} documents clientRequestId`);
+    assert.equal(body.properties.clientRequestId.type, 'string');
+    assert.ok(!(body.required ?? []).includes('clientRequestId'));
+  }
 });
