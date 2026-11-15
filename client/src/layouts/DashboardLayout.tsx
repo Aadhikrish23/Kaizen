@@ -13,6 +13,7 @@ import { WeightTracker } from '../features/weight/WeightTracker';
 import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
 import { GlobalSearch } from '../components/GlobalSearch';
+import { ReminderBanner } from '../features/reminders/ReminderBanner';
 import { ReportsPage } from '../features/reports/ReportsPage';
 
 type NavigationTab = 'dashboard' | 'workouts' | 'meals' | 'water' | 'sleep' | 'analytics' | 'weight' | 'reports';
@@ -254,6 +255,7 @@ export const DashboardLayout = () => {
 
       {/* Main Content Workspace */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full pb-24 md:pb-8">
+        <ReminderBanner />
         <div className="mb-5">
           <GlobalSearch
             onNavigate={(target) => {
