@@ -1,12 +1,12 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
+import { api } from '../api/client';
+import { WorkoutRoutine } from '../types';
 
 export const useRoutines = () => {
   return useQuery({
     queryKey: ['routines'],
     queryFn: async () => {
-      const response = await apiClient.get('/routines');
-      return response as any;
+      return api.get<WorkoutRoutine[]>('/routines');
     }
   });
 };
@@ -16,7 +16,7 @@ export const useCreateRoutine = () => {
   
   return useMutation({
     mutationFn: async (data: any) => {
-      return apiClient.post('/routines', data);
+      return api.post<WorkoutRoutine>('/routines', data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] });
@@ -29,7 +29,7 @@ export const useDeleteRoutine = () => {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      return apiClient.delete(`/routines/${id}`);
+      return api.delete(`/routines/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['routines'] });

@@ -1,13 +1,13 @@
 ﻿import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../api/client';
-import { MealLog } from '../types';
+import { api } from '../api/client';
+import { MealLog, DailyMeals } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { submitOrQueue } from '../offline/offlineQueue';
 
 export const useMealLogs = (date: string) => {
   return useQuery({
     queryKey: ['mealLogs', date],
-    queryFn: () => apiClient.get(`/meals?date=${date}`),
+    queryFn: () => api.get<DailyMeals>(`/meals?date=${date}`),
   });
 };
 
@@ -28,7 +28,7 @@ export const useAddMealLog = () => {
 export const useDeleteMealLog = (date: string) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => apiClient.delete(`/meals/${id}`),
+    mutationFn: (id: string) => api.delete(`/meals/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['mealLogs', date] });
       queryClient.invalidateQueries({ queryKey: ['summary', date] });

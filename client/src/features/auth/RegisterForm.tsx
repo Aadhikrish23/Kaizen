@@ -28,7 +28,7 @@ export const RegisterForm: React.FC = () => {
         name: `${firstName} ${lastName}`.trim(),
         timezone: browserTimezone()
       });
-      register(response as any);
+      await register(response as any);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err?.message || 'Failed to register');
