@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clientRequestIdPattern } from '../../utils/idempotency';
 
 export const upsertSleepSchema = z.object({
   body: z.object({
@@ -11,7 +12,8 @@ export const upsertSleepSchema = z.object({
     remSleepMinutes: z.number().min(0).optional(),
     lightSleepMinutes: z.number().min(0).optional(),
     awakeMinutes: z.number().min(0).optional(),
-    notes: z.string().optional()
+    notes: z.string().optional(),
+    clientRequestId: z.string().regex(clientRequestIdPattern, 'Invalid clientRequestId').optional()
   })
 });
 

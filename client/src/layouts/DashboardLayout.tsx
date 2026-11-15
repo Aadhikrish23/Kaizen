@@ -14,6 +14,8 @@ import { AnalyticsDashboard } from '../features/analytics/AnalyticsDashboard';
 import { useAuth } from '../contexts/AuthContext';
 import { GlobalSearch } from '../components/GlobalSearch';
 import { ReminderBanner } from '../features/reminders/ReminderBanner';
+import { OfflineBanner } from '../offline/OfflineBanner';
+import { useOnlineStatus } from '../offline/online';
 import { ReportsPage } from '../features/reports/ReportsPage';
 import { AdminPanel } from '../features/admin/AdminPanel';
 
@@ -24,6 +26,7 @@ export const DashboardLayout = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('dashboard');
   const [workoutSubTab, setWorkoutSubTab] = useState<WorkoutSubTab>('tracker');
   const { logout, user } = useAuth();
+  const online = useOnlineStatus();
   
   // Today's date as YYYY-MM-DD in the browser's local timezone
   const getTodayString = () => localDateString();
@@ -258,6 +261,7 @@ export const DashboardLayout = () => {
 
       {/* Main Content Workspace */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto w-full pb-24 md:pb-8">
+        <OfflineBanner />
         <ReminderBanner />
         <div className="mb-5">
           <GlobalSearch
@@ -275,6 +279,11 @@ export const DashboardLayout = () => {
               if (tab === 'workouts') setWorkoutSubTab('tracker');
             }}
           />
+        )}
+        {activeTab === 'workouts' && !online && (
+          <div className="p-3 mb-4 rounded-control bg-kaizen-surface border border-kaizen-border text-sm text-kaizen-muted" role="status">
+            Needs connection: logging workouts and using the planner are not available offline. Your other data stays visible.
+          </div>
         )}
         {activeTab === 'workouts' && (
           <div className="space-y-6">
