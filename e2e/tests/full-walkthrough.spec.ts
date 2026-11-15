@@ -134,12 +134,10 @@ test.describe('Kaizen Full Feature Verification', () => {
     await expect(page.getByRole('heading', { name: 'Gym & Equipment Inventory' })).toBeVisible({ timeout: 15000 });
     await expect(page.locator('text=Quick Setup Presets')).toBeVisible();
 
-    // Apply Preset
-    const gymPresetBtn = page.locator('button:has-text("Apply Preset")').first();
-    if (await gymPresetBtn.isVisible()) {
-      await gymPresetBtn.click();
-      await page.waitForTimeout(1000);
-    }
+    // Apply a preset (new users have no equipment until they choose)
+    // New users start with an empty, unconfirmed inventory: choose the Home Dumbbell Starter preset explicitly
+    await page.locator('div:has(> div > h4:has-text("Home Dumbbell Starter")) > button').click();
+    await page.waitForTimeout(1000);
 
     // Test Equipment Editing feature
     console.log('Testing Equipment Editing...');
@@ -265,7 +263,7 @@ test.describe('Kaizen Full Feature Verification', () => {
 
     // --- 9. PROFILE SETTINGS ---
     console.log('[9/9] Testing Profile Settings...');
-    await page.locator('a:has-text("Profile Settings")').click();
+    await page.locator('aside a[title="Profile Settings"]').click();
     await expect(page).toHaveURL(/.*\/settings\/profile/);
     await expect(page.getByRole('heading', { name: 'Athlete Profile & Calibration' })).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '14_profile_settings.png') });
