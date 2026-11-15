@@ -263,7 +263,7 @@ test.describe('Kaizen Full Feature Verification', () => {
 
     // --- 9. PROFILE SETTINGS ---
     console.log('[9/9] Testing Profile Settings...');
-    await page.locator('a:has-text("Profile Settings")').click();
+    await page.locator('aside a[title="Profile Settings"]').click();
     await expect(page).toHaveURL(/.*\/settings\/profile/);
     await expect(page.getByRole('heading', { name: 'Athlete Profile & Calibration' })).toBeVisible();
     await page.screenshot({ path: path.join(screenshotsDir, '14_profile_settings.png') });
