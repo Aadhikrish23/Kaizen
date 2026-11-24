@@ -20,7 +20,12 @@ services:
       context: ./ai_services
     environment:
       - PORT=8000
-      - AI_PROVIDER=${AI_PROVIDER:-ollama}
+      - AI_PROVIDER=${AI_PROVIDER:-nvidia}
+      - AI_FALLBACK_PROVIDERS=${AI_FALLBACK_PROVIDERS-ollama}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY:-}
+      - NVIDIA_MODEL=${NVIDIA_MODEL:-nvidia/nemotron-3-super-120b-a12b}
+      - NVIDIA_FALLBACK_MODELS=${NVIDIA_FALLBACK_MODELS:-openai/gpt-oss-20b}
+      - NVIDIA_BASE_URL=${NVIDIA_BASE_URL:-https://integrate.api.nvidia.com/v1}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
@@ -29,6 +34,9 @@ services:
       - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
       - OLLAMA_MODEL=${OLLAMA_MODEL:-phi3:mini}
       - CORS_ORIGINS=${AI_CORS_ORIGINS:-http://localhost:5000}
+      # The assistant reads and changes data through the API as the signed-in user
+      - KAIZEN_API_URL=http://server:5000/api/v1
+      - AI_INTERNAL_TOKEN=${AI_INTERNAL_TOKEN:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     healthcheck:
@@ -53,6 +61,7 @@ services:
       # Browser origin of the client (no trailing slash; port 80 is implicit).
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost}
       - AI_SERVICE_URL=http://ai_services:8000
+      - AI_INTERNAL_TOKEN=${AI_INTERNAL_TOKEN:-}
     depends_on:
       mongodb:
         condition: service_healthy

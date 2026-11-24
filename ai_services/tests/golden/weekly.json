@@ -1,0 +1,669 @@
+{
+ "weekly": [
+  {
+   "name": "empty",
+   "report": {
+    "period": "weekly",
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-07",
+    "daysInPeriod": 7,
+    "daysWithData": 0,
+    "minDaysWithData": 3,
+    "missing": [
+     "meals",
+     "water",
+     "sleep",
+     "workouts",
+     "weight (needs two weigh-ins)"
+    ],
+    "days": [
+     {
+      "date": "2026-03-01",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-02",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-03",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-04",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-05",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-06",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-07",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     }
+    ],
+    "sufficient": false,
+    "notEnoughData": "Not enough data for a weekly report: you logged on 0 of 7 days (at least 3 needed).",
+    "calories": null,
+    "protein": null,
+    "water": null,
+    "workouts": null,
+    "weight": null,
+    "sleep": null
+   },
+   "heuristic": {
+    "insight": "Not enough data for a weekly insight yet: you logged on 0 of 7 days (at least 3 needed). Keep logging meals, water, sleep and workouts.",
+    "highlights": [
+     "Nothing logged for: meals, water, sleep, workouts, weight (needs two weigh-ins)."
+    ]
+   }
+  },
+  {
+   "name": "two days only",
+   "report": {
+    "period": "weekly",
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-07",
+    "daysInPeriod": 7,
+    "daysWithData": 2,
+    "minDaysWithData": 3,
+    "missing": [
+     "sleep",
+     "workouts",
+     "weight (needs two weigh-ins)"
+    ],
+    "days": [
+     {
+      "date": "2026-03-01",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-02",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-03",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-04",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-05",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-06",
+      "calories": 2000,
+      "protein": 140,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-07",
+      "calories": null,
+      "protein": null,
+      "waterMl": 2500,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     }
+    ],
+    "sufficient": false,
+    "notEnoughData": "Not enough data for a weekly report: you logged on 2 of 7 days (at least 3 needed).",
+    "calories": null,
+    "protein": null,
+    "water": null,
+    "workouts": null,
+    "weight": null,
+    "sleep": null
+   },
+   "heuristic": {
+    "insight": "Not enough data for a weekly insight yet: you logged on 2 of 7 days (at least 3 needed). Keep logging meals, water, sleep and workouts.",
+    "highlights": [
+     "Nothing logged for: sleep, workouts, weight (needs two weigh-ins)."
+    ]
+   }
+  },
+  {
+   "name": "rich week",
+   "report": {
+    "period": "weekly",
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-07",
+    "daysInPeriod": 7,
+    "daysWithData": 6,
+    "minDaysWithData": 3,
+    "missing": [],
+    "days": [
+     {
+      "date": "2026-03-01",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-02",
+      "calories": 1550,
+      "protein": 91,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": 80.4
+     },
+     {
+      "date": "2026-03-03",
+      "calories": 1600,
+      "protein": 92,
+      "waterMl": 1600,
+      "workouts": 1,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-04",
+      "calories": 1650,
+      "protein": 93,
+      "waterMl": 1600,
+      "workouts": 0,
+      "sleepMinutes": 380,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-05",
+      "calories": 1700,
+      "protein": 94,
+      "waterMl": 1600,
+      "workouts": 1,
+      "sleepMinutes": 380,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-06",
+      "calories": 1750,
+      "protein": 95,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": 380,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-07",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": 79.6
+     }
+    ],
+    "sufficient": true,
+    "notEnoughData": null,
+    "calories": {
+     "average": 1650,
+     "target": 2000,
+     "adherencePct": 83,
+     "loggedDays": 5
+    },
+    "protein": {
+     "average": 93,
+     "target": 150,
+     "adherencePct": 62,
+     "loggedDays": 5
+    },
+    "water": {
+     "average": 1600,
+     "target": 2500,
+     "adherencePct": 64,
+     "loggedDays": 3
+    },
+    "workouts": {
+     "count": 2,
+     "daysWithWorkout": 2,
+     "totalVolumeKg": 7200
+    },
+    "weight": {
+     "firstKg": 80.4,
+     "lastKg": 79.6,
+     "changeKg": -0.8
+    },
+    "sleep": {
+     "averageHours": 6.3,
+     "loggedNights": 3
+    }
+   },
+   "heuristic": {
+    "insight": "This week (2026-03-01 to 2026-03-07), based on 6 of 7 days with logs. Protein is the gap this week: add a protein source to your lightest meal.",
+    "highlights": [
+     "Average intake 1650 kcal on 5 logged days (83% of your 2000 kcal target).",
+     "Average protein 93 g (62% of your 150 g target).",
+     "Average water 1600 ml on 3 logged days (64% of target).",
+     "2 workouts on 2 days, 7200 kg total volume.",
+     "Average sleep 6.3 h on 3 logged nights.",
+     "Weight -0.8 kg between your first and last weigh-in."
+    ]
+   }
+  },
+  {
+   "name": "over target no workouts",
+   "report": {
+    "period": "weekly",
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-07",
+    "daysInPeriod": 7,
+    "daysWithData": 3,
+    "minDaysWithData": 3,
+    "missing": [
+     "workouts",
+     "weight (needs two weigh-ins)"
+    ],
+    "days": [
+     {
+      "date": "2026-03-01",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-02",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-03",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-04",
+      "calories": 2600,
+      "protein": 160,
+      "waterMl": 3000,
+      "workouts": 0,
+      "sleepMinutes": 480,
+      "weightKg": 70
+     },
+     {
+      "date": "2026-03-05",
+      "calories": 2600,
+      "protein": 160,
+      "waterMl": 3000,
+      "workouts": 0,
+      "sleepMinutes": 480,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-06",
+      "calories": 2600,
+      "protein": 160,
+      "waterMl": 3000,
+      "workouts": 0,
+      "sleepMinutes": 480,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-07",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     }
+    ],
+    "sufficient": true,
+    "notEnoughData": null,
+    "calories": {
+     "average": 2600,
+     "target": 2000,
+     "adherencePct": 130,
+     "loggedDays": 3
+    },
+    "protein": {
+     "average": 160,
+     "target": 150,
+     "adherencePct": 107,
+     "loggedDays": 3
+    },
+    "water": {
+     "average": 3000,
+     "target": 2500,
+     "adherencePct": 120,
+     "loggedDays": 3
+    },
+    "workouts": {
+     "count": 0,
+     "daysWithWorkout": 0,
+     "totalVolumeKg": 0
+    },
+    "weight": null,
+    "sleep": {
+     "averageHours": 8,
+     "loggedNights": 3
+    }
+   },
+   "heuristic": {
+    "insight": "This week (2026-03-01 to 2026-03-07), based on 3 of 7 days with logs. Your logged intake runs above target: review portions on your biggest meals. Not logged: workouts, weight (needs two weigh-ins).",
+    "highlights": [
+     "Average intake 2600 kcal on 3 logged days (130% of your 2000 kcal target).",
+     "Average protein 160 g (107% of your 150 g target).",
+     "Average water 3000 ml on 3 logged days (120% of target).",
+     "No workouts logged this week.",
+     "Average sleep 8 h on 3 logged nights."
+    ]
+   }
+  },
+  {
+   "name": "low protein good everything else",
+   "report": {
+    "period": "weekly",
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-07",
+    "daysInPeriod": 7,
+    "daysWithData": 4,
+    "minDaysWithData": 3,
+    "missing": [
+     "weight (needs two weigh-ins)"
+    ],
+    "days": [
+     {
+      "date": "2026-03-01",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-02",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-03",
+      "calories": 2000,
+      "protein": 100,
+      "waterMl": 2600,
+      "workouts": 0,
+      "sleepMinutes": 450,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-04",
+      "calories": 2000,
+      "protein": 100,
+      "waterMl": 2600,
+      "workouts": 1,
+      "sleepMinutes": 450,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-05",
+      "calories": 2000,
+      "protein": 100,
+      "waterMl": 2600,
+      "workouts": 0,
+      "sleepMinutes": 450,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-06",
+      "calories": 2000,
+      "protein": 100,
+      "waterMl": 2600,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-07",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     }
+    ],
+    "sufficient": true,
+    "notEnoughData": null,
+    "calories": {
+     "average": 2000,
+     "target": 2000,
+     "adherencePct": 100,
+     "loggedDays": 4
+    },
+    "protein": {
+     "average": 100,
+     "target": 150,
+     "adherencePct": 67,
+     "loggedDays": 4
+    },
+    "water": {
+     "average": 2600,
+     "target": 2500,
+     "adherencePct": 104,
+     "loggedDays": 4
+    },
+    "workouts": {
+     "count": 1,
+     "daysWithWorkout": 1,
+     "totalVolumeKg": 100
+    },
+    "weight": null,
+    "sleep": {
+     "averageHours": 7.5,
+     "loggedNights": 3
+    }
+   },
+   "heuristic": {
+    "insight": "This week (2026-03-01 to 2026-03-07), based on 4 of 7 days with logs. Protein is the gap this week: add a protein source to your lightest meal. Not logged: weight (needs two weigh-ins).",
+    "highlights": [
+     "Average intake 2000 kcal on 4 logged days (100% of your 2000 kcal target).",
+     "Average protein 100 g (67% of your 150 g target).",
+     "Average water 2600 ml on 4 logged days (104% of target).",
+     "1 workout on 1 day, 100 kg total volume.",
+     "Average sleep 7.5 h on 3 logged nights."
+    ]
+   }
+  },
+  {
+   "name": "planned workout not performed",
+   "report": {
+    "period": "weekly",
+    "startDate": "2026-03-01",
+    "endDate": "2026-03-07",
+    "daysInPeriod": 7,
+    "daysWithData": 3,
+    "minDaysWithData": 3,
+    "missing": [
+     "water",
+     "sleep",
+     "workouts",
+     "weight (needs two weigh-ins)"
+    ],
+    "days": [
+     {
+      "date": "2026-03-01",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-02",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-03",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-04",
+      "calories": null,
+      "protein": null,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-05",
+      "calories": 1000,
+      "protein": 60,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-06",
+      "calories": 1000,
+      "protein": 60,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     },
+     {
+      "date": "2026-03-07",
+      "calories": 1000,
+      "protein": 60,
+      "waterMl": null,
+      "workouts": 0,
+      "sleepMinutes": null,
+      "weightKg": null
+     }
+    ],
+    "sufficient": true,
+    "notEnoughData": null,
+    "calories": {
+     "average": 1000,
+     "target": 2000,
+     "adherencePct": 50,
+     "loggedDays": 3
+    },
+    "protein": {
+     "average": 60,
+     "target": 150,
+     "adherencePct": 40,
+     "loggedDays": 3
+    },
+    "water": null,
+    "workouts": {
+     "count": 0,
+     "daysWithWorkout": 0,
+     "totalVolumeKg": 0
+    },
+    "weight": null,
+    "sleep": null
+   },
+   "heuristic": {
+    "insight": "This week (2026-03-01 to 2026-03-07), based on 3 of 7 days with logs. Your logged intake runs well under target: make sure you are logging every meal and eating enough. Not logged: water, sleep, workouts, weight (needs two weigh-ins).",
+    "highlights": [
+     "Average intake 1000 kcal on 3 logged days (50% of your 2000 kcal target).",
+     "Average protein 60 g (40% of your 150 g target).",
+     "No workouts logged this week."
+    ]
+   }
+  }
+ ]
+}

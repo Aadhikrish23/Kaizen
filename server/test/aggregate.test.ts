@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aggregateWeek, heuristicWeeklyInsight, isPerformedWorkout, WeeklyInputs, MIN_DAYS_WITH_DATA } from '../src/features/ai/weeklyInsight';
+import { aggregateWeek, isPerformedWorkout, WeeklyInputs, MIN_DAYS_WITH_DATA } from '../src/features/reports/aggregate';
 
 const targets = { calories: 2000, protein: 150, water: 2500 };
 const done = [{ sets: [{ completed: true }] }];
@@ -71,31 +71,6 @@ test('sufficiency threshold: needs at least MIN_DAYS_WITH_DATA days with any log
   const three = aggregateWeek(base({ meals: [{ date: '2026-03-06', calories: 2000 }, { date: '2026-03-07', calories: 2000 }, { date: '2026-03-08', calories: 2000 }] }));
   assert.equal(three.sufficient, true);
   assert.equal(MIN_DAYS_WITH_DATA, 3);
-});
-
-test('heuristic insight states missing data instead of faking it', () => {
-  const thin = heuristicWeeklyInsight(aggregateWeek(base({ meals: [{ date: '2026-03-08', calories: 2000 }] })));
-  assert.match(thin.insight, /^Not enough data/);
-  assert.match(thin.insight, /1 of 7 days/);
-  assert.ok(thin.highlights.some((h) => /Nothing logged for/.test(h)));
-});
-
-test('heuristic insight with enough data uses real numbers and names what is missing', () => {
-  const a = aggregateWeek(base({
-    meals: [
-      { date: '2026-03-05', calories: 2000, protein: 90 },
-      { date: '2026-03-06', calories: 2100, protein: 95 },
-      { date: '2026-03-07', calories: 1900, protein: 100 },
-    ],
-    workouts: [{ date: '2026-03-06', totalVolumeKg: 5000, exercises: done }],
-  }));
-  const r = heuristicWeeklyInsight(a);
-  assert.ok(r.highlights.some((h) => h.includes('Average intake 2000 kcal')));
-  assert.ok(r.highlights.some((h) => h.includes('Average protein 95 g')));
-  assert.ok(r.highlights.some((h) => h.includes('1 workout on 1 day')));
-  assert.match(r.insight, /Protein is the gap/); // 95/150 = 63% < 85%
-  assert.match(r.insight, /Not logged: water, sleep/);
-  assert.ok(!r.highlights.some((h) => /sleep|water/i.test(h) && /Average/.test(h)));
 });
 
 test('planned-but-not-performed workouts (only uncompleted sets) do not count', () => {

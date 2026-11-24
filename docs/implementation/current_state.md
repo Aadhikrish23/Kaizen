@@ -60,6 +60,10 @@ an earlier one throws, e.g. blocked localStorage.
 Known limitation: a slow request still in flight from the previous user when another user signs in in the same tab can still receive
 a 401 and join the shared refresh; this straggler case is not handled.
 
+## AI work in progress (branch `feature/nvidia-provider`, not merged)
+
+NVIDIA NIM is the default AI provider (Ollama as a fallback chain). The AI features moved into the Python service, which acts as the signed-in user through this API; the Express AI routes are proxies. `/ai/chat` is now an action assistant ([../assistant.md](../assistant.md)). Verified with the AI service tests (mock transport and an in-memory fake API), the smoke suite and a live run against MongoDB; **never run with a real NVIDIA key or language model**. Search stays in Express.
+
 ## Known gaps and risks
 
 **Security and operations (see the production checklist for the status of each item)**

@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
-from .routers import health, coach, food, weekly
+from .routers import health, coach, food, weekly, me
 from .services.llm import get_provider
 
 app = FastAPI(
     title="Kaizen AI Intelligence Service",
-    description="Microservice providing personalized fitness, nutrition, and lifestyle coaching using a configurable LLM provider (Ollama, OpenAI-compatible or Anthropic)",
+    description="Microservice providing personalized fitness, nutrition, and lifestyle coaching using a configurable LLM provider chain (NVIDIA NIM by default, with Ollama, OpenAI-compatible and Anthropic available)",
     version="1.0.0"
 )
 
@@ -22,6 +22,7 @@ app.include_router(health.router)
 app.include_router(coach.router)
 app.include_router(food.router)
 app.include_router(weekly.router)
+app.include_router(me.router)
 
 @app.on_event("startup")
 async def startup_event():

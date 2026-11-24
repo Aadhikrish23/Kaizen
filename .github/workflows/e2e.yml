@@ -42,6 +42,14 @@ jobs:
             client/package-lock.json
             e2e/package-lock.json
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: ai_services/requirements.txt
+      - name: Install AI service
+        working-directory: ai_services
+        run: pip install -r requirements.txt
       - name: Install and build server
         working-directory: server
         run: |
@@ -56,16 +64,25 @@ jobs:
       - name: Start server
         working-directory: server
         run: nohup npm start > ../server.log 2>&1 &
+      - name: Start AI service
+        working-directory: ai_services
+        env:
+          # No model in CI: rules, fallbacks and the real tools still run against the real API
+          AI_PROVIDER: nvidia
+          AI_FALLBACK_PROVIDERS: ''
+          NVIDIA_API_KEY: ''
+          KAIZEN_API_URL: http://localhost:5000/api/v1
+        run: nohup python -m uvicorn app.main:app --port 8000 > ../ai.log 2>&1 &
       - name: Serve built client
         working-directory: client
         run: nohup npx vite preview --host --port 5173 --strictPort > ../client.log 2>&1 &
       - name: Wait for the stack
         run: |
           for i in $(seq 1 60); do
-            curl -sf http://localhost:5000/api/v1/health | grep -q '"db":"up"' && curl -sf http://localhost:5173/ > /dev/null && exit 0
+            curl -sf http://localhost:5000/api/v1/health | grep -q '"db":"up"' && curl -sf http://localhost:5173/ > /dev/null && curl -sf http://localhost:8000/api/health > /dev/null && exit 0
             sleep 1
           done
-          echo "stack did not become ready"; tail -n 50 server.log client.log; exit 1
+          echo "stack did not become ready"; tail -n 50 server.log client.log ai.log; exit 1
 
       - name: Install Playwright
         working-directory: e2e
@@ -88,4 +105,4 @@ jobs:
           retention-days: 7
       - name: Server log
         if: always()
-        run: tail -n 100 server.log
+        run: tail -n 100 server.log ai.log

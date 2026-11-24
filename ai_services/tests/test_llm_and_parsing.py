@@ -11,7 +11,8 @@ from app.schemas.coach import UserProfileContext  # noqa: E402
 from app.services.coach_service import coach_service  # noqa: E402
 from app.services.food_parser import ModelOutputError, ProviderUnavailable, parse_food_text, parse_model_output  # noqa: E402
 from app.services.llm import (  # noqa: E402
-    AnthropicProvider, LLMProvider, OllamaProvider, OpenAICompatibleProvider, build_provider, set_provider,
+    AnthropicProvider, FallbackProvider, LLMProvider, NvidiaNimProvider, OllamaProvider, OpenAICompatibleProvider,
+    build_provider, set_provider,
 )
 
 
@@ -39,12 +40,19 @@ def run(coro):
 class ProviderSelectionTests(unittest.TestCase):
     def cfg(self, **kw):
         c = Settings()
+        c.AI_FALLBACK_PROVIDERS = ""  # single provider unless a test asks for a chain
         for k, v in kw.items():
             setattr(c, k, v)
         return c
 
-    def test_default_is_ollama(self):
+    def test_ollama_selected_when_asked(self):
         self.assertIsInstance(build_provider(self.cfg(AI_PROVIDER="ollama")), OllamaProvider)
+
+    def test_default_is_nvidia_with_ollama_fallback(self):
+        provider = build_provider(Settings())
+        self.assertIsInstance(provider, FallbackProvider)
+        self.assertIsInstance(provider.providers[0], NvidiaNimProvider)
+        self.assertIsInstance(provider.providers[1], OllamaProvider)
 
     def test_openai_and_anthropic_selected_from_env_values(self):
         p = build_provider(self.cfg(AI_PROVIDER="openai", OPENAI_API_KEY="k", OPENAI_MODEL="m", OPENAI_BASE_URL="http://gw/v1/"))

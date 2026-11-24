@@ -1,4 +1,5 @@
-// Pure weekly aggregation + deterministic insight. No I/O, so it is unit-testable with fixed data.
+// Pure weekly aggregation shared by reports and the reminders. No I/O, so it is unit-testable with fixed data.
+// (The AI weekly insight text is built in the Python AI service from the report this produces.)
 import { addDaysTz, dateRange } from '../../utils/dates';
 
 export interface WorkoutLike {
@@ -130,54 +131,4 @@ export const aggregateWeek = (input: WeeklyInputs): WeeklyAggregate => {
     sufficient: daysWithData >= MIN_DAYS_WITH_DATA,
     missing,
   };
-};
-
-export interface WeeklyInsightText {
-  insight: string;
-  highlights: string[];
-}
-
-/** Deterministic weekly summary used when the AI service is down. States missing data instead of inventing it. */
-export const heuristicWeeklyInsight = (a: WeeklyAggregate): WeeklyInsightText => {
-  if (!a.sufficient) {
-    return {
-      insight: `Not enough data for a weekly insight yet: you logged on ${a.daysWithData} of ${a.days.length} days (at least ${MIN_DAYS_WITH_DATA} needed). Keep logging meals, water, sleep and workouts.`,
-      highlights: a.missing.length ? [`Nothing logged for: ${a.missing.join(', ')}.`] : [],
-    };
-  }
-
-  const highlights: string[] = [];
-  let focus: string | null = null;
-
-  if (a.avgCalories !== null) {
-    const pct = Math.round((a.avgCalories / a.targets.calories) * 100);
-    highlights.push(`Average intake ${a.avgCalories} kcal on ${a.loggedDays.nutrition} logged days (${pct}% of your ${a.targets.calories} kcal target).`);
-    if (pct < 80 || pct > 115) focus = pct < 80 ? 'Your logged intake runs well under target: make sure you are logging every meal and eating enough.' : 'Your logged intake runs above target: review portions on your biggest meals.';
-  }
-  if (a.avgProteinG !== null) {
-    const pct = Math.round((a.avgProteinG / a.targets.protein) * 100);
-    highlights.push(`Average protein ${a.avgProteinG} g (${pct}% of your ${a.targets.protein} g target).`);
-    if (!focus && pct < 85) focus = 'Protein is the gap this week: add a protein source to your lightest meal.';
-  }
-  if (a.avgWaterMl !== null) {
-    const pct = Math.round((a.avgWaterMl / a.targets.water) * 100);
-    highlights.push(`Average water ${a.avgWaterMl} ml on ${a.loggedDays.water} logged days (${pct}% of target).`);
-    if (!focus && pct < 75) focus = 'Hydration is behind target: keep a bottle nearby.';
-  }
-  highlights.push(
-    a.workoutCount > 0
-      ? `${a.workoutCount} workout${a.workoutCount === 1 ? '' : 's'} on ${a.workoutDays} day${a.workoutDays === 1 ? '' : 's'}, ${a.totalVolumeKg} kg total volume.`
-      : 'No workouts logged this week.'
-  );
-  if (a.avgSleepHours !== null) {
-    highlights.push(`Average sleep ${a.avgSleepHours} h on ${a.loggedDays.sleep} logged nights.`);
-    if (!focus && a.avgSleepHours < 7) focus = 'Sleep averaged under 7 hours: an earlier bedtime is the easiest win.';
-  }
-  if (a.weightChangeKg !== null) {
-    highlights.push(`Weight ${a.weightChangeKg > 0 ? '+' : ''}${a.weightChangeKg} kg between your first and last weigh-in.`);
-  }
-  if (!focus && a.workoutCount === 0) focus = 'No workouts this week: schedule one short session to restart the habit.';
-
-  const insight = `This week (${a.startDate} to ${a.endDate}), based on ${a.daysWithData} of ${a.days.length} days with logs. ${focus ?? 'You are broadly on track: keep the consistency going.'}${a.missing.length ? ` Not logged: ${a.missing.join(', ')}.` : ''}`;
-  return { insight, highlights };
 };

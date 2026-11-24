@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
 
 export interface ParsedFoodItem {
@@ -44,7 +44,29 @@ export interface CoachReply {
   modelUsed?: string;
   contextApplied?: boolean;
   source?: string;
+  /** SUCCESS, PARTIAL, FAILED, CONFIRMATION_REQUIRED (answer "yes" or "no") or CANCELLED. */
+  status?: string;
+  /** Data areas the assistant changed, so the screens showing them can refresh. */
+  changed?: string[];
+  undoAvailable?: boolean;
+  confirmationRequired?: boolean;
 }
+
+// Which cached queries show each data area the assistant can change.
+const QUERIES_BY_AREA: Record<string, string[][]> = {
+  meals: [['mealLogs'], ['ai', 'recommendations']],
+  water: [['waterLogs']],
+  weight: [['weightLogs'], ['weightHistory'], ['goalProgress'], ['goalHistory']],
+  sleep: [['sleepLog'], ['sleepHistory'], ['circadianWindows']],
+  workouts: [['workoutLogs'], ['workouts'], ['splitSchedule']],
+  planner: [['workoutPlan'], ['splitSchedule']],
+  profile: [['goalProgress'], ['goalHistory'], ['inventory']],
+  summary: [['summary'], ['gamification'], ['report'], ['analytics'], ['ai', 'insights'], ['reminders']],
+};
+
+/** The queries to refresh after the assistant changed the given areas (nothing when it changed nothing). */
+export const queriesToRefresh = (changed: string[] | undefined): string[][] =>
+  changed && changed.length > 0 ? [...changed.flatMap((area) => QUERIES_BY_AREA[area] ?? []), ['gamification'], ['summary']] : [];
 
 export const useParseFood = () => {
   return useMutation({
@@ -79,11 +101,16 @@ export interface CoachMessagePayload {
 }
 
 export const useChatCoach = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: string | CoachMessagePayload) => {
       const data = typeof payload === 'string' ? { message: payload } : payload;
       return api.post<CoachReply>('/ai/chat', data);
-    }
+    },
+    // The coach is also the action assistant: when it logs or changes something, the screens showing it must refresh.
+    onSuccess: (reply) => {
+      for (const queryKey of queriesToRefresh(reply.changed)) queryClient.invalidateQueries({ queryKey });
+    },
   });
 };
 

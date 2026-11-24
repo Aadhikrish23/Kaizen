@@ -1,0 +1,1764 @@
+{
+ "rawFoods": [
+  {
+   "_id": "f1",
+   "name": "Chicken breast",
+   "basis": "per_100g",
+   "calories": 165,
+   "protein": 31,
+   "carbs": 0,
+   "fat": 3.6
+  },
+  {
+   "_id": "f2",
+   "name": "Biscuit",
+   "basis": "per_100g",
+   "servingQty": 30,
+   "servingUnit": "g",
+   "calories": 480,
+   "protein": 6,
+   "carbs": 70,
+   "fat": 20
+  },
+  {
+   "_id": "f3",
+   "name": "Roti",
+   "servingSize": "1 piece",
+   "calories": 120,
+   "protein": 3,
+   "carbs": 20,
+   "fat": 3
+  },
+  {
+   "_id": "f4",
+   "name": "Paneer tikka",
+   "servingSize": "150 g",
+   "calories": 380,
+   "protein": 28,
+   "carbs": 8,
+   "fat": 26
+  },
+  {
+   "_id": "f5",
+   "name": "Greek yogurt",
+   "basis": "per_serving",
+   "servingSize": "200 g",
+   "calories": 130,
+   "protein": 20,
+   "carbs": 8,
+   "fat": 1
+  },
+  {
+   "_id": "f6",
+   "name": "Tiny snack",
+   "servingSize": "1 piece",
+   "calories": 30,
+   "protein": 1,
+   "carbs": 5,
+   "fat": 1
+  },
+  {
+   "_id": "f7",
+   "name": "Feast",
+   "servingSize": "1 plate",
+   "calories": 1500,
+   "protein": 60,
+   "carbs": 150,
+   "fat": 70
+  },
+  {
+   "_id": "f8",
+   "name": "Lentil soup",
+   "servingSize": "1 bowl",
+   "calories": 220,
+   "protein": 15,
+   "carbs": 30,
+   "fat": 4
+  },
+  {
+   "_id": "f9",
+   "name": "Milk",
+   "basis": "per_100g",
+   "servingQty": 250,
+   "servingUnit": "ml",
+   "calories": 42,
+   "protein": 3.4,
+   "carbs": 5,
+   "fat": 1
+  },
+  {
+   "_id": "f10",
+   "name": "Roti",
+   "servingSize": "1 piece",
+   "calories": 120,
+   "protein": 3,
+   "carbs": 20,
+   "fat": 3
+  }
+ ],
+ "rawRecipes": [
+  {
+   "_id": "r1",
+   "name": "Manual stew",
+   "servings": 4,
+   "ingredients": [
+    {
+     "calories": 400
+    },
+    {
+     "calories": 600
+    }
+   ],
+   "totalCalories": 1000,
+   "totalProtein": 80,
+   "totalCarbs": 60,
+   "totalFat": 30
+  },
+  {
+   "_id": "r2",
+   "name": "Imported bowl",
+   "servings": 2,
+   "ingredients": [
+    {
+     "name": "x"
+    }
+   ],
+   "totalCalories": 450,
+   "totalProtein": 35,
+   "totalCarbs": 40,
+   "totalFat": 12
+  },
+  {
+   "_id": "r3",
+   "name": "No totals",
+   "servings": 1,
+   "ingredients": []
+  },
+  {
+   "_id": "r4",
+   "name": "Zero servings",
+   "servings": 0,
+   "ingredients": [
+    {
+     "calories": 300
+    }
+   ],
+   "totalCalories": 300,
+   "totalProtein": 20,
+   "totalCarbs": 10,
+   "totalFat": 5
+  }
+ ],
+ "candidates": [
+  {
+   "id": "f1",
+   "type": "food",
+   "name": "Chicken breast",
+   "servingLabel": "100 g",
+   "calories": 165,
+   "protein": 31,
+   "carbs": 0,
+   "fat": 3.6
+  },
+  {
+   "id": "f2",
+   "type": "food",
+   "name": "Biscuit",
+   "servingLabel": "30 g",
+   "calories": 144,
+   "protein": 1.8,
+   "carbs": 21,
+   "fat": 6
+  },
+  {
+   "id": "f3",
+   "type": "food",
+   "name": "Roti",
+   "servingLabel": "1 piece",
+   "calories": 120,
+   "protein": 3,
+   "carbs": 20,
+   "fat": 3
+  },
+  {
+   "id": "f4",
+   "type": "food",
+   "name": "Paneer tikka",
+   "servingLabel": "150 g",
+   "calories": 380,
+   "protein": 28,
+   "carbs": 8,
+   "fat": 26
+  },
+  {
+   "id": "f5",
+   "type": "food",
+   "name": "Greek yogurt",
+   "servingLabel": "200 g",
+   "calories": 130,
+   "protein": 20,
+   "carbs": 8,
+   "fat": 1
+  },
+  {
+   "id": "f6",
+   "type": "food",
+   "name": "Tiny snack",
+   "servingLabel": "1 piece",
+   "calories": 30,
+   "protein": 1,
+   "carbs": 5,
+   "fat": 1
+  },
+  {
+   "id": "f7",
+   "type": "food",
+   "name": "Feast",
+   "servingLabel": "1 plate",
+   "calories": 1500,
+   "protein": 60,
+   "carbs": 150,
+   "fat": 70
+  },
+  {
+   "id": "f8",
+   "type": "food",
+   "name": "Lentil soup",
+   "servingLabel": "1 bowl",
+   "calories": 220,
+   "protein": 15,
+   "carbs": 30,
+   "fat": 4
+  },
+  {
+   "id": "f9",
+   "type": "food",
+   "name": "Milk",
+   "servingLabel": "250 ml",
+   "calories": 105,
+   "protein": 8.5,
+   "carbs": 12.5,
+   "fat": 2.5
+  },
+  {
+   "id": "f10",
+   "type": "food",
+   "name": "Roti",
+   "servingLabel": "1 piece",
+   "calories": 120,
+   "protein": 3,
+   "carbs": 20,
+   "fat": 3
+  },
+  {
+   "id": "r1",
+   "type": "recipe",
+   "name": "Manual stew",
+   "servingLabel": "1 serving",
+   "calories": 250,
+   "protein": 20,
+   "carbs": 15,
+   "fat": 7.5
+  },
+  {
+   "id": "r2",
+   "type": "recipe",
+   "name": "Imported bowl",
+   "servingLabel": "1 serving",
+   "calories": 450,
+   "protein": 35,
+   "carbs": 40,
+   "fat": 12
+  },
+  {
+   "id": "r4",
+   "type": "recipe",
+   "name": "Zero servings",
+   "servingLabel": "1 serving",
+   "calories": 300,
+   "protein": 20,
+   "carbs": 10,
+   "fat": 5
+  }
+ ],
+ "ranking": [
+  {
+   "remaining": {
+    "calories": 2000,
+    "protein": 150
+   },
+   "limit": 1,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 23% of your 150 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 2000,
+    "protein": 150
+   },
+   "limit": 3,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 23% of your 150 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 2000 kcal remaining; covers about 19% of your 150 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 2000 kcal remaining; covers about 21% of your 150 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 2000,
+    "protein": 150
+   },
+   "limit": 5,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 23% of your 150 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 2000 kcal remaining; covers about 19% of your 150 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 2000 kcal remaining; covers about 21% of your 150 g remaining protein"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.489,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 13% of your 150 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.487,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 2000 kcal remaining; covers about 13% of your 150 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 2000,
+    "protein": 150
+   },
+   "limit": 10,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 23% of your 150 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 2000 kcal remaining; covers about 19% of your 150 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 2000 kcal remaining; covers about 21% of your 150 g remaining protein"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.489,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 13% of your 150 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.487,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 2000 kcal remaining; covers about 13% of your 150 g remaining protein"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.473,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 2000 kcal remaining; covers about 13% of your 150 g remaining protein"
+    },
+    {
+     "id": "f7",
+     "type": "food",
+     "name": "Feast",
+     "servingLabel": "1 plate",
+     "calories": 1500,
+     "protein": 60,
+     "carbs": 150,
+     "fat": 70,
+     "score": 0.453,
+     "reason": "1500 kcal and 60 g protein per 1 plate; fits within your 2000 kcal remaining; covers about 40% of your 150 g remaining protein"
+    },
+    {
+     "id": "f8",
+     "type": "food",
+     "name": "Lentil soup",
+     "servingLabel": "1 bowl",
+     "calories": 220,
+     "protein": 15,
+     "carbs": 30,
+     "fat": 4,
+     "score": 0.388,
+     "reason": "220 kcal and 15 g protein per 1 bowl; fits within your 2000 kcal remaining; covers about 10% of your 150 g remaining protein"
+    },
+    {
+     "id": "f9",
+     "type": "food",
+     "name": "Milk",
+     "servingLabel": "250 ml",
+     "calories": 105,
+     "protein": 8.5,
+     "carbs": 12.5,
+     "fat": 2.5,
+     "score": 0.263,
+     "reason": "105 kcal and 8.5 g protein per 250 ml; fits within your 2000 kcal remaining; covers about 6% of your 150 g remaining protein"
+    },
+    {
+     "id": "f3",
+     "type": "food",
+     "name": "Roti",
+     "servingLabel": "1 piece",
+     "calories": 120,
+     "protein": 3,
+     "carbs": 20,
+     "fat": 3,
+     "score": 0.143,
+     "reason": "120 kcal and 3 g protein per 1 piece; fits within your 2000 kcal remaining; covers about 2% of your 150 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "limit": 1,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 600 kcal remaining; covers about 88% of your 40 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "limit": 3,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 600 kcal remaining; covers about 88% of your 40 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 600 kcal remaining; covers about 70% of your 40 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 600 kcal remaining; covers about 78% of your 40 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "limit": 5,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 600 kcal remaining; covers about 88% of your 40 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 600 kcal remaining; covers about 70% of your 40 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 600 kcal remaining; covers about 78% of your 40 g remaining protein"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.489,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 600 kcal remaining; covers about 50% of your 40 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.487,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 600 kcal remaining; covers about 50% of your 40 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "limit": 10,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 600 kcal remaining; covers about 88% of your 40 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 600 kcal remaining; covers about 70% of your 40 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 600 kcal remaining; covers about 78% of your 40 g remaining protein"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.489,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 600 kcal remaining; covers about 50% of your 40 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.487,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 600 kcal remaining; covers about 50% of your 40 g remaining protein"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.473,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 600 kcal remaining; covers about 50% of your 40 g remaining protein"
+    },
+    {
+     "id": "f8",
+     "type": "food",
+     "name": "Lentil soup",
+     "servingLabel": "1 bowl",
+     "calories": 220,
+     "protein": 15,
+     "carbs": 30,
+     "fat": 4,
+     "score": 0.388,
+     "reason": "220 kcal and 15 g protein per 1 bowl; fits within your 600 kcal remaining; covers about 38% of your 40 g remaining protein"
+    },
+    {
+     "id": "f9",
+     "type": "food",
+     "name": "Milk",
+     "servingLabel": "250 ml",
+     "calories": 105,
+     "protein": 8.5,
+     "carbs": 12.5,
+     "fat": 2.5,
+     "score": 0.263,
+     "reason": "105 kcal and 8.5 g protein per 250 ml; fits within your 600 kcal remaining; covers about 21% of your 40 g remaining protein"
+    },
+    {
+     "id": "f3",
+     "type": "food",
+     "name": "Roti",
+     "servingLabel": "1 piece",
+     "calories": 120,
+     "protein": 3,
+     "carbs": 20,
+     "fat": 3,
+     "score": 0.143,
+     "reason": "120 kcal and 3 g protein per 1 piece; fits within your 600 kcal remaining; covers about 8% of your 40 g remaining protein"
+    },
+    {
+     "id": "f2",
+     "type": "food",
+     "name": "Biscuit",
+     "servingLabel": "30 g",
+     "calories": 144,
+     "protein": 1.8,
+     "carbs": 21,
+     "fat": 6,
+     "score": 0.131,
+     "reason": "144 kcal and 1.8 g protein per 30 g; fits within your 600 kcal remaining; covers about 5% of your 40 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 400,
+    "protein": 0
+   },
+   "limit": 1,
+   "result": [
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.878,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 400 kcal remaining"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 400,
+    "protein": 0
+   },
+   "limit": 3,
+   "result": [
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.878,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.789,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.765,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 400 kcal remaining"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 400,
+    "protein": 0
+   },
+   "limit": 5,
+   "result": [
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.878,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.789,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.765,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.757,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.73,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 400 kcal remaining"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 400,
+    "protein": 0
+   },
+   "limit": 10,
+   "result": [
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.878,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.789,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.765,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.757,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.73,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f8",
+     "type": "food",
+     "name": "Lentil soup",
+     "servingLabel": "1 bowl",
+     "calories": 220,
+     "protein": 15,
+     "carbs": 30,
+     "fat": 4,
+     "score": 0.711,
+     "reason": "220 kcal and 15 g protein per 1 bowl; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f9",
+     "type": "food",
+     "name": "Milk",
+     "servingLabel": "250 ml",
+     "calories": 105,
+     "protein": 8.5,
+     "carbs": 12.5,
+     "fat": 2.5,
+     "score": 0.613,
+     "reason": "105 kcal and 8.5 g protein per 250 ml; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f2",
+     "type": "food",
+     "name": "Biscuit",
+     "servingLabel": "30 g",
+     "calories": 144,
+     "protein": 1.8,
+     "carbs": 21,
+     "fat": 6,
+     "score": 0.561,
+     "reason": "144 kcal and 1.8 g protein per 30 g; fits within your 400 kcal remaining"
+    },
+    {
+     "id": "f3",
+     "type": "food",
+     "name": "Roti",
+     "servingLabel": "1 piece",
+     "calories": 120,
+     "protein": 3,
+     "carbs": 20,
+     "fat": 3,
+     "score": 0.553,
+     "reason": "120 kcal and 3 g protein per 1 piece; fits within your 400 kcal remaining"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 49,
+    "protein": 10
+   },
+   "limit": 1,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 49,
+    "protein": 10
+   },
+   "limit": 3,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 49,
+    "protein": 10
+   },
+   "limit": 5,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 49,
+    "protein": 10
+   },
+   "limit": 10,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 0,
+    "protein": 0
+   },
+   "limit": 1,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 0,
+    "protein": 0
+   },
+   "limit": 3,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 0,
+    "protein": 0
+   },
+   "limit": 5,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 0,
+    "protein": 0
+   },
+   "limit": 10,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 250,
+    "protein": 25
+   },
+   "limit": 1,
+   "result": [
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.864,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 250 kcal remaining; covers about 100% of your 25 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 250,
+    "protein": 25
+   },
+   "limit": 3,
+   "result": [
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.864,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 250 kcal remaining; covers about 100% of your 25 g remaining protein"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.827,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 250 kcal remaining; covers about 80% of your 25 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.728,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 250 kcal remaining; covers about 80% of your 25 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 250,
+    "protein": 25
+   },
+   "limit": 5,
+   "result": [
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.864,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 250 kcal remaining; covers about 100% of your 25 g remaining protein"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.827,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 250 kcal remaining; covers about 80% of your 25 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.728,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 250 kcal remaining; covers about 80% of your 25 g remaining protein"
+    },
+    {
+     "id": "f8",
+     "type": "food",
+     "name": "Lentil soup",
+     "servingLabel": "1 bowl",
+     "calories": 220,
+     "protein": 15,
+     "carbs": 30,
+     "fat": 4,
+     "score": 0.683,
+     "reason": "220 kcal and 15 g protein per 1 bowl; fits within your 250 kcal remaining; covers about 60% of your 25 g remaining protein"
+    },
+    {
+     "id": "f9",
+     "type": "food",
+     "name": "Milk",
+     "servingLabel": "250 ml",
+     "calories": 105,
+     "protein": 8.5,
+     "carbs": 12.5,
+     "fat": 2.5,
+     "score": 0.412,
+     "reason": "105 kcal and 8.5 g protein per 250 ml; fits within your 250 kcal remaining; covers about 34% of your 25 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 250,
+    "protein": 25
+   },
+   "limit": 10,
+   "result": [
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.864,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 250 kcal remaining; covers about 100% of your 25 g remaining protein"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.827,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 250 kcal remaining; covers about 80% of your 25 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.728,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 250 kcal remaining; covers about 80% of your 25 g remaining protein"
+    },
+    {
+     "id": "f8",
+     "type": "food",
+     "name": "Lentil soup",
+     "servingLabel": "1 bowl",
+     "calories": 220,
+     "protein": 15,
+     "carbs": 30,
+     "fat": 4,
+     "score": 0.683,
+     "reason": "220 kcal and 15 g protein per 1 bowl; fits within your 250 kcal remaining; covers about 60% of your 25 g remaining protein"
+    },
+    {
+     "id": "f9",
+     "type": "food",
+     "name": "Milk",
+     "servingLabel": "250 ml",
+     "calories": 105,
+     "protein": 8.5,
+     "carbs": 12.5,
+     "fat": 2.5,
+     "score": 0.412,
+     "reason": "105 kcal and 8.5 g protein per 250 ml; fits within your 250 kcal remaining; covers about 34% of your 25 g remaining protein"
+    },
+    {
+     "id": "f2",
+     "type": "food",
+     "name": "Biscuit",
+     "servingLabel": "30 g",
+     "calories": 144,
+     "protein": 1.8,
+     "carbs": 21,
+     "fat": 6,
+     "score": 0.276,
+     "reason": "144 kcal and 1.8 g protein per 30 g; fits within your 250 kcal remaining; covers about 7% of your 25 g remaining protein"
+    },
+    {
+     "id": "f3",
+     "type": "food",
+     "name": "Roti",
+     "servingLabel": "1 piece",
+     "calories": 120,
+     "protein": 3,
+     "carbs": 20,
+     "fat": 3,
+     "score": 0.273,
+     "reason": "120 kcal and 3 g protein per 1 piece; fits within your 250 kcal remaining; covers about 12% of your 25 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 1200,
+    "protein": 90
+   },
+   "limit": 1,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 39% of your 90 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 1200,
+    "protein": 90
+   },
+   "limit": 3,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 39% of your 90 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 1200 kcal remaining; covers about 31% of your 90 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 1200 kcal remaining; covers about 34% of your 90 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 1200,
+    "protein": 90
+   },
+   "limit": 5,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 39% of your 90 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 1200 kcal remaining; covers about 31% of your 90 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 1200 kcal remaining; covers about 34% of your 90 g remaining protein"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.489,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 22% of your 90 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.487,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 1200 kcal remaining; covers about 22% of your 90 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 1200,
+    "protein": 90
+   },
+   "limit": 10,
+   "result": [
+    {
+     "id": "r2",
+     "type": "recipe",
+     "name": "Imported bowl",
+     "servingLabel": "1 serving",
+     "calories": 450,
+     "protein": 35,
+     "carbs": 40,
+     "fat": 12,
+     "score": 0.754,
+     "reason": "450 kcal and 35 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 39% of your 90 g remaining protein"
+    },
+    {
+     "id": "f4",
+     "type": "food",
+     "name": "Paneer tikka",
+     "servingLabel": "150 g",
+     "calories": 380,
+     "protein": 28,
+     "carbs": 8,
+     "fat": 26,
+     "score": 0.632,
+     "reason": "380 kcal and 28 g protein per 150 g; fits within your 1200 kcal remaining; covers about 31% of your 90 g remaining protein"
+    },
+    {
+     "id": "f1",
+     "type": "food",
+     "name": "Chicken breast",
+     "servingLabel": "100 g",
+     "calories": 165,
+     "protein": 31,
+     "carbs": 0,
+     "fat": 3.6,
+     "score": 0.62,
+     "reason": "165 kcal and 31 g protein per 100 g; fits within your 1200 kcal remaining; covers about 34% of your 90 g remaining protein"
+    },
+    {
+     "id": "r4",
+     "type": "recipe",
+     "name": "Zero servings",
+     "servingLabel": "1 serving",
+     "calories": 300,
+     "protein": 20,
+     "carbs": 10,
+     "fat": 5,
+     "score": 0.489,
+     "reason": "300 kcal and 20 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 22% of your 90 g remaining protein"
+    },
+    {
+     "id": "f5",
+     "type": "food",
+     "name": "Greek yogurt",
+     "servingLabel": "200 g",
+     "calories": 130,
+     "protein": 20,
+     "carbs": 8,
+     "fat": 1,
+     "score": 0.487,
+     "reason": "130 kcal and 20 g protein per 200 g; fits within your 1200 kcal remaining; covers about 22% of your 90 g remaining protein"
+    },
+    {
+     "id": "r1",
+     "type": "recipe",
+     "name": "Manual stew",
+     "servingLabel": "1 serving",
+     "calories": 250,
+     "protein": 20,
+     "carbs": 15,
+     "fat": 7.5,
+     "score": 0.473,
+     "reason": "250 kcal and 20 g protein per 1 serving; fits within your 1200 kcal remaining; covers about 22% of your 90 g remaining protein"
+    },
+    {
+     "id": "f8",
+     "type": "food",
+     "name": "Lentil soup",
+     "servingLabel": "1 bowl",
+     "calories": 220,
+     "protein": 15,
+     "carbs": 30,
+     "fat": 4,
+     "score": 0.388,
+     "reason": "220 kcal and 15 g protein per 1 bowl; fits within your 1200 kcal remaining; covers about 17% of your 90 g remaining protein"
+    },
+    {
+     "id": "f9",
+     "type": "food",
+     "name": "Milk",
+     "servingLabel": "250 ml",
+     "calories": 105,
+     "protein": 8.5,
+     "carbs": 12.5,
+     "fat": 2.5,
+     "score": 0.263,
+     "reason": "105 kcal and 8.5 g protein per 250 ml; fits within your 1200 kcal remaining; covers about 9% of your 90 g remaining protein"
+    },
+    {
+     "id": "f3",
+     "type": "food",
+     "name": "Roti",
+     "servingLabel": "1 piece",
+     "calories": 120,
+     "protein": 3,
+     "carbs": 20,
+     "fat": 3,
+     "score": 0.143,
+     "reason": "120 kcal and 3 g protein per 1 piece; fits within your 1200 kcal remaining; covers about 3% of your 90 g remaining protein"
+    },
+    {
+     "id": "f2",
+     "type": "food",
+     "name": "Biscuit",
+     "servingLabel": "30 g",
+     "calories": 144,
+     "protein": 1.8,
+     "carbs": 21,
+     "fat": 6,
+     "score": 0.131,
+     "reason": "144 kcal and 1.8 g protein per 30 g; fits within your 1200 kcal remaining; covers about 2% of your 90 g remaining protein"
+    }
+   ]
+  },
+  {
+   "remaining": {
+    "calories": 100,
+    "protein": 5
+   },
+   "limit": 1,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 100,
+    "protein": 5
+   },
+   "limit": 3,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 100,
+    "protein": 5
+   },
+   "limit": 5,
+   "result": []
+  },
+  {
+   "remaining": {
+    "calories": 100,
+    "protein": 5
+   },
+   "limit": 10,
+   "result": []
+  }
+ ],
+ "scores": [
+  {
+   "c": {
+    "id": "f1",
+    "type": "food",
+    "name": "Chicken breast",
+    "servingLabel": "100 g",
+    "calories": 165,
+    "protein": 31,
+    "carbs": 0,
+    "fat": 3.6
+   },
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "score": 0.62,
+   "reason": "165 kcal and 31 g protein per 100 g; fits within your 600 kcal remaining; covers about 78% of your 40 g remaining protein"
+  },
+  {
+   "c": {
+    "id": "f2",
+    "type": "food",
+    "name": "Biscuit",
+    "servingLabel": "30 g",
+    "calories": 144,
+    "protein": 1.8,
+    "carbs": 21,
+    "fat": 6
+   },
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "score": 0.131,
+   "reason": "144 kcal and 1.8 g protein per 30 g; fits within your 600 kcal remaining; covers about 5% of your 40 g remaining protein"
+  },
+  {
+   "c": {
+    "id": "f3",
+    "type": "food",
+    "name": "Roti",
+    "servingLabel": "1 piece",
+    "calories": 120,
+    "protein": 3,
+    "carbs": 20,
+    "fat": 3
+   },
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "score": 0.143,
+   "reason": "120 kcal and 3 g protein per 1 piece; fits within your 600 kcal remaining; covers about 8% of your 40 g remaining protein"
+  },
+  {
+   "c": {
+    "id": "f4",
+    "type": "food",
+    "name": "Paneer tikka",
+    "servingLabel": "150 g",
+    "calories": 380,
+    "protein": 28,
+    "carbs": 8,
+    "fat": 26
+   },
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "score": 0.632,
+   "reason": "380 kcal and 28 g protein per 150 g; fits within your 600 kcal remaining; covers about 70% of your 40 g remaining protein"
+  },
+  {
+   "c": {
+    "id": "f5",
+    "type": "food",
+    "name": "Greek yogurt",
+    "servingLabel": "200 g",
+    "calories": 130,
+    "protein": 20,
+    "carbs": 8,
+    "fat": 1
+   },
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "score": 0.487,
+   "reason": "130 kcal and 20 g protein per 200 g; fits within your 600 kcal remaining; covers about 50% of your 40 g remaining protein"
+  },
+  {
+   "c": {
+    "id": "f6",
+    "type": "food",
+    "name": "Tiny snack",
+    "servingLabel": "1 piece",
+    "calories": 30,
+    "protein": 1,
+    "carbs": 5,
+    "fat": 1
+   },
+   "remaining": {
+    "calories": 600,
+    "protein": 40
+   },
+   "score": 0.074,
+   "reason": "30 kcal and 1 g protein per 1 piece; fits within your 600 kcal remaining; covers about 3% of your 40 g remaining protein"
+  }
+ ]
+}

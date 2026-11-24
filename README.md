@@ -16,7 +16,7 @@ Read [docs/production_checklist.md](docs/production_checklist.md) before putting
 - **Tracking:** water, meals (foods, recipes, external recipe/food import with explicit per-100 g or per-serving basis), weight and
   goals (target date, history, pace), body measurements, sleep (estimated cycle bedtimes), workouts, routines, equipment inventory.
 - **Planner:** biomechanical workout engine (14 files in `server/src/features/planner/engine/`); new users start with an empty equipment inventory and choose a preset.
-- **AI:** provider-neutral LLM layer in `ai_services/` (Ollama, OpenAI-compatible, Anthropic) for coach chat, daily and weekly
+- **AI:** provider-neutral LLM layer in `ai_services/` (NVIDIA NIM by default with an Ollama fallback; OpenAI-compatible and Anthropic also available) for coach chat, daily and weekly
   insights and food-text parsing; every AI feature has a deterministic fallback, and nutrition numbers always come from the food
   database, never from the model.
 - **Also:** meal suggestions that fit your remaining macros, grouped global search, in-app reminders, daily/weekly/monthly reports,
@@ -30,7 +30,7 @@ Read [docs/production_checklist.md](docs/production_checklist.md) before putting
 |---|---|
 | `client/` | React 18, TypeScript, Vite 5, TailwindCSS, TanStack Query, React Router 7, Recharts, jsPDF, PWA manifest |
 | `server/` | Express 4, TypeScript, Mongoose 8 / MongoDB, JWT (access + hashed single-use refresh tokens), Zod validation, helmet, rate limits |
-| `ai_services/` | FastAPI + Pydantic v2, pluggable LLM provider (`AI_PROVIDER`), default local Ollama |
+| `ai_services/` | FastAPI + Pydantic v2, pluggable LLM provider (`AI_PROVIDER`), default NVIDIA NIM with an Ollama fallback |
 | `e2e/` | Playwright specs (chromium, firefox, webkit) |
 | `scripts/` | `smoke.sh` + `smoke.d/*.sh` post-merge smoke checks |
 
@@ -52,7 +52,7 @@ unit tests. All routes are under `/api/v1`; Swagger UI at `/api-docs` (generated
 
 ## Running locally
 
-Prerequisites: Node 20 (CI and the Docker images use it), MongoDB, Python 3.10+ (AI service, optional) and, optionally, [Ollama](https://ollama.com).
+Prerequisites: Node 20 (CI and the Docker images use it), MongoDB, Python 3.10+ (AI service, optional) and, for AI answers, an [NVIDIA API key](https://build.nvidia.com) (`NVIDIA_API_KEY`) or a local [Ollama](https://ollama.com).
 
 ```bash
 # 1. MongoDB

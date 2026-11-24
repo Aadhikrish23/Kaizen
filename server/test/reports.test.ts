@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { aggregateWeek, WeeklyInputs } from '../src/features/ai/weeklyInsight';
+import { aggregateWeek, WeeklyInputs } from '../src/features/reports/aggregate';
 import { buildReport, PERIOD_DAYS, MIN_DAYS_WITH_DATA, periodStart, isReportPeriod } from '../src/features/reports/reports.logic';
 import { reportsSchema, isRealDate } from '../src/features/reports/reports.schema';
 

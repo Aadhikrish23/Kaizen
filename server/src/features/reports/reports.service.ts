@@ -1,4 +1,4 @@
-import { loadAggregate } from '../ai/weeklyInsight.service';
+import { loadAggregate } from './aggregate.service';
 import { todayInTz } from '../../utils/dates';
 import { AppError } from '../../middleware/errorHandler';
 import { buildReport, PERIOD_DAYS, ReportPeriod } from './reports.logic';

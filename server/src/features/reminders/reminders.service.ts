@@ -4,7 +4,7 @@ import MealLog from '../meals/MealLog';
 import WeightLog from '../weight/WeightLog';
 import SleepLog from '../sleep/SleepLog';
 import WorkoutLog from '../workouts/WorkoutLog';
-import { isPerformedWorkout } from '../ai/weeklyInsight';
+import { isPerformedWorkout } from '../reports/aggregate';
 import { isValidTimezone } from '../../utils/dates';
 import {
   ReminderPrefs as Prefs, DEFAULT_PREFS, REMINDER_TYPES, computeDueReminders, localNow, parseClockToMinutes, TodayStatus,
