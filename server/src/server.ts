@@ -9,6 +9,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import { connectDB } from './config/db';
 import { assertSecretsConfigured } from './config/secrets';
 import { apiRateLimitMax } from './middleware/globalRateLimit';
+import { isInternalRequest } from './middleware/internalAuth';
 
 // 1. Load environment variables
 dotenv.config();
@@ -42,7 +43,13 @@ const limiter = rateLimit({
   // The reminders router is polled by every open tab, so it must not drain the IP budget shared by everyone behind
   // one address. It is exempt here ONLY because it carries its own limits (see reminders.routes.ts): a generous IP
   // ceiling before `protect` and a per-user limiter after it. All other routes keep this global limiter.
-  skip: (req) => req.originalUrl.split('?')[0].startsWith('/api/v1/reminders'),
+  skip: (req) => {
+    const path = req.originalUrl.split('?')[0];
+    if (path.startsWith('/api/v1/reminders')) return true;
+    // The AI service calls back into this API as the user: with the shared server secret those calls skip the per-IP budget
+    // (it would otherwise be shared by every user's AI request). Never for sign-in/sign-up, which keep their IP protection.
+    return !path.startsWith('/api/v1/auth') && isInternalRequest(req);
+  },
 });
 app.use('/api', limiter);
 

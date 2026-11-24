@@ -1,5 +1,5 @@
 import { recordActivity } from '../gamification/gamification.service';
-import { isPerformedWorkout } from '../ai/weeklyInsight';
+import { isPerformedWorkout } from '../reports/aggregate';
 import { applyWorkingWeightToPlan } from '../planner/planner.service';
 import { todayInTz, weekdayOfDate } from '../../utils/dates';
 import { getUserTimezone } from '../../utils/userTimezone';

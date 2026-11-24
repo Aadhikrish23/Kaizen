@@ -1,11 +1,11 @@
 import json
 import re
-from typing import Any, List
+from typing import Any, List, Optional, Tuple
 
 from pydantic import ValidationError
 
 from ..schemas.food import ParsedFoodItem
-from .llm import LLMProvider
+from .llm import ChatResult, LLMProvider
 
 MAX_ITEMS = 20
 
@@ -55,16 +55,22 @@ def parse_model_output(raw: str) -> List[ParsedFoodItem]:
     return parsed
 
 
-async def parse_food_text(provider: LLMProvider, text: str) -> List[ParsedFoodItem]:
+async def parse_food_with_meta(provider: LLMProvider, text: str, timeout: Optional[float] = None) -> Tuple[List[ParsedFoodItem], ChatResult]:
     """Ask the provider to extract items. Raises ProviderUnavailable if it did not answer, ModelOutputError if invalid."""
-    reply = await provider.chat(
+    result = await provider.chat_with_meta(
         [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": text}],
         temperature=0.0,
         json_mode=True,
+        timeout=timeout,
     )
-    if reply is None:
+    if result is None:
         raise ProviderUnavailable("LLM provider unavailable")
-    return parse_model_output(reply)
+    return parse_model_output(result.text), result
+
+
+async def parse_food_text(provider: LLMProvider, text: str) -> List[ParsedFoodItem]:
+    items, _ = await parse_food_with_meta(provider, text)
+    return items
 
 
 class ProviderUnavailable(RuntimeError):

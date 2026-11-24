@@ -1150,6 +1150,7 @@ paths:
       tags:
         - AI
       summary: 'Parse free text into foods; nutrition comes from the food database'
+      description: 'Proxied to the Python AI service, which acts as you through this API.'
       requestBody:
         required: true
         content:
@@ -1294,7 +1295,8 @@ paths:
     post:
       tags:
         - AI
-      summary: 'Coach chat'
+      summary: 'Coach chat and action assistant: logs meals, water, weight, sleep and workouts and changes plan or targets from plain language, asks before risky changes, and supports "undo"'
+      description: 'Returns reply, status (SUCCESS, PARTIAL, FAILED, CONFIRMATION_REQUIRED, CANCELLED), changed (data areas to refresh), actions and undoAvailable. Reply "yes" or "no" to a confirmation question. 503 AI_UNAVAILABLE is never returned: when the AI service is down a canned reply with status FAILED comes back.'
       requestBody:
         required: true
         content:
@@ -1336,6 +1338,88 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: 'Missing, invalid or expired access token, or a deactivated account'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 'Rate limit exceeded: per-user limit for this endpoint group (RATE_LIMITED)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /ai/assistant/chat:
+    post:
+      tags:
+        - AI
+      summary: 'Same as /ai/chat'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                history:
+                  maxItems: 20
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      role: {type: string, enum: [user, assistant]}
+                      content: {type: string, minLength: 1, maxLength: 4000}
+                    required:
+                      - role
+                      - content
+                    additionalProperties: false
+                date:
+                  type: string
+                  pattern: '^\d{4}-\d{2}-\d{2}$'
+              required:
+                - message
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: 'Validation error (VALIDATION_ERROR) with per-field details'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: 'Missing, invalid or expired access token, or a deactivated account'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: 'Rate limit exceeded: per-user limit for this endpoint group (RATE_LIMITED)'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /ai/assistant/reset:
+    post:
+      tags:
+        - AI
+      summary: 'Forget the assistant conversation (pending question and undo history)'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
         '401':
           description: 'Missing, invalid or expired access token, or a deactivated account'
           content:

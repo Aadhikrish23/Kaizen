@@ -86,11 +86,13 @@ export const ROUTES: RouteDef[] = [
   R('get', '/reports', 'Reports', 'Daily, weekly or monthly report (logged days only; states when data is insufficient)', { schema: reportsSchema }),
   R('get', '/gamification', 'Gamification', 'XP, level, streak and achievements'),
 
-  R('post', '/ai/parse-food', 'AI', 'Parse free text into foods; nutrition comes from the food database', { schema: parseFoodSchema, limited: true }),
+  R('post', '/ai/parse-food', 'AI', 'Parse free text into foods; nutrition comes from the food database', { schema: parseFoodSchema, limited: true, notes: 'Proxied to the Python AI service, which acts as you through this API.' }),
   R('get', '/ai/insights', 'AI', 'Daily insight (AI with heuristic fallback)', { query: [{ name: 'date', description: 'YYYY-MM-DD' }], limited: true }),
   R('get', '/ai/insight/weekly', 'AI', 'Weekly insight over the last 7 days', { limited: true }),
   R('get', '/ai/recommendations', 'AI', 'Meal suggestions that fit the remaining calories and protein (deterministic)', { schema: recommendationsSchema, limited: true }),
-  R('post', '/ai/chat', 'AI', 'Coach chat', { schema: chatSchema, limited: true }),
+  R('post', '/ai/chat', 'AI', 'Coach chat and action assistant: logs meals, water, weight, sleep and workouts and changes plan or targets from plain language, asks before risky changes, and supports "undo"', { schema: chatSchema, limited: true, notes: 'Returns reply, status (SUCCESS, PARTIAL, FAILED, CONFIRMATION_REQUIRED, CANCELLED), changed (data areas to refresh), actions and undoAvailable. Reply "yes" or "no" to a confirmation question. 503 AI_UNAVAILABLE is never returned: when the AI service is down a canned reply with status FAILED comes back.' }),
+  R('post', '/ai/assistant/chat', 'AI', 'Same as /ai/chat', { schema: chatSchema, limited: true }),
+  R('post', '/ai/assistant/reset', 'AI', 'Forget the assistant conversation (pending question and undo history)', { limited: true }),
   R('get', '/ai/search', 'Search', 'Grouped search over foods, recipes, exercises and routines', { schema: searchSchema, limited: true }),
   R('get', '/search', 'Search', 'Alias of /ai/search', { schema: searchSchema, limited: true }),
 

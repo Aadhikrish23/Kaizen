@@ -50,3 +50,19 @@ jobs:
             echo "$h" | grep -qi '^referrer-policy:' || { echo "missing Referrer-Policy on $path"; exit 1; }
           done
           curl -sI http://localhost:8081/index.html | grep -qi '^cache-control: no-cache' || { echo "index.html must not be cached"; exit 1; }
+
+  ai-service:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: ai_services/requirements.txt
+      - name: Install AI service
+        working-directory: ai_services
+        run: pip install -r requirements.txt
+      - name: AI service tests (providers, ports, assistant; no network, no model)
+        working-directory: ai_services
+        run: python -m unittest discover tests

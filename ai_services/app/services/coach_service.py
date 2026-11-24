@@ -110,7 +110,8 @@ class CoachService:
         message: str,
         history: Optional[List[ChatMessage]] = None,
         profile: Optional[UserProfileContext] = None,
-        metrics: Optional[DailyMetricsContext] = None
+        metrics: Optional[DailyMetricsContext] = None,
+        timeout: Optional[float] = None
     ) -> CoachChatResponse:
         system_prompt = self.build_system_prompt(profile, metrics)
         
@@ -122,16 +123,16 @@ class CoachService:
 
         messages.append({"role": "user", "content": message})
 
-        # Send to the configured LLM provider (ollama / openai / anthropic)
+        # Send to the configured LLM provider chain (nvidia / ollama / openai / anthropic)
         provider = get_provider()
-        llm_reply = await provider.chat(messages)
+        result = await provider.chat_with_meta(messages, timeout=timeout)
 
-        if llm_reply:
+        if result:
             return CoachChatResponse(
-                reply=llm_reply,
-                model_used=provider.model,
+                reply=result.text,
+                model_used=result.model,
                 context_applied=True,
-                source=provider.name
+                source=result.provider
             )
 
         # Fallback if the provider is loading, misconfigured or unreachable
@@ -162,9 +163,9 @@ class CoachService:
         ]
 
         provider = get_provider()
-        llm_reply = await provider.chat(messages, temperature=0.7)
-        if llm_reply:
-            return InsightResponse(insight=llm_reply.strip('\"'), category="daily", model_used=provider.model)
+        result = await provider.chat_with_meta(messages, temperature=0.7, timeout=12.0)
+        if result:
+            return InsightResponse(insight=result.text.strip('\"'), category="daily", model_used=result.model)
 
         # Heuristic Insight
         if metrics and metrics.remainingCalories and metrics.remainingCalories > 0:

@@ -1,6 +1,6 @@
 // Pure report builder on top of the weekly aggregation helper (`aggregateWeek`). All averages cover logged days only.
 import { addDaysTz } from '../../utils/dates';
-import type { WeeklyAggregate } from '../ai/weeklyInsight';
+import type { WeeklyAggregate } from './aggregate';
 
 export type ReportPeriod = 'daily' | 'weekly' | 'monthly';
 

@@ -57,7 +57,7 @@ named here; nothing below has been verified on a real production environment.
 | Real browser E2E (Playwright: chromium, firefox, webkit) | `e2e.yml` on PRs and main | Done (runs against `vite preview`, not the nginx image) |
 | Docker image builds, nginx config, SPA fallback and security headers of the client image | `ci.yml` docker job | Done |
 | `docker compose up` of the whole stack | none | **Not covered by CI** |
-| AI provider calls (Ollama/OpenAI/Anthropic) | none | **Never exercised against a real provider** |
+| AI provider calls (NVIDIA NIM/Ollama/OpenAI/Anthropic) | `ai_services/tests/test_nvidia_and_fallback.py` (mock HTTP transport only) | **Never exercised against a real provider** |
 
 ## Not verified (stated honestly)
 - No deployment to a real host has been done; `docker compose up` was never run in CI or by the authors of these docs.

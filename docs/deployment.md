@@ -55,7 +55,12 @@ origin of the client) and `VITE_API_URL` (baked into the client bundle at build 
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `AI_PROVIDER` | `ollama` | `ollama`, `openai` (any OpenAI-compatible gateway) or `anthropic`. |
+| `AI_PROVIDER` | `nvidia` | Primary backend: `nvidia` (NVIDIA NIM), `ollama`, `openai` (any OpenAI-compatible gateway) or `anthropic`. |
+| `AI_FALLBACK_PROVIDERS` | `ollama` | Comma separated providers tried in order when the primary gives no answer; empty for none. Set it empty if you do not run Ollama. |
+| `AI_INTERNAL_TOKEN` | none | Shared secret (16+ characters, identical on the server and the AI service) so the AI service's calls back into the API skip the per-IP rate limit. Without it, behind one proxy address all AI traffic shares the 100 requests per 15 minutes budget. |
+| `KAIZEN_API_URL` | `http://localhost:5000/api/v1` | Where the AI service reaches the API (compose sets `http://server:5000/api/v1`). |
+| `NVIDIA_API_KEY` | none | Required for the `nvidia` provider (secret). Without it the NVIDIA step is skipped and the fallback chain, then the built-in heuristics, answer. |
+| `NVIDIA_MODEL`, `NVIDIA_FALLBACK_MODELS`, `NVIDIA_BASE_URL` | `nvidia/nemotron-3-super-120b-a12b`, `openai/gpt-oss-20b`, `https://integrate.api.nvidia.com/v1` | Hosted models are tried in order on the same key; which models a key can use varies by account. |
 | `OLLAMA_HOST`, `OLLAMA_MODEL` | `http://localhost:11434`, `phi3:mini` | Local Ollama. Compose default host: `http://host.docker.internal:11434`. |
 | `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL` | empty, `https://api.openai.com/v1`, `gpt-4o-mini` | OpenAI-compatible provider. |
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`, `ANTHROPIC_VERSION` | empty, `claude-sonnet-4-5`, `https://api.anthropic.com`, `2023-06-01` | Anthropic Messages API. |
